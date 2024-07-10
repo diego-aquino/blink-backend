@@ -22,6 +22,9 @@ devDependencies:
   dotenv-cli:
     specifier: ^7.4.2
     version: 7.4.2
+  prettier:
+    specifier: ^3.3.2
+    version: 3.3.2
   prisma:
     specifier: ^5.16.2
     version: 5.16.2
@@ -1383,6 +1386,12 @@ packages:
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.4.5
+    dev: true
+
+  /prettier@3.3.2:
+    resolution: {integrity: sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /prisma@5.16.2:
