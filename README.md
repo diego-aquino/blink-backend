@@ -4,6 +4,8 @@ Blink é um encurtador de URLs que está sendo desenvolvido por [@diego-aquino](
 disciplina de Programação Web 2 2024.1, no curso de Ciência da Computação da UFCG. Nesse sistema, uma URL encurtada é
 chamada de _blink_.
 
+![Screenshot da interface inicial do Blink](docs/hero.png)
+
 ## Requisitos funcionais
 
 1. Usuários
