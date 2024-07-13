@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "URL shortener",
   "license": "MIT",
-  "packageManager": "pnpm@9.5.0",
+  "packageManager": "npm@10.7.0",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -12,8 +12,8 @@
     "dev": "dotenv -c development -- tsx watch src/server.ts",
     "build": "dotenv -c production -- tsup",
     "start": "dotenv -c production -- node ./dist/server.js",
-    "style:check": "pnpm style --check",
-    "style:format": "pnpm style --write",
+    "style:check": "npm run style --check",
+    "style:format": "npm run style --write",
     "types:check": "tsc --noEmit"
   },
   "dependencies": {
