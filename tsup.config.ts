@@ -11,6 +11,6 @@ export default defineConfig({
   format: ['cjs'],
   dts: false,
   entry: {
-    index: 'src/index.ts',
+    server: 'src/server.ts',
   },
 });

@@ -9,14 +9,14 @@
   },
   "author": "Diego Aquino <diegocruzdeaquino@gmail.com>",
   "scripts": {
-    "dev": "dotenv -c development -- tsx watch src/index.ts",
+    "dev": "dotenv -c development -- tsx watch src/server.ts",
     "build": "dotenv -c production -- tsup",
+    "start": "dotenv -c production -- node ./dist/server.js",
     "style:check": "pnpm style --check",
     "style:format": "pnpm style --write",
     "types:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^5.16.2",
     "express": "^4.19.2"
   },
   "devDependencies": {
@@ -24,7 +24,6 @@
     "@types/node": "^20.14.10",
     "dotenv-cli": "^7.4.2",
     "prettier": "^3.3.2",
-    "prisma": "^5.16.2",
     "tsup": "^8.1.0",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3"
