@@ -12,6 +12,7 @@
     "dev": "dotenv -c development -- tsx watch src/server.ts",
     "build": "dotenv -c production -- tsup",
     "start": "dotenv -c production -- node ./dist/server.js",
+    "prestart": "npm run build",
     "style:check": "npm run style --check",
     "style:format": "npm run style --write",
     "types:check": "tsc --noEmit"
