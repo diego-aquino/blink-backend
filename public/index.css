@@ -30,11 +30,6 @@
   margin: 1.5rem 0;
 }
 
-.header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-}
-
 .blinkForm {
   display: flex;
   flex-direction: column;
@@ -152,6 +147,18 @@
   margin-left: 1.75rem;
 }
 
+.aboutOrderedList > li + li {
+  margin-top: 1rem;
+}
+
 .aboutUnorderedList {
   list-style-type: none;
+}
+
+.aboutUnorderedList > li + li {
+  margin-top: 0.5rem;
+}
+
+.aboutUnorderedList > li > ul {
+  margin-left: 2rem;
 }
