@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build
+/dist
+
+# Cache
+.cache
+tsconfig.tsbuildinfo
+
+# Logs
+*.log
+
+# Miscellaneous
+.vscode
+local/
