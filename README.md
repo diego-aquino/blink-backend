@@ -8,17 +8,17 @@ chamada de _blink_.
 
 1. Usuários
 
-- _RF 1.1_: Como usuário não cadastrado, eu quero poder criar uma conta no sistema.
-- _RF 1.2_: Como usuário cadastrado e não autenticado, eu quero poder fazer login no sistema.
-- _RF 1.3_: Como usuário cadastrado e autenticado, eu quero poder fazer logout do sistema.
+- **RF 1.1**: Como usuário não cadastrado, eu quero poder criar uma conta no sistema.
+- **RF 1.2**: Como usuário cadastrado e não autenticado, eu quero poder fazer login no sistema.
+- **RF 1.3**: Como usuário cadastrado e autenticado, eu quero poder fazer logout do sistema.
 
 2. URLs (blinks)
 
-- _RF 2.1_: Como usuário autenticado, eu quero poder criar uma URL encurtada.
-- _RF 2.2_: Como usuário autenticado, eu quero poder visualizar as URLs encurtadas que criei.
-- _RF 2.3_: Como usuário autenticado, eu quero poder editar uma URL encurtada que criei.
-- _RF 2.4_: Como usuário autenticado, eu quero poder remover uma URL encurtada que criei.
-- _RF 2.5_: Como usuário qualquer na internet, possivelmente não cadastrado ou não autenticado no sistema, eu quero
+- **RF 2.1**: Como usuário autenticado, eu quero poder criar uma URL encurtada.
+- **RF 2.2**: Como usuário autenticado, eu quero poder visualizar as URLs encurtadas que criei.
+- **RF 2.3**: Como usuário autenticado, eu quero poder editar uma URL encurtada que criei.
+- **RF 2.4**: Como usuário autenticado, eu quero poder remover uma URL encurtada que criei.
+- **RF 2.5**: Como usuário qualquer na internet, possivelmente não cadastrado ou não autenticado no sistema, eu quero
   poder acessar uma URL encurtada e ser redirecionado para a URL original.
   - Deve ser realizado um redirecionamento HTTP 308 (Permanent Redirect) para a URL original.
   - Devem ser usados os headers `Cache-Control: public, max-age=0, must-revalidate` e `Location: {url-original}`.
@@ -27,23 +27,23 @@ chamada de _blink_.
 
 1. Segurança
 
-- _RNF 1.1_: O sistema deve armazenar as senhas dos usuários de forma segura.
-- _RNF 1.2_: O sistema deve garantir que um usuário possa listar, editar ou remover apenas as URLs encurtadas que ele
+- **RNF 1.1**: O sistema deve armazenar as senhas dos usuários de forma segura.
+- **RNF 1.2**: O sistema deve garantir que um usuário possa listar, editar ou remover apenas as URLs encurtadas que ele
   criou.
-- _RNF 1.3_: O sistema deve garantir que um usuário não autenticado não possa criar, visualizar, editar ou remover URLs
-  encurtadas.
-- _RNF 1.4_: O sistema deve utilizar um método de autenticação stateless para autenticar os usuários, com tokens JWT de
-  acesso e refresh. Os tokens deve ser armazenados em cookies HTTP com os atributos `HttpOnly`, de modo a serem
+- **RNF 1.3**: O sistema deve garantir que um usuário não autenticado não possa criar, visualizar, editar ou remover
+  URLs encurtadas.
+- **RNF 1.4**: O sistema deve utilizar um método de autenticação stateless para autenticar os usuários, com tokens JWT
+  de acesso e refresh. Os tokens deve ser armazenados em cookies HTTP com os atributos `HttpOnly`, de modo a serem
   acessíveis apenas pelo servidor.
 
 2. Usabilidade
 
-- _RNF 2.2_: O sistema deve ser acessível, seguindo as diretrizes de acessibilidade.
-- _RNF 2.3_: O sistema deve ser intuitivo, com uma interface de usuário amigável.
+- **RNF 2.2**: O sistema deve ser acessível, seguindo as diretrizes de acessibilidade.
+- **RNF 2.3**: O sistema deve ser intuitivo, com uma interface de usuário amigável.
 
 3. Desempenho
 
-- _RNF 3.1_: O sistema deve ser capaz de redirecionar o usuário para a URL original de forma rápida, em menos de 100
+- **RNF 3.1**: O sistema deve ser capaz de redirecionar o usuário para a URL original de forma rápida, em menos de 100
   milissegundos em condições normais.
-- _RNF 3.2_: O sistema deve realizar suas operações comuns em menos de 1 segundo em condições normais, como cadastro,
+- **RNF 3.2**: O sistema deve realizar suas operações comuns em menos de 1 segundo em condições normais, como cadastro,
   login, logout, criação, listagem, edição e remoção de URLs encurtadas.
