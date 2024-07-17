@@ -1,0 +1,64 @@
+GET http://localhost:3000
+
+###
+
+GET http://localhost:3000/index.html
+
+###
+
+POST http://localhost:3000/users
+content-type: application/json
+{
+  "name": "Diego Aquino",
+  "email": "diegocruzdeaquino@gmail.com",
+  "password": "123123"
+}
+
+###
+
+POST http://localhost:3000/auth/login
+content-type: application/json
+{
+  "email": "diegocruzdeaquino@gmail.com",
+  "password": "123123"
+}
+
+###
+
+GET http://localhost:3000/auth/introspect
+
+###
+
+POST http://localhost:3000/auth/logout
+
+###
+
+POST http://localhost:3000/blinks
+content-type: application/json
+{
+  "title": "Repositório",
+  "url": "https://github.com/diego-aquino/blink-backend",
+  "redirectId": "4dsglYo"
+}
+
+###
+
+GET http://localhost:3000/blinks?orderBy=createdAt.desc
+
+###
+
+PATCH http://localhost:3000/blinks/44f54a1a-af30-4b9d-a2d4-97864c11af6d
+content-type: application/json
+{
+  "title": "Repositório",
+  "url": "https://github.com/diego-aquino/blink-backend",
+  "redirectId": "4dsglYo"
+}
+
+###
+
+DELETE http://localhost:3000/blinks/44f54a1a-af30-4b9d-a2d4-97864c11af6d
+
+###
+
+GET http://localhost:3000/4dsglYo
