@@ -1,0 +1,42 @@
+POST http://localhost:3000/blinks
+content-type: application/json
+
+{
+  "userId": "975c87d7-1641-423e-928f-8fbb4cfb4f3e",
+  "title": "Repositório",
+  "url": "https://github.com/diego-aquino/blink-backend",
+  "redirectId": "4dsglYo"
+}
+
+###
+
+GET http://localhost:3000/blinks
+  ?userId=975c87d7-1641-423e-928f-8fbb4cfb4f3e
+  &orderBy=title.desc
+  &page=1
+  &perPage=10
+
+###
+
+PATCH http://localhost:3000/blinks/ebf14b93-7f52-4c54-8c95-dc29ab5cadce
+content-type: application/json
+
+{
+  "userId": "975c87d7-1641-423e-928f-8fbb4cfb4f3e",
+  "title": "Repositório (atualizado)",
+  "url": "https://github.com/diego-aquino/blink-frontend",
+  "redirectId": "4dsglYo"
+}
+
+###
+
+DELETE http://localhost:3000/blinks/ebf14b93-7f52-4c54-8c95-dc29ab5cadce
+content-type: application/json
+
+{
+  "userId": "975c87d7-1641-423e-928f-8fbb4cfb4f3e"
+}
+
+###
+
+GET http://localhost:3000/4dsglYo
