@@ -30,26 +30,51 @@ interface Blink {
   updatedAt: Date;
 }
 
-const database: {
-  users: User[];
-  blinks: Blink[];
-} = {
-  users: [],
-  blinks: [],
+const database = {
+  users: {
+    rows: [] as User[],
+
+    findById(id: User['id']) {
+      return database.users.rows.find((user) => user.id === id);
+    },
+
+    findByEmail(email: User['email']) {
+      return database.users.rows.find((user) => user.email === email);
+    },
+  },
+
+  blinks: {
+    rows: [] as Blink[],
+
+    findById(id: Blink['id']) {
+      return database.blinks.rows.find((blink) => blink.id === id);
+    },
+
+    findByRedirectId(redirectId: Blink['redirectId']) {
+      return database.blinks.rows.find((blink) => blink.redirectId === redirectId);
+    },
+
+    findByUserId(userId: Blink['userId']) {
+      return database.blinks.rows.filter((blink) => blink.userId === userId);
+    },
+  },
 };
 
 const userCreationSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
+  name: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio'),
+  email: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .email('O email deve ser válido'),
 });
 
 app.post('/users', (request, response) => {
   const { name, email } = userCreationSchema.parse(request.body);
 
-  const userWithExistingEmail = database.users.find((user) => user.email === email);
+  const userWithExistingEmail = database.users.findByEmail(email);
   if (userWithExistingEmail) {
-    response.status(409).json({ message: 'Email already in use' });
-    return;
+    return response.status(409).json({ message: 'Email already in use' });
   }
 
   const user: User = {
@@ -60,16 +85,25 @@ app.post('/users', (request, response) => {
     updatedAt: new Date(),
   };
 
-  database.users.push(user);
+  database.users.rows.push(user);
 
-  response.status(201).json(user);
+  return response.status(201).json(user);
 });
 
 const blinkCreationSchema = z.object({
-  userId: z.string().uuid(), // Temporary; will be inferred from the auth token
-  title: z.string().min(1),
-  url: z.string().url(),
-  redirectId: z.string().min(1).optional(),
+  userId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
+  title: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio'),
+  url: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .url('Deve ser uma URL válida'),
+  redirectId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio')
+    .optional(),
 });
 
 function randomInteger(lowerLimit: number, upperLimit: number) {
@@ -80,8 +114,8 @@ const DEFAULT_REDIRECT_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP
 
 function generateRedirectId(length: number) {
   const redirectId = Array.from({ length }, () => {
-    const nextCharacterIndex = randomInteger(0, DEFAULT_REDIRECT_ID_ALPHABET.length);
-    const nextCharacter = DEFAULT_REDIRECT_ID_ALPHABET[nextCharacterIndex];
+    const indexOfNextCharacterInAlphabet = randomInteger(0, DEFAULT_REDIRECT_ID_ALPHABET.length);
+    const nextCharacter = DEFAULT_REDIRECT_ID_ALPHABET[indexOfNextCharacterInAlphabet];
     return nextCharacter;
   }).join('');
 
@@ -91,42 +125,39 @@ function generateRedirectId(length: number) {
 function generateUnusedRedirectId(length: number) {
   while (true) {
     const redirectIdCandidate = generateRedirectId(length);
-
-    const existingBlink = database.blinks.find((blink) => blink.redirectId === redirectIdCandidate);
-    if (!existingBlink) {
+    const isRedirectIdInUse = database.blinks.findByRedirectId(redirectIdCandidate);
+    if (!isRedirectIdInUse) {
       return redirectIdCandidate;
     }
   }
 }
 
 app.post('/blinks', (request, response) => {
-  const { userId, title, url: url, redirectId } = blinkCreationSchema.parse(request.body);
+  const { userId, title, url, redirectId = generateUnusedRedirectId(6) } = blinkCreationSchema.parse(request.body);
 
-  const user = database.users.find((user) => user.id === userId);
+  const user = database.users.findById(userId);
   if (!user) {
-    response.status(404).json({ message: 'User not found' });
-    return;
+    return response.status(404).json({ message: 'User not found' });
   }
 
-  const blinkWithExistingRedirectId = database.blinks.find((blink) => blink.redirectId === redirectId);
+  const blinkWithExistingRedirectId = database.blinks.findByRedirectId(redirectId);
   if (blinkWithExistingRedirectId) {
-    response.status(409).json({ message: 'Redirect id is already in use' });
-    return;
+    return response.status(409).json({ message: 'Redirect id is already in use' });
   }
 
   const blink: Blink = {
     id: crypto.randomUUID(),
     userId,
     title,
-    url: url,
-    redirectId: redirectId ?? generateUnusedRedirectId(6),
+    url,
+    redirectId,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  database.blinks.push(blink);
+  database.blinks.rows.push(blink);
 
-  response.status(201).json(blink);
+  return response.status(201).json(blink);
 });
 
 const BLINK_ORDER_BY = ['createdAt.desc', 'createdAt.asc', 'title.desc', 'title.asc'] as const;
@@ -148,38 +179,62 @@ function blinksComparedBy(orderBy: BlinkOrderBy) {
 }
 
 const listBlinksSchema = z.object({
-  userId: z.string().uuid(), // Temporary; will be inferred from the auth token
-  orderBy: z.enum(BLINK_ORDER_BY).optional().default('createdAt.desc'),
-  page: z.coerce.number().int().positive().optional().default(1),
-  perPage: z.coerce.number().int().positive().optional().default(10),
+  userId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
+  orderBy: z
+    .enum(BLINK_ORDER_BY, { invalid_type_error: 'Valor inválido', required_error: 'Obrigatório' })
+    .optional()
+    .default('createdAt.desc'),
+  page: z.coerce
+    .number({ invalid_type_error: 'Deve ser um número', required_error: 'Obrigatório' })
+    .int('Deve ser um número inteiro')
+    .positive('Deve ser um número positivo')
+    .optional()
+    .default(1),
+  perPage: z.coerce
+    .number({ invalid_type_error: 'Deve ser um número', required_error: 'Obrigatório' })
+    .int('Deve ser um número inteiro')
+    .positive('Deve ser um número positivo')
+    .optional()
+    .default(10),
 });
 
 app.get('/blinks', (request, response) => {
   const { userId, orderBy, page, perPage } = listBlinksSchema.parse(request.query);
 
-  const user = database.users.find((user) => user.id === userId);
+  const user = database.users.findById(userId);
   if (!user) {
-    response.status(404).json({ message: 'User not found' });
-    return;
+    return response.status(404).json({ message: 'User not found' });
   }
 
   const paginationFrom = (page - 1) * perPage;
   const paginationTo = page * perPage;
 
   const blinks = database.blinks
-    .filter((blink) => blink.userId === userId)
+    .findByUserId(userId)
     .sort(blinksComparedBy(orderBy))
     .slice(paginationFrom, paginationTo);
 
-  response.status(200).json(blinks);
+  return response.status(200).json(blinks);
 });
 
 const blinkUpdateSchema = z.object({
-  userId: z.string().uuid(), // Temporary; will be inferred from the auth token
-  blinkId: z.string().uuid(),
-  title: z.string().min(1).optional(),
-  url: z.string().url().optional(),
-  redirectId: z.string().min(1).optional(),
+  userId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
+  blinkId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'),
+  title: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio')
+    .optional(),
+  url: z.string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' }).url().optional(),
+  redirectId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio')
+    .optional(),
 });
 
 app.patch('/blinks/:blinkId', (request, response) => {
@@ -188,19 +243,17 @@ app.patch('/blinks/:blinkId', (request, response) => {
     ...request.body,
   });
 
-  const user = database.users.find((user) => user.id === userId);
+  const user = database.users.findById(userId);
   if (!user) {
-    response.status(404).json({ message: 'User not found' });
-    return;
+    return response.status(404).json({ message: 'User not found' });
   }
 
-  const blinkIndex = database.blinks.findIndex((blink) => blink.id === blinkId);
+  const blinkIndex = database.blinks.rows.findIndex((blink) => blink.id === blinkId);
   if (blinkIndex === -1) {
-    response.status(404).json({ message: 'Blink not found' });
-    return;
+    return response.status(404).json({ message: 'Blink not found' });
   }
 
-  const blink = database.blinks[blinkIndex];
+  const blink = database.blinks.rows[blinkIndex];
 
   const updatedBlink: Blink = {
     ...blink,
@@ -210,14 +263,18 @@ app.patch('/blinks/:blinkId', (request, response) => {
     updatedAt: new Date(),
   };
 
-  database.blinks[blinkIndex] = updatedBlink;
+  database.blinks.rows[blinkIndex] = updatedBlink;
 
-  response.status(200).json(updatedBlink);
+  return response.status(200).json(updatedBlink);
 });
 
 const blinkDeletionSchema = z.object({
-  userId: z.string().uuid(), // Temporary; will be inferred from the auth token
-  blinkId: z.string().uuid(),
+  userId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
+  blinkId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .uuid('Deve ser um uuid v4'),
 });
 
 app.delete('/blinks/:blinkId', (request, response) => {
@@ -226,41 +283,39 @@ app.delete('/blinks/:blinkId', (request, response) => {
     ...request.body,
   });
 
-  const user = database.users.find((user) => user.id === userId);
+  const user = database.users.findById(userId);
   if (!user) {
-    response.status(404).json({ message: 'User not found' });
-    return;
+    return response.status(404).json({ message: 'User not found' });
   }
 
-  const blink = database.blinks.find((blink) => blink.id === blinkId);
-  if (!blink) {
-    response.status(404).json({ message: 'Blink not found' });
-    return;
+  const blinkIndex = database.blinks.rows.findIndex((blink) => blink.id === blinkId);
+  if (blinkIndex === -1) {
+    return response.status(404).json({ message: 'Blink not found' });
   }
 
-  database.blinks = database.blinks.filter((blink) => blink.id !== blinkId);
+  database.blinks.rows.splice(blinkIndex, 1);
 
-  response.status(204).end();
+  return response.status(204).end();
 });
 
 const redirectSchema = z.object({
-  redirectId: z.string().min(1),
+  redirectId: z
+    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
+    .min(1, 'Não pode ser vazio'),
 });
 
 app.get('/:redirectId', (request, response) => {
   const { redirectId } = redirectSchema.parse(request.params);
 
-  const blink = database.blinks.find((blink) => blink.redirectId === redirectId);
-
+  const blink = database.blinks.findByRedirectId(redirectId);
   if (!blink) {
-    response.status(404).json({ message: 'Blink not found' });
-    return;
+    return response.status(404).json({ message: 'Blink not found' });
   }
 
-  response.header('cache-control', 'public, max-age=0, must-revalidate').redirect(308, blink.url);
+  return response.header('cache-control', 'public, max-age=0, must-revalidate').redirect(308, blink.url);
 });
 
-app.use(((error, _request, response, next) => {
+const handleError: ErrorRequestHandler = (error, _request, response, next) => {
   if (!error) {
     next();
   }
@@ -270,16 +325,18 @@ app.use(((error, _request, response, next) => {
   }
 
   if (error instanceof ZodError) {
-    response.status(400).json({
+    return response.status(400).json({
       message: 'Validation failed',
       issues: error.issues,
     });
   } else {
-    response.status(500).json({
+    return response.status(500).json({
       message: error.message,
     });
   }
-}) satisfies ErrorRequestHandler);
+};
+
+app.use(handleError);
 
 app.listen(PORT, HOSTNAME, () => {
   console.log(`Server is running at http://${HOSTNAME}:${PORT}`);
