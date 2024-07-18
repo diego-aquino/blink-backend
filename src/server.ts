@@ -16,7 +16,6 @@ interface User {
   id: string;
   name: string;
   email: string;
-  password: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,11 +41,10 @@ const database: {
 const userCreationSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  password: z.string().min(1),
 });
 
 app.post('/users', (request, response) => {
-  const { name, email, password } = userCreationSchema.parse(request.body);
+  const { name, email } = userCreationSchema.parse(request.body);
 
   const userWithExistingEmail = database.users.find((user) => user.email === email);
   if (userWithExistingEmail) {
@@ -58,7 +56,6 @@ app.post('/users', (request, response) => {
     id: crypto.randomUUID(),
     name,
     email,
-    password,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
