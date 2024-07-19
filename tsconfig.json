@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2016",
+    "target": "ES6",
     "module": "commonjs",
-    "lib": ["esnext"],
-    "noEmit": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "incremental": true,
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "outDir": "./dist",
+
+    "lib": ["esnext"],
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+
+  "include": ["./**/*.ts"],
+  "exclude": ["dist", "node_modules", "**/*.spec.ts"]
 }
