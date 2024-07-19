@@ -61,12 +61,8 @@ const database = {
 };
 
 const userCreationSchema = z.object({
-  name: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio'),
-  email: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .email('O email deve ser válido'),
+  name: z.string().min(1),
+  email: z.string().email(),
 });
 
 app.post('/users', (request, response) => {
@@ -91,26 +87,17 @@ app.post('/users', (request, response) => {
 });
 
 const blinkCreationSchema = z.object({
-  userId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
-  title: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio'),
-  url: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .url('Deve ser uma URL válida'),
-  redirectId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio')
-    .optional(),
+  userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
+  title: z.string().min(1),
+  url: z.string().url(),
+  redirectId: z.string().min(1).optional(),
 });
 
 function randomInteger(lowerLimit: number, upperLimit: number) {
   return Math.floor(Math.random() * (upperLimit - lowerLimit)) + lowerLimit;
 }
 
-const DEFAULT_REDIRECT_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const DEFAULT_REDIRECT_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.';
 
 function generateRedirectId(length: number) {
   const redirectId = Array.from({ length }, () => {
@@ -179,25 +166,10 @@ function blinksComparedBy(orderBy: BlinkOrderBy) {
 }
 
 const listBlinksSchema = z.object({
-  userId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
-  orderBy: z
-    .enum(BLINK_ORDER_BY, { invalid_type_error: 'Valor inválido', required_error: 'Obrigatório' })
-    .optional()
-    .default('createdAt.desc'),
-  page: z.coerce
-    .number({ invalid_type_error: 'Deve ser um número', required_error: 'Obrigatório' })
-    .int('Deve ser um número inteiro')
-    .positive('Deve ser um número positivo')
-    .optional()
-    .default(1),
-  perPage: z.coerce
-    .number({ invalid_type_error: 'Deve ser um número', required_error: 'Obrigatório' })
-    .int('Deve ser um número inteiro')
-    .positive('Deve ser um número positivo')
-    .optional()
-    .default(10),
+  userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
+  orderBy: z.enum(BLINK_ORDER_BY).optional().default('createdAt.desc'),
+  page: z.coerce.number().int().positive().optional().default(1),
+  perPage: z.coerce.number().int().positive().optional().default(10),
 });
 
 app.get('/blinks', (request, response) => {
@@ -220,21 +192,11 @@ app.get('/blinks', (request, response) => {
 });
 
 const blinkUpdateSchema = z.object({
-  userId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
-  blinkId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'),
-  title: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio')
-    .optional(),
-  url: z.string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' }).url().optional(),
-  redirectId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio')
-    .optional(),
+  userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
+  blinkId: z.string().uuid(),
+  title: z.string().min(1).optional(),
+  url: z.string().url().optional(),
+  redirectId: z.string().min(1).optional(),
 });
 
 app.patch('/blinks/:blinkId', (request, response) => {
@@ -269,12 +231,8 @@ app.patch('/blinks/:blinkId', (request, response) => {
 });
 
 const blinkDeletionSchema = z.object({
-  userId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'), // Temporário; será extraído do token de autenticação
-  blinkId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .uuid('Deve ser um uuid v4'),
+  userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
+  blinkId: z.string().uuid(),
 });
 
 app.delete('/blinks/:blinkId', (request, response) => {
@@ -299,9 +257,7 @@ app.delete('/blinks/:blinkId', (request, response) => {
 });
 
 const redirectSchema = z.object({
-  redirectId: z
-    .string({ invalid_type_error: 'Deve ser uma string', required_error: 'Obrigatório' })
-    .min(1, 'Não pode ser vazio'),
+  redirectId: z.string().min(1),
 });
 
 app.get('/:redirectId', (request, response) => {

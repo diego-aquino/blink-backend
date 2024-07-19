@@ -1,5 +1,7 @@
+# Página inicial
 GET http://localhost:3000
 
 ###
 
+# Página inicial (index.html)
 GET http://localhost:3000/index.html
