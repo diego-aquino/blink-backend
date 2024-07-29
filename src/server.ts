@@ -22,7 +22,7 @@ interface User {
 
 interface Blink {
   id: string;
-  title: string;
+  name: string;
   url: string;
   redirectId: string;
   userId: string;
@@ -88,7 +88,7 @@ app.post('/users', (request, response) => {
 
 const blinkCreationSchema = z.object({
   userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
-  title: z.string().min(1),
+  name: z.string().min(1),
   url: z.string().url(),
   redirectId: z.string().min(1).optional(),
 });
@@ -120,7 +120,7 @@ function generateUnusedRedirectId(length: number) {
 }
 
 app.post('/blinks', (request, response) => {
-  const { userId, title, url, redirectId = generateUnusedRedirectId(6) } = blinkCreationSchema.parse(request.body);
+  const { userId, name, url, redirectId = generateUnusedRedirectId(6) } = blinkCreationSchema.parse(request.body);
 
   const user = database.users.findById(userId);
   if (!user) {
@@ -135,7 +135,7 @@ app.post('/blinks', (request, response) => {
   const blink: Blink = {
     id: crypto.randomUUID(),
     userId,
-    title,
+    name,
     url,
     redirectId,
     createdAt: new Date(),
@@ -147,7 +147,7 @@ app.post('/blinks', (request, response) => {
   return response.status(201).json(blink);
 });
 
-const BLINK_ORDER_BY = ['createdAt.desc', 'createdAt.asc', 'title.desc', 'title.asc'] as const;
+const BLINK_ORDER_BY = ['createdAt.desc', 'createdAt.asc', 'name.desc', 'name.asc'] as const;
 type BlinkOrderBy = (typeof BLINK_ORDER_BY)[number];
 
 function blinksComparedBy(orderBy: BlinkOrderBy) {
@@ -157,10 +157,10 @@ function blinksComparedBy(orderBy: BlinkOrderBy) {
         return blink.createdAt.getTime() - otherBlink.createdAt.getTime();
       case 'createdAt.desc':
         return otherBlink.createdAt.getTime() - blink.createdAt.getTime();
-      case 'title.asc':
-        return blink.title.localeCompare(otherBlink.title);
-      case 'title.desc':
-        return otherBlink.title.localeCompare(blink.title);
+      case 'name.asc':
+        return blink.name.localeCompare(otherBlink.name);
+      case 'name.desc':
+        return otherBlink.name.localeCompare(blink.name);
     }
   };
 }
@@ -194,13 +194,13 @@ app.get('/blinks', (request, response) => {
 const blinkUpdateSchema = z.object({
   userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
   blinkId: z.string().uuid(),
-  title: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
   url: z.string().url().optional(),
   redirectId: z.string().min(1).optional(),
 });
 
 app.patch('/blinks/:blinkId', (request, response) => {
-  const { userId, blinkId, title, url, redirectId } = blinkUpdateSchema.parse({
+  const { userId, blinkId, name, url, redirectId } = blinkUpdateSchema.parse({
     ...request.params,
     ...request.body,
   });
@@ -219,7 +219,7 @@ app.patch('/blinks/:blinkId', (request, response) => {
 
   const updatedBlink: Blink = {
     ...blink,
-    title: title ?? blink.title,
+    name: name ?? blink.name,
     url: url ?? blink.url,
     redirectId: redirectId ?? blink.redirectId,
     updatedAt: new Date(),
