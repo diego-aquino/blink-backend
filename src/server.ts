@@ -1,3 +1,4 @@
+import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
 import express, { ErrorRequestHandler } from 'express';
 import path from 'path';
 import { z, ZodError } from 'zod';
@@ -74,7 +75,7 @@ app.post('/users', (request, response) => {
   }
 
   const user: User = {
-    id: crypto.randomUUID(),
+    id: createId(),
     name,
     email,
     createdAt: new Date(),
@@ -93,25 +94,11 @@ const blinkCreationSchema = z.object({
   redirectId: z.string().min(1).optional(),
 });
 
-function randomInteger(lowerLimit: number, upperLimit: number) {
-  return Math.floor(Math.random() * (upperLimit - lowerLimit)) + lowerLimit;
-}
+const generateRedirectId = createIdFactory({ length: 8 });
 
-const DEFAULT_REDIRECT_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.';
-
-function generateRedirectId(length: number) {
-  const redirectId = Array.from({ length }, () => {
-    const indexOfNextCharacterInAlphabet = randomInteger(0, DEFAULT_REDIRECT_ID_ALPHABET.length);
-    const nextCharacter = DEFAULT_REDIRECT_ID_ALPHABET[indexOfNextCharacterInAlphabet];
-    return nextCharacter;
-  }).join('');
-
-  return redirectId;
-}
-
-function generateUnusedRedirectId(length: number) {
+function generateUnusedRedirectId() {
   while (true) {
-    const redirectIdCandidate = generateRedirectId(length);
+    const redirectIdCandidate = generateRedirectId();
     const isRedirectIdInUse = database.blinks.findByRedirectId(redirectIdCandidate);
     if (!isRedirectIdInUse) {
       return redirectIdCandidate;
@@ -120,7 +107,7 @@ function generateUnusedRedirectId(length: number) {
 }
 
 app.post('/blinks', (request, response) => {
-  const { userId, name, url, redirectId = generateUnusedRedirectId(6) } = blinkCreationSchema.parse(request.body);
+  const { userId, name, url, redirectId = generateUnusedRedirectId() } = blinkCreationSchema.parse(request.body);
 
   const user = database.users.findById(userId);
   if (!user) {
@@ -133,7 +120,7 @@ app.post('/blinks', (request, response) => {
   }
 
   const blink: Blink = {
-    id: crypto.randomUUID(),
+    id: createId(),
     userId,
     name,
     url,
