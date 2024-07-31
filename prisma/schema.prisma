@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(uuid())
+  id             String   @id
   name           String
   email          String   @unique
   type           UserType @default(NORMAL)
@@ -21,20 +21,20 @@ model User {
   workspaceMembers WorkspaceMember[]
 }
 
-model UserSession {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-}
-
 enum UserType {
   SYSTEM_ADMINISTRATOR
   NORMAL
 }
 
+model UserSession {
+  id String @id
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
 model Workspace {
-  id        String   @id @default(uuid())
+  id        String   @id
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -44,7 +44,7 @@ model Workspace {
 }
 
 model WorkspaceMember {
-  id   String              @id @default(uuid())
+  id   String              @id
   type WorkspaceMemberType @default(NORMAL)
 
   workspaceId String
@@ -64,7 +64,7 @@ enum WorkspaceMemberType {
 }
 
 model Blink {
-  id         String @id @default(uuid())
+  id         String @id
   name       String
   url        String
   redirectId String @unique
