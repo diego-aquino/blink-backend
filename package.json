@@ -9,7 +9,7 @@
   },
   "author": "Diego Aquino <diegocruzdeaquino@gmail.com>",
   "scripts": {
-    "dev": "dotenv -c development -- ts-node --transpileOnly src/server.ts",
+    "dev": "dotenv -c development -- tsx watch src/server.ts",
     "build": "tsc",
     "start": "dotenv -c production -- node dist/server.js",
     "style:check": "prettier --check",
@@ -39,7 +39,7 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "prettier": "^3.3.3",
     "prisma": "^5.17.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.16.3",
     "typescript": "^5.5.3"
   }
 }
