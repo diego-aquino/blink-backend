@@ -1,4 +1,6 @@
-// As rotas abaixo foram feitas no laboratório 1 e serão refatoradas para usar a conexão com o banco de dados.
+// NOTA:
+// As rotas abaixo foram feitas no laboratório 1 e serão refatoradas no futuro para usar a conexão com o banco de dados
+// na arquitetura de camadas.
 
 import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
 import { Router } from 'express';
