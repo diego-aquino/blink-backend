@@ -1,9 +1,9 @@
 openapi: 3.1.0
 
 info:
-  title: Blink Backend
+  title: Blink API REST
   version: 0.0.0
-  description: API para encurtar URLs.
+  description: API REST do Blink, um encurtador de URLs.
 externalDocs:
   url: https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0
 tags:
@@ -313,10 +313,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
-  /auth/passwords:
+  /auth/password:
     put:
       summary: Alterar senha
-      operationId: /auth/passwords/update
+      operationId: /auth/password/update
       tags:
         - Autenticação
       security:
