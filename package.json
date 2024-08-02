@@ -15,6 +15,9 @@
     "style:check": "prettier --check",
     "style:format": "prettier --write",
     "types:check": "tsc --noEmit",
+    "migration:create": "dotenv -c development -- prisma migrate dev --create-only",
+    "migration:apply": "dotenv -c development -- prisma migrate deploy",
+    "deps:up": "docker compose up -d --wait blink-database",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -39,6 +42,8 @@
     "gulp-tslint": "^8.1.4",
     "gulp-typescript": "^6.0.0-alpha.1",
     "prettier": "^3.3.3",
+    "prettier-plugin-sh": "^0.14.0",
+    "prettier-plugin-sql": "^0.18.1",
     "prisma": "^5.17.0",
     "tsx": "^4.16.3",
     "typescript": "^5.5.3",
