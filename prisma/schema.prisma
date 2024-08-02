@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id
+  name           String
+  email          String   @unique
+  type           UserType @default(NORMAL)
+  hashedPassword String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sessions         UserSession[]
+  blinks           Blink[]
+  workspaceMembers WorkspaceMember[]
+}
+
+enum UserType {
+  SYSTEM_ADMINISTRATOR
+  NORMAL
+}
+
+model UserSession {
+  id String @id
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Workspace {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blinks  Blink[]
+  members WorkspaceMember[]
+}
+
+model WorkspaceMember {
+  id   String              @id
+  type WorkspaceMemberType @default(NORMAL)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WorkspaceMemberType {
+  WORKSPACE_OWNER
+  WORKSPACE_ADMINISTRATOR
+  NORMAL
+}
+
+model Blink {
+  id         String @id
+  name       String
+  url        String
+  redirectId String @unique
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

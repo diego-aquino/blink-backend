@@ -6,6 +6,9 @@ chamada de _blink_.
 
 ![Screenshot da interface inicial do Blink](docs/hero.png)
 
+Veja a [documentação da API](./docs/spec/openapi.yaml), também disponível no
+[SwaggerHub](https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0).
+
 ## Requisitos funcionais
 
 1. Usuários

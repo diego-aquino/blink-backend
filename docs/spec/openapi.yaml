@@ -1,0 +1,1300 @@
+openapi: 3.1.0
+
+info:
+  title: Blink API REST
+  version: 0.0.0
+  description: API REST do Blink, um encurtador de URLs.
+externalDocs:
+  url: https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0
+tags:
+  - name: Usuários
+  - name: Autenticação
+  - name: Workspaces
+  - name: Blinks
+  - name: Redirecionamentos
+
+paths:
+  /users:
+    post:
+      summary: Criar usuário
+      operationId: users/create
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  description: O nome do usuário
+                  examples:
+                    - Diego Aquino
+                email:
+                  type: string
+                  format: email
+                  description: O email do usuário
+                  examples:
+                    - diego@email.com
+                password:
+                  type: string
+                  description: A senha do usuário
+                  examples:
+                    - 123456
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Email em uso por outro usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: O id do usuário
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    get:
+      summary: Buscar usuário
+      operationId: users/getById
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuário encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    patch:
+      summary: Atualizar usuário
+      operationId: users/update
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: O nome do usuário
+                  examples:
+                    - Diego Aquino
+                email:
+                  type: string
+                  format: email
+                  description: O email do usuário
+                  examples:
+                    - diego@email.com
+      responses:
+        '200':
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Email em uso por outro usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /auth/login:
+    post:
+      summary: Login
+      operationId: auth/login
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: O email do usuário
+                  examples:
+                    - diego@email.com
+                password:
+                  type: string
+                  description: A senha do usuário
+                  examples:
+                    - 123456
+      responses:
+        '200':
+          description: Usuário autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResult'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /auth/logout:
+    post:
+      summary: Logout
+      operationId: auth/logout
+      tags:
+        - Autenticação
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Usuário deslogado
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /auth/refresh:
+    post:
+      summary: Gerar novo token de acesso
+      operationId: auth/tokens/refresh
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  description: O token de atualização
+                  examples:
+                    - eyJhbGciOiJIUzI1NiI...
+      responses:
+        '200':
+          description: Novo token de acesso gerado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResult'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /auth/password:
+    put:
+      summary: Alterar senha
+      operationId: /auth/password/update
+      tags:
+        - Autenticação
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  description: A senha atual
+                  examples:
+                    - 123456
+                newPassword:
+                  type: string
+                  description: A nova senha
+                  examples:
+                    - 654321
+      responses:
+        '204':
+          description: Senha alterada
+        '400':
+          description: Erro de validação ou senha atual inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces:
+    post:
+      summary: Criar workspace
+      operationId: workspaces/create
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: O nome do workspace
+                  examples:
+                    - Meu workspace
+      responses:
+        '201':
+          description: Workspace criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces/{workspaceId}:
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        description: O id do workspace
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    get:
+      summary: Buscar workspace
+      operationId: workspaces/getById
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Workspace encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    patch:
+      summary: Atualizar workspace
+      operationId: workspaces/update
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: O nome do workspace
+                  examples:
+                    - Meu workspace
+      responses:
+        '200':
+          description: Workspace atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    delete:
+      summary: Remover workspace
+      operationId: workspaces/delete
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Workspace removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces/{workspaceId}/members:
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        description: O id do workspace
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    post:
+      summary: Adicionar membro
+      operationId: workspaces/addMember
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  examples:
+                    - tz4a98xxat96iws9zmbrgj3a
+      responses:
+        '204':
+          description: Membro adicionado
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    get:
+      summary: Listar membros
+      operationId: workspaces/listMembers
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Membros listados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces/{workspaceId}/members/{memberId}:
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        description: O id do workspace
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+      - name: memberId
+        in: path
+        required: true
+        description: O id do membro
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    get:
+      summary: Buscar membro
+      operationId: workspaces/getMember
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Membro encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Membro não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Remover membro
+      operationId: workspaces/removeMember
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Membro removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Membro não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces/{workspaceId}/blinks:
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        description: O id do workspace
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    post:
+      summary: Criar blink
+      operationId: workspaces/createBlink
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - url
+              properties:
+                name:
+                  type: string
+                  description: O nome do blink
+                  examples:
+                    - Meu blink
+                url:
+                  type: string
+                  description: A url do blink
+                  examples:
+                    - https://google.com
+                redirectId:
+                  type: string
+                  description: O id do redirecionamento (se não fornecido, será gerado automaticamente)
+                  examples:
+                    - t96iws9z
+      responses:
+        '201':
+          description: Blink criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blink'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Id de redirecionamento em uso por outro blink
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /workspaces/{workspaceId}/blinks/{blinkId}:
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        description: O id do workspace
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+      - name: blinkId
+        in: path
+        required: true
+        description: O id do blink
+        schema:
+          type: string
+        example: tz4a98xxat96iws9zmbrgj3a
+
+    get:
+      summary: Buscar blink
+      operationId: workspaces/getBlink
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Blink encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blink'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace ou blink não encontrados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    patch:
+      summary: Atualizar blink
+      operationId: workspaces/updateBlink
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: O nome do blink
+                  examples:
+                    - Meu blink
+                url:
+                  type: string
+                  description: A url do blink
+                  examples:
+                    - https://google.com
+                redirectId:
+                  type: string
+                  description: O id do redirecionamento
+                  examples:
+                    - t96iws9z
+      responses:
+        '200':
+          description: Blink atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blink'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Blink não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Id de redirecionamento em uso por outro blink
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /{redirectId}:
+    parameters:
+      - name: redirectId
+        in: path
+        required: true
+        description: O id do redirecionamento
+        schema:
+          type: string
+        example: t96iws9z
+
+    get:
+      summary: Redirecionar
+      operationId: redirect
+      tags:
+        - Redirecionamentos
+      responses:
+        '308':
+          description: Redirecionamento
+          headers:
+            location:
+              schema:
+                type: string
+                examples:
+                  - https://google.com
+            cache-control:
+              schema:
+                type: string
+                examples:
+                  - public, max-age=0, must-revalidate
+        '404':
+          description: Redirecionamento não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - type
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: O id do usuário
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
+        name:
+          type: string
+          description: O nome do usuário
+          examples:
+            - Diego Aquino
+        email:
+          type: string
+          format: email
+          description: O email do usuário
+          examples:
+            - diego@email.com
+        type:
+          type: string
+          description: O tipo do usuário
+          enum:
+            - SYSTEM_ADMINISTRATOR
+            - NORMAL
+          examples:
+            - NORMAL
+        createdAt:
+          type: string
+          format: date-time
+          description: A data de criação do usuário
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: A data de atualização do usuário
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+
+    LoginResult:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          description: O token de autenticação
+          examples:
+            - eyJhbGciOiJIUzI1NiI...
+        refreshToken:
+          type: string
+          description: O token de atualização
+          examples:
+            - eyJIUzI1NiIJhbGciOi...
+
+    TokenRefreshResult:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          description: O novo token de autenticação
+          examples:
+            - eyJhbGciOiJIUzI1NiI...
+
+    Workspace:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: O id do workspace
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
+        name:
+          type: string
+          description: O nome do workspace
+          examples:
+            - Meu workspace
+        createdAt:
+          type: string
+          format: date-time
+          description: A data de criação do workspace
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: A data de atualização do workspace
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+
+    WorkspaceMember:
+      type: object
+      required:
+        - id
+        - user
+        - type
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: O id do membro
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
+        user:
+          $ref: '#/components/schemas/User'
+        type:
+          type: string
+          description: O tipo do membro
+          enum:
+            - WORKSPACE_OWNER
+            - WORKSPACE_ADMINISTRATOR
+            - NORMAL
+          examples:
+            - NORMAL
+        createdAt:
+          type: string
+          format: date-time
+          description: A data de criação do membro
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: A data de atualização do membro
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+
+    Blink:
+      type: object
+      required:
+        - id
+        - name
+        - url
+        - redirectId
+        - creator
+        - workspace
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: O id do blink
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
+        name:
+          type: string
+          description: O nome do blink
+          examples:
+            - Meu blink
+        url:
+          type: string
+          description: A url do blink
+          examples:
+            - https://google.com
+        redirectId:
+          type: string
+          description: O id do redirecionamento
+          examples:
+            - t96iws9z
+        creator:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+          description: A data de criação do blink
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: A data de atualização do blink
+          examples:
+            - '2021-08-01T00:00:00.000Z'
+
+    ValidationError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Validation error
+        issues:
+          type: array
+          description: Os problemas de validação
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                description: A mensagem de erro
+                examples:
+                  - 'Invalid input: expected string, received number'
+              code:
+                type: string
+                description: O código do erro
+                examples:
+                  - invalid_type
+              path:
+                type: array
+                description: O caminho do erro
+                items:
+                  oneOf:
+                    - type: string
+                    - type: number
+                examples:
+                  - - name
+            additionalProperties: true
+
+    AuthError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Unauthorized
+
+    NotFoundError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Not found
+
+    ConflictError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Conflict
+
+    InternalServerError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Internal server error
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

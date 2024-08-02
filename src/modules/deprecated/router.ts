@@ -1,16 +1,12 @@
-import express, { ErrorRequestHandler } from 'express';
-import path from 'path';
-import { z, ZodError } from 'zod';
+// NOTA:
+// As rotas abaixo foram feitas no laboratório 1 e serão refatoradas no futuro para usar a conexão com o banco de dados
+// na arquitetura de camadas.
 
-const HOSTNAME = process.env.HOSTNAME ?? '0.0.0.0';
-const PORT = Number(process.env.PORT ?? '3000');
+import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
+import { Router } from 'express';
+import { z } from 'zod';
 
-const app = express();
-app.use(express.json());
-
-const rootDirectory = path.join(__dirname, '..');
-const publicDirectory = path.join(rootDirectory, 'public');
-app.use(express.static(publicDirectory));
+const deprecatedRouter = Router();
 
 interface User {
   id: string;
@@ -22,7 +18,7 @@ interface User {
 
 interface Blink {
   id: string;
-  title: string;
+  name: string;
   url: string;
   redirectId: string;
   userId: string;
@@ -65,7 +61,7 @@ const userCreationSchema = z.object({
   email: z.string().email(),
 });
 
-app.post('/users', (request, response) => {
+deprecatedRouter.post('/users', (request, response) => {
   const { name, email } = userCreationSchema.parse(request.body);
 
   const userWithExistingEmail = database.users.findByEmail(email);
@@ -74,7 +70,7 @@ app.post('/users', (request, response) => {
   }
 
   const user: User = {
-    id: crypto.randomUUID(),
+    id: createId(),
     name,
     email,
     createdAt: new Date(),
@@ -88,30 +84,16 @@ app.post('/users', (request, response) => {
 
 const blinkCreationSchema = z.object({
   userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
-  title: z.string().min(1),
+  name: z.string().min(1),
   url: z.string().url(),
   redirectId: z.string().min(1).optional(),
 });
 
-function randomInteger(lowerLimit: number, upperLimit: number) {
-  return Math.floor(Math.random() * (upperLimit - lowerLimit)) + lowerLimit;
-}
+const generateRedirectId = createIdFactory({ length: 8 });
 
-const DEFAULT_REDIRECT_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.';
-
-function generateRedirectId(length: number) {
-  const redirectId = Array.from({ length }, () => {
-    const indexOfNextCharacterInAlphabet = randomInteger(0, DEFAULT_REDIRECT_ID_ALPHABET.length);
-    const nextCharacter = DEFAULT_REDIRECT_ID_ALPHABET[indexOfNextCharacterInAlphabet];
-    return nextCharacter;
-  }).join('');
-
-  return redirectId;
-}
-
-function generateUnusedRedirectId(length: number) {
+function generateUnusedRedirectId() {
   while (true) {
-    const redirectIdCandidate = generateRedirectId(length);
+    const redirectIdCandidate = generateRedirectId();
     const isRedirectIdInUse = database.blinks.findByRedirectId(redirectIdCandidate);
     if (!isRedirectIdInUse) {
       return redirectIdCandidate;
@@ -119,8 +101,8 @@ function generateUnusedRedirectId(length: number) {
   }
 }
 
-app.post('/blinks', (request, response) => {
-  const { userId, title, url, redirectId = generateUnusedRedirectId(6) } = blinkCreationSchema.parse(request.body);
+deprecatedRouter.post('/blinks', (request, response) => {
+  const { userId, name, url, redirectId = generateUnusedRedirectId() } = blinkCreationSchema.parse(request.body);
 
   const user = database.users.findById(userId);
   if (!user) {
@@ -133,9 +115,9 @@ app.post('/blinks', (request, response) => {
   }
 
   const blink: Blink = {
-    id: crypto.randomUUID(),
+    id: createId(),
     userId,
-    title,
+    name,
     url,
     redirectId,
     createdAt: new Date(),
@@ -147,7 +129,7 @@ app.post('/blinks', (request, response) => {
   return response.status(201).json(blink);
 });
 
-const BLINK_ORDER_BY = ['createdAt.desc', 'createdAt.asc', 'title.desc', 'title.asc'] as const;
+const BLINK_ORDER_BY = ['createdAt.desc', 'createdAt.asc', 'name.desc', 'name.asc'] as const;
 type BlinkOrderBy = (typeof BLINK_ORDER_BY)[number];
 
 function blinksComparedBy(orderBy: BlinkOrderBy) {
@@ -157,10 +139,10 @@ function blinksComparedBy(orderBy: BlinkOrderBy) {
         return blink.createdAt.getTime() - otherBlink.createdAt.getTime();
       case 'createdAt.desc':
         return otherBlink.createdAt.getTime() - blink.createdAt.getTime();
-      case 'title.asc':
-        return blink.title.localeCompare(otherBlink.title);
-      case 'title.desc':
-        return otherBlink.title.localeCompare(blink.title);
+      case 'name.asc':
+        return blink.name.localeCompare(otherBlink.name);
+      case 'name.desc':
+        return otherBlink.name.localeCompare(blink.name);
     }
   };
 }
@@ -172,7 +154,7 @@ const listBlinksSchema = z.object({
   perPage: z.coerce.number().int().positive().optional().default(10),
 });
 
-app.get('/blinks', (request, response) => {
+deprecatedRouter.get('/blinks', (request, response) => {
   const { userId, orderBy, page, perPage } = listBlinksSchema.parse(request.query);
 
   const user = database.users.findById(userId);
@@ -194,13 +176,13 @@ app.get('/blinks', (request, response) => {
 const blinkUpdateSchema = z.object({
   userId: z.string().uuid(), // Temporário; será extraído do token de autenticação
   blinkId: z.string().uuid(),
-  title: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
   url: z.string().url().optional(),
   redirectId: z.string().min(1).optional(),
 });
 
-app.patch('/blinks/:blinkId', (request, response) => {
-  const { userId, blinkId, title, url, redirectId } = blinkUpdateSchema.parse({
+deprecatedRouter.patch('/blinks/:blinkId', (request, response) => {
+  const { userId, blinkId, name, url, redirectId } = blinkUpdateSchema.parse({
     ...request.params,
     ...request.body,
   });
@@ -219,7 +201,7 @@ app.patch('/blinks/:blinkId', (request, response) => {
 
   const updatedBlink: Blink = {
     ...blink,
-    title: title ?? blink.title,
+    name: name ?? blink.name,
     url: url ?? blink.url,
     redirectId: redirectId ?? blink.redirectId,
     updatedAt: new Date(),
@@ -235,7 +217,7 @@ const blinkDeletionSchema = z.object({
   blinkId: z.string().uuid(),
 });
 
-app.delete('/blinks/:blinkId', (request, response) => {
+deprecatedRouter.delete('/blinks/:blinkId', (request, response) => {
   const { userId, blinkId } = blinkDeletionSchema.parse({
     ...request.params,
     ...request.body,
@@ -260,7 +242,7 @@ const redirectSchema = z.object({
   redirectId: z.string().min(1),
 });
 
-app.get('/:redirectId', (request, response) => {
+deprecatedRouter.get('/:redirectId', (request, response) => {
   const { redirectId } = redirectSchema.parse(request.params);
 
   const blink = database.blinks.findByRedirectId(redirectId);
@@ -271,29 +253,4 @@ app.get('/:redirectId', (request, response) => {
   return response.header('cache-control', 'public, max-age=0, must-revalidate').redirect(308, blink.url);
 });
 
-const handleError: ErrorRequestHandler = (error, _request, response, next) => {
-  if (!error) {
-    next();
-  }
-
-  if (!(error instanceof Error)) {
-    throw error;
-  }
-
-  if (error instanceof ZodError) {
-    return response.status(400).json({
-      message: 'Validation failed',
-      issues: error.issues,
-    });
-  } else {
-    return response.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-app.use(handleError);
-
-app.listen(PORT, HOSTNAME, () => {
-  console.log(`Server is running at http://${HOSTNAME}:${PORT}`);
-});
+export default deprecatedRouter;
