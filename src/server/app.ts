@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import userRouter from '../modules/users/router';
-import deprecatedRouter from '../modules/deprecated/deprecatedRouter';
+import deprecatedRouter from '../modules/deprecated/router';
 import handleUncaughtError from '../errors/handler';
 
 const app = express();

@@ -1,26 +1,25 @@
 import { createId } from '@paralleldrive/cuid2';
 import { z } from 'zod';
-import UseCaseService from '../shared/UseCaseService';
 import { User } from '@prisma/client';
 import database from '@/database/client';
-import { ConflictError } from '@/errors/http';
+import { EmailAlreadyInUseError } from './errors';
 
-export const createUserSchema = z.object({
+export const createUserPayloadSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(8),
 });
 
-type CreateUserInput = z.infer<typeof createUserSchema>;
+type CreateUserPayload = z.infer<typeof createUserPayloadSchema>;
 
-class CreateUserService extends UseCaseService {
-  async run(input: CreateUserInput): Promise<User> {
+class CreateUserService {
+  async create(input: CreateUserPayload): Promise<User> {
     const existingUserWithEmail = await database.user.findUnique({
       where: { email: input.email },
     });
 
     if (existingUserWithEmail) {
-      throw new ConflictError(`Email '${input.email}' is already in use by another user.`);
+      throw new EmailAlreadyInUseError(input.email);
     }
 
     const user = await database.user.create({
