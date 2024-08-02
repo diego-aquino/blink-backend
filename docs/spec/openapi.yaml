@@ -3,7 +3,9 @@ openapi: 3.1.0
 info:
   title: Blink Backend
   version: 0.0.0
-  description: API para encurtar URLs
+  description: API para encurtar URLs.
+externalDocs:
+  url: https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0
 tags:
   - name: Usuários
   - name: Autenticação
