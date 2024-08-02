@@ -18,7 +18,7 @@ gulp.task('watch', (done) => {
   gulp.watch('./**/*.ts');
 
   nodemon({
-    script: 'dist/server.js',
+    script: 'dist/index.js',
     tasks: ['build'],
     ext: 'ts,json',
     ignore: ['node_modules/', 'package.json', 'tsconfig.json'],

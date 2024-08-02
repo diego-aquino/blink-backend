@@ -1,17 +1,10 @@
+// As rotas abaixo foram feitas no laboratório 1 e serão refatoradas para usar a conexão com o banco de dados.
+
 import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
-import express, { ErrorRequestHandler } from 'express';
-import path from 'path';
-import { z, ZodError } from 'zod';
+import { Router } from 'express';
+import { z } from 'zod';
 
-const HOSTNAME = process.env.HOSTNAME ?? '0.0.0.0';
-const PORT = Number(process.env.PORT ?? '3000');
-
-const app = express();
-app.use(express.json());
-
-const rootDirectory = path.join(__dirname, '..');
-const publicDirectory = path.join(rootDirectory, 'public');
-app.use(express.static(publicDirectory));
+const deprecatedRouter = Router();
 
 interface User {
   id: string;
@@ -66,7 +59,7 @@ const userCreationSchema = z.object({
   email: z.string().email(),
 });
 
-app.post('/users', (request, response) => {
+deprecatedRouter.post('/users', (request, response) => {
   const { name, email } = userCreationSchema.parse(request.body);
 
   const userWithExistingEmail = database.users.findByEmail(email);
@@ -106,7 +99,7 @@ function generateUnusedRedirectId() {
   }
 }
 
-app.post('/blinks', (request, response) => {
+deprecatedRouter.post('/blinks', (request, response) => {
   const { userId, name, url, redirectId = generateUnusedRedirectId() } = blinkCreationSchema.parse(request.body);
 
   const user = database.users.findById(userId);
@@ -159,7 +152,7 @@ const listBlinksSchema = z.object({
   perPage: z.coerce.number().int().positive().optional().default(10),
 });
 
-app.get('/blinks', (request, response) => {
+deprecatedRouter.get('/blinks', (request, response) => {
   const { userId, orderBy, page, perPage } = listBlinksSchema.parse(request.query);
 
   const user = database.users.findById(userId);
@@ -186,7 +179,7 @@ const blinkUpdateSchema = z.object({
   redirectId: z.string().min(1).optional(),
 });
 
-app.patch('/blinks/:blinkId', (request, response) => {
+deprecatedRouter.patch('/blinks/:blinkId', (request, response) => {
   const { userId, blinkId, name, url, redirectId } = blinkUpdateSchema.parse({
     ...request.params,
     ...request.body,
@@ -222,7 +215,7 @@ const blinkDeletionSchema = z.object({
   blinkId: z.string().uuid(),
 });
 
-app.delete('/blinks/:blinkId', (request, response) => {
+deprecatedRouter.delete('/blinks/:blinkId', (request, response) => {
   const { userId, blinkId } = blinkDeletionSchema.parse({
     ...request.params,
     ...request.body,
@@ -247,7 +240,7 @@ const redirectSchema = z.object({
   redirectId: z.string().min(1),
 });
 
-app.get('/:redirectId', (request, response) => {
+deprecatedRouter.get('/:redirectId', (request, response) => {
   const { redirectId } = redirectSchema.parse(request.params);
 
   const blink = database.blinks.findByRedirectId(redirectId);
@@ -258,29 +251,4 @@ app.get('/:redirectId', (request, response) => {
   return response.header('cache-control', 'public, max-age=0, must-revalidate').redirect(308, blink.url);
 });
 
-const handleError: ErrorRequestHandler = (error, _request, response, next) => {
-  if (!error) {
-    next();
-  }
-
-  if (!(error instanceof Error)) {
-    throw error;
-  }
-
-  if (error instanceof ZodError) {
-    return response.status(400).json({
-      message: 'Validation failed',
-      issues: error.issues,
-    });
-  } else {
-    return response.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-app.use(handleError);
-
-app.listen(PORT, HOSTNAME, () => {
-  console.log(`Server is running at http://${HOSTNAME}:${PORT}`);
-});
+export default deprecatedRouter;

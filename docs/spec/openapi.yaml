@@ -59,6 +59,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Email em uso por outro usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '500':
           description: Erro no servidor
           content:
@@ -171,6 +177,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Email em uso por outro usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '500':
           description: Erro no servidor
           content:
@@ -823,6 +835,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Id de redirecionamento em uso por outro blink
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '500':
           description: Erro no servidor
           content:
@@ -946,6 +964,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Id de redirecionamento em uso por outro blink
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '500':
           description: Erro no servidor
           content:
@@ -1246,6 +1270,17 @@ components:
           description: A mensagem de erro
           examples:
             - Not found
+
+    ConflictError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A mensagem de erro
+          examples:
+            - Conflict
 
     InternalServerError:
       type: object
