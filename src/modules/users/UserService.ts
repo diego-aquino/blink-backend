@@ -12,7 +12,7 @@ export const createUserPayloadSchema = z.object({
 
 type CreateUserPayload = z.infer<typeof createUserPayloadSchema>;
 
-class CreateUserService {
+class UserService {
   async create(input: CreateUserPayload): Promise<User> {
     const existingUserWithEmail = await database.user.findUnique({
       where: { email: input.email },
@@ -36,4 +36,4 @@ class CreateUserService {
   }
 }
 
-export default CreateUserService;
+export default UserService;

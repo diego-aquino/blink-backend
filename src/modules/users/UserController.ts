@@ -1,8 +1,8 @@
-import CreateUserService, { createUserPayloadSchema } from './UserService';
+import UserService, { createUserPayloadSchema } from './UserService';
 import { RequestHandler } from '../shared/controllers';
 
-class CreateUserController {
-  private userService = new CreateUserService();
+class UserController {
+  private userService = new UserService();
 
   create: RequestHandler = async (request, response) => {
     const payload = createUserPayloadSchema.parse(request.body);
@@ -11,4 +11,4 @@ class CreateUserController {
   };
 }
 
-export default CreateUserController;
+export default UserController;
