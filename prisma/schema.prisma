@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -50,8 +50,8 @@ model Workspace {
 }
 
 model WorkspaceMember {
-  id   String              @id
-  type WorkspaceMemberType @default(DEFAULT)
+  id   String @id
+  type String @default("NORMAL")
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -68,10 +68,10 @@ model WorkspaceMember {
   @@unique([workspaceId, userId])
 }
 
-enum WorkspaceMemberType {
-  ADMINISTRATOR
-  DEFAULT
-}
+// enum WorkspaceMemberType {
+//   ADMINISTRATOR
+//   DEFAULT
+// }
 
 model Blink {
   id         String @id
