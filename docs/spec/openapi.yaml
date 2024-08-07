@@ -4,6 +4,9 @@ info:
   title: Blink API REST
   version: 0.0.0
   description: API REST do Blink, um encurtador de URLs.
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desenvolvimento
 externalDocs:
   url: https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0
 tags:
