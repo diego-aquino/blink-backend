@@ -1,30 +1,15 @@
 import { createId } from '@paralleldrive/cuid2';
-import { z } from 'zod';
-import { User } from '@prisma/client';
 import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
-
-export const createUserSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-type CreateUserInput = z.infer<typeof createUserSchema>;
-
-export const getUserByIdSchema = z.object({
-  userId: z.string().min(1),
-});
-
-type GetUserByIdInput = z.infer<typeof getUserByIdSchema>;
+import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators';
 
 class UserService {
-  async create(input: CreateUserInput): Promise<User> {
-    const existingUserWithEmail = await database.user.findUnique({
+  async create(input: CreateUserInput) {
+    const numberOfEmailUses = await database.user.count({
       where: { email: input.email },
     });
 
-    if (existingUserWithEmail) {
+    if (numberOfEmailUses > 0) {
       throw new EmailAlreadyInUseError(input.email);
     }
 
@@ -41,7 +26,7 @@ class UserService {
     return user;
   }
 
-  async getById(input: GetUserByIdInput): Promise<User> {
+  async getById(input: GetUserByIdInput) {
     const user = await database.user.findUnique({
       where: { id: input.userId },
     });
@@ -51,6 +36,37 @@ class UserService {
     }
 
     return user;
+  }
+
+  async update(input: UpdateUserInput) {
+    const user = await database.user.findUnique({
+      where: { id: input.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(input.userId);
+    }
+
+    const numberOfEmailUses = await database.user.count({
+      where: {
+        email: input.email,
+        NOT: { id: input.userId },
+      },
+    });
+
+    if (numberOfEmailUses > 0) {
+      throw new EmailAlreadyInUseError(input.email);
+    }
+
+    const updatedUser = await database.user.update({
+      where: { id: input.userId },
+      data: {
+        name: input.name,
+        email: input.email,
+      },
+    });
+
+    return updatedUser;
   }
 }
 
