@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
 import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators';
+import { hashPassword } from '@/utils/auth';
 
 class UserService {
   async create(input: CreateUserInput) {
@@ -19,7 +20,7 @@ class UserService {
         name: input.name,
         email: input.email,
         type: 'NORMAL',
-        hashedPassword: input.password, // TODO: hash password
+        hashedPassword: await hashPassword(input.password),
       },
     });
 
