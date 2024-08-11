@@ -1,24 +1,16 @@
 import { createId } from '@paralleldrive/cuid2';
-import { z } from 'zod';
-import { User } from '@prisma/client';
 import database from '@/database/client';
-import { EmailAlreadyInUseError } from './errors';
-
-export const createUserPayloadSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-type CreateUserPayload = z.infer<typeof createUserPayloadSchema>;
+import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
+import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators';
+import { hashPassword } from '@/utils/auth';
 
 class UserService {
-  async create(input: CreateUserPayload): Promise<User> {
-    const existingUserWithEmail = await database.user.findUnique({
+  async create(input: CreateUserInput) {
+    const numberOfEmailUses = await database.user.count({
       where: { email: input.email },
     });
 
-    if (existingUserWithEmail) {
+    if (numberOfEmailUses > 0) {
       throw new EmailAlreadyInUseError(input.email);
     }
 
@@ -28,11 +20,54 @@ class UserService {
         name: input.name,
         email: input.email,
         type: 'NORMAL',
-        hashedPassword: input.password, // TODO: hash password
+        hashedPassword: await hashPassword(input.password),
       },
     });
 
     return user;
+  }
+
+  async getById(input: GetUserByIdInput) {
+    const user = await database.user.findUnique({
+      where: { id: input.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(input.userId);
+    }
+
+    return user;
+  }
+
+  async update(input: UpdateUserInput) {
+    const user = await database.user.findUnique({
+      where: { id: input.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(input.userId);
+    }
+
+    const numberOfEmailUses = await database.user.count({
+      where: {
+        email: input.email,
+        NOT: { id: input.userId },
+      },
+    });
+
+    if (numberOfEmailUses > 0) {
+      throw new EmailAlreadyInUseError(input.email);
+    }
+
+    const updatedUser = await database.user.update({
+      where: { id: input.userId },
+      data: {
+        name: input.name,
+        email: input.email,
+      },
+    });
+
+    return updatedUser;
   }
 }
 
