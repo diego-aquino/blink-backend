@@ -1,7 +1,7 @@
-import { BlinkComponents } from '@/types/generated';
 import { User } from '@prisma/client';
+import { UserResponse } from './types';
 
-export function toUserResponse(user: User): BlinkComponents['schemas']['User'] {
+export function toUserResponse(user: User): UserResponse {
   return {
     id: user.id,
     name: user.name,
