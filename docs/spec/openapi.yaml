@@ -48,7 +48,7 @@ paths:
                   type: string
                   description: A senha do usuário
                   examples:
-                    - 123456
+                    - 12345678
       responses:
         '201':
           description: Usuário criado
@@ -219,7 +219,7 @@ paths:
                   type: string
                   description: A senha do usuário
                   examples:
-                    - 123456
+                    - 12345678
       responses:
         '200':
           description: Usuário autenticado
@@ -338,7 +338,7 @@ paths:
                   type: string
                   description: A senha atual
                   examples:
-                    - 123456
+                    - 12345678
                 newPassword:
                   type: string
                   description: A nova senha
