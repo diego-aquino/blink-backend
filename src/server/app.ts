@@ -8,16 +8,13 @@ import userRouter from '../modules/users/router';
 import deprecatedRouter from '../modules/deprecated/router';
 import handleUncaughtError from '../errors/handler';
 
-async function replaceSwaggerConfigURL(swaggerDirectory: string) {
-  const swaggerInitializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
+async function setSwaggerConfigURL(swaggerDirectory: string, newConfigURL: string) {
+  const initializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
 
-  const initialInitializerContent = await filesystem.promises.readFile(swaggerInitializerPath, 'utf-8');
-  const updatedInitializerContent = initialInitializerContent.replace(
-    /url: .+,/,
-    'url: `${window.location.origin}/openapi.yaml`,',
-  );
+  const initialInitializer = await filesystem.promises.readFile(initializerPath, 'utf-8');
+  const updatedInitializer = initialInitializer.replace(/url: .+,/, `url: \`${newConfigURL}\`,`);
 
-  await filesystem.promises.writeFile(swaggerInitializerPath, updatedInitializerContent);
+  await filesystem.promises.writeFile(initializerPath, updatedInitializer);
 }
 
 async function createApp() {
@@ -31,12 +28,9 @@ async function createApp() {
   const openapiDirectory = path.join(rootDirectory, 'docs', 'spec');
   app.use(express.static(openapiDirectory));
 
-  const publicDirectory = path.join(rootDirectory, 'public');
-  app.use(express.static(publicDirectory));
-
   const swaggerDirectory = swaggerAbsolutePath();
-  await replaceSwaggerConfigURL(swaggerDirectory);
-  app.use('/swagger', express.static(swaggerDirectory));
+  await setSwaggerConfigURL(swaggerDirectory, '${window.location.origin}/openapi.yaml');
+  app.use(express.static(swaggerDirectory));
 
   app.use(userRouter);
   app.use(deprecatedRouter);

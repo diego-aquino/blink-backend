@@ -4,10 +4,11 @@ Blink é um encurtador de URLs que está sendo desenvolvido por [@diego-aquino](
 disciplina de Programação Web 2 2024.1, no curso de Ciência da Computação da UFCG. Nesse sistema, uma URL encurtada é
 chamada de _blink_.
 
-![Screenshot da interface inicial do Blink](docs/hero.png)
-
 Veja a [documentação da API](./docs/spec/openapi.yaml), também disponível no
-[SwaggerHub](https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0).
+[SwaggerHub](https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0) ou em `http://localhost:3000` ao executar
+o projeto.
+
+![Swagger UI](docs/images/swagger.png)
 
 ## Requisitos funcionais
 
