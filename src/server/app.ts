@@ -1,22 +1,49 @@
+import filesystem from 'fs';
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
+import cors from 'cors';
+import { absolutePath as swaggerAbsolutePath } from 'swagger-ui-dist';
+
 import userRouter from '../modules/users/router';
 import deprecatedRouter from '../modules/deprecated/router';
 import handleUncaughtError from '../errors/handler';
 
-const app = express();
+async function replaceSwaggerConfigURL(swaggerDirectory: string) {
+  const swaggerInitializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
 
-app.use(express.json());
-app.use(cors({ origin: '*' }));
+  const initialInitializerContent = await filesystem.promises.readFile(swaggerInitializerPath, 'utf-8');
+  const updatedInitializerContent = initialInitializerContent.replace(
+    /url: .+,/,
+    'url: `${window.location.origin}/openapi.yaml`,',
+  );
 
-const rootDirectory = path.join(__dirname, '..');
-const publicDirectory = path.join(rootDirectory, 'public');
-app.use(express.static(publicDirectory));
+  await filesystem.promises.writeFile(swaggerInitializerPath, updatedInitializerContent);
+}
 
-app.use(userRouter);
-app.use(deprecatedRouter);
+async function createApp() {
+  const app = express();
 
-app.use(handleUncaughtError);
+  app.use(express.json());
+  app.use(cors({ origin: '*' }));
 
-export default app;
+  const rootDirectory = path.join(__dirname, '..', '..');
+
+  const openapiDirectory = path.join(rootDirectory, 'docs', 'spec');
+  app.use(express.static(openapiDirectory));
+
+  const publicDirectory = path.join(rootDirectory, 'public');
+  app.use(express.static(publicDirectory));
+
+  const swaggerDirectory = swaggerAbsolutePath();
+  await replaceSwaggerConfigURL(swaggerDirectory);
+  app.use('/swagger', express.static(swaggerDirectory));
+
+  app.use(userRouter);
+  app.use(deprecatedRouter);
+
+  app.use(handleUncaughtError);
+
+  return app;
+}
+
+export default createApp;
