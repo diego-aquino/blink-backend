@@ -6,11 +6,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "./dist",
+    "resolveJsonModule": true,
 
     "lib": ["esnext"],
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@@/package.json": ["package.json"]
     }
   },
 
