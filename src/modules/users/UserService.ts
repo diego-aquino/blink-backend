@@ -5,6 +5,14 @@ import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators
 import { hashPassword } from '@/utils/auth';
 
 class UserService {
+  private static instance = new UserService();
+
+  static singleton() {
+    return this.instance;
+  }
+
+  private constructor() {}
+
   async create(input: CreateUserInput) {
     const numberOfEmailUses = await database.user.count({
       where: { email: input.email },

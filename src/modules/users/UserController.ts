@@ -6,7 +6,7 @@ import { toUserResponse } from './views';
 import { createUserSchema, getUserByIdSchema, updateUserSchema } from './validators';
 
 class UserController {
-  private userService = new UserService();
+  private userService = UserService.singleton();
 
   create: RequestHandler = async (request, response) => {
     type RequestBody = BlinkOperations['users/create']['request']['body'];
