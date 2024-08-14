@@ -6,6 +6,14 @@ import { toUserResponse } from './views';
 import { createUserSchema, getUserByIdSchema, updateUserSchema } from './validators';
 
 class UserController {
+  private static instance = new UserController();
+
+  static singleton() {
+    return this.instance;
+  }
+
+  private constructor() {}
+
   private userService = UserService.singleton();
 
   create: RequestHandler = async (request, response) => {

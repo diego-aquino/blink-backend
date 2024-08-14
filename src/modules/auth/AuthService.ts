@@ -6,6 +6,7 @@ import { AccessTokenPayload, LoginResult, RefreshTokenPayload } from './types';
 import { LoginInput } from './validators';
 import { InvalidCredentialsError } from './errors';
 import environment from '@/config/environment';
+import { UserSession } from '@prisma/client';
 
 class AuthService {
   private static instance = new AuthService();
@@ -39,7 +40,7 @@ class AuthService {
     });
 
     const accessTokenPromise = createJWT<AccessTokenPayload>(
-      { userId: user.id },
+      { userId: user.id, sessionId: session.id },
       { expirationTime: environment.JWT_ACCESS_DURATION },
     );
 
@@ -51,6 +52,12 @@ class AuthService {
     const [accessToken, refreshToken] = await Promise.all([accessTokenPromise, refreshTokenPromise]);
 
     return { accessToken, refreshToken };
+  }
+
+  async logout(input: { sessionId: UserSession['id'] }) {
+    await database.userSession.delete({
+      where: { id: input.sessionId },
+    });
   }
 }
 

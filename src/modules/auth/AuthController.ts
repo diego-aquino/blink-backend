@@ -4,6 +4,14 @@ import { BlinkOperations } from '@/types/generated';
 import { loginSchema } from './validators';
 
 class AuthController {
+  private static instance = new AuthController();
+
+  static singleton() {
+    return this.instance;
+  }
+
+  private constructor() {}
+
   private authService = AuthService.singleton();
 
   login: RequestHandler = async (request, response) => {
@@ -14,6 +22,16 @@ class AuthController {
     const loginResult = await this.authService.login(input);
 
     return response.status(200).json(loginResult satisfies SuccessResponseBody);
+  };
+
+  logout: RequestHandler = async (request, response) => {
+    type LogoutStatus = keyof BlinkOperations['auth/logout']['response'];
+
+    const { sessionId } = request.middlewares.authenticated;
+
+    await this.authService.logout({ sessionId });
+
+    return response.status(204 satisfies LogoutStatus).send();
   };
 }
 
