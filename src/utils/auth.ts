@@ -16,10 +16,10 @@ const DECODED_JWT_SECRET = base64url.decode(environment.JWT_SECRET);
 const JWT_ISSUER = 'blink';
 const JWT_AUDIENCE = 'blink';
 
-export async function createJWT(
-  payload: JWTPayload,
+export async function createJWT<Payload extends JWTPayload>(
+  payload: Payload,
   options: {
-    expirationTime: `${number}${'d' | 'h' | 'm'}`;
+    expirationTime: string;
   },
 ) {
   const jwt = await new EncryptJWT(payload)
@@ -33,11 +33,11 @@ export async function createJWT(
   return jwt;
 }
 
-export async function verifyJWT(jwt: string) {
+export async function verifyJWT<Payload extends JWTPayload>(jwt: string) {
   const { payload } = await jwtDecrypt(jwt, DECODED_JWT_SECRET, {
     issuer: JWT_ISSUER,
     audience: JWT_AUDIENCE,
   });
 
-  return payload;
+  return payload as Partial<Payload>;
 }

@@ -2,9 +2,10 @@ import { createJWT, verifyPassword } from '@/utils/auth';
 import database from '@/database/client';
 import { createId } from '@paralleldrive/cuid2';
 
-import { LoginResult } from './types';
+import { AccessTokenPayload, LoginResult, RefreshTokenPayload } from './types';
 import { LoginInput } from './validators';
 import { InvalidCredentialsError } from './errors';
+import environment from '@/config/environment';
 
 class AuthService {
   private static instance = new AuthService();
@@ -37,10 +38,17 @@ class AuthService {
       },
     });
 
-    const [accessToken, refreshToken] = await Promise.all([
-      createJWT({ sessionId: session.id }, { expirationTime: '5m' }),
-      createJWT({ sessionId: session.id }, { expirationTime: '30d' }),
-    ]);
+    const accessTokenPromise = createJWT<AccessTokenPayload>(
+      { userId: user.id },
+      { expirationTime: environment.JWT_ACCESS_DURATION },
+    );
+
+    const refreshTokenPromise = createJWT<RefreshTokenPayload>(
+      { sessionId: session.id },
+      { expirationTime: environment.JWT_REFRESH_DURATION },
+    );
+
+    const [accessToken, refreshToken] = await Promise.all([accessTokenPromise, refreshTokenPromise]);
 
     return { accessToken, refreshToken };
   }
