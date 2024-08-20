@@ -5,10 +5,10 @@ import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators
 import { hashPassword } from '@/utils/auth';
 
 class UserService {
-  private static instance = new UserService();
+  private static _instance = new UserService();
 
-  static singleton() {
-    return this.instance;
+  static instance() {
+    return this._instance;
   }
 
   private constructor() {}

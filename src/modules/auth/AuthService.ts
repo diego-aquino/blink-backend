@@ -9,10 +9,10 @@ import environment from '@/config/environment';
 import { UserSession } from '@prisma/client';
 
 class AuthService {
-  private static instance = new AuthService();
+  private static _instance = new AuthService();
 
-  static singleton() {
-    return this.instance;
+  static instance() {
+    return this._instance;
   }
 
   private constructor() {}

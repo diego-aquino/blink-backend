@@ -4,15 +4,15 @@ import { BlinkOperations } from '@/types/generated';
 import { loginSchema } from './validators';
 
 class AuthController {
-  private static instance = new AuthController();
+  private static _instance = new AuthController();
 
-  static singleton() {
-    return this.instance;
+  static instance() {
+    return this._instance;
   }
 
   private constructor() {}
 
-  private authService = AuthService.singleton();
+  private authService = AuthService.instance();
 
   login: RequestHandler = async (request, response) => {
     type RequestBody = BlinkOperations['auth/login']['request']['body'];

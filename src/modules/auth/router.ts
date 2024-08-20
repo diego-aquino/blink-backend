@@ -4,7 +4,8 @@ import AuthController from './AuthController';
 
 const authRouter = Router();
 
-const authController = AuthController.singleton();
+const authController = AuthController.instance();
+
 authRouter.post('/auth/login', authController.login);
 
 export default authRouter;

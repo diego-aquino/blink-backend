@@ -5,8 +5,8 @@ import AuthMiddleware from '../auth/AuthMiddleware';
 
 const userRouter = Router();
 
-const userController = UserController.singleton();
-const authMiddleware = AuthMiddleware.singleton();
+const userController = UserController.instance();
+const authMiddleware = AuthMiddleware.instance();
 
 userRouter.post('/users', userController.create);
 userRouter.get('/users/:userId', authMiddleware.authenticated, userController.get);

@@ -7,15 +7,15 @@ import { createUserSchema, getUserByIdSchema, updateUserSchema } from './validat
 import { InferPathParams } from 'zimic/http';
 
 class UserController {
-  private static instance = new UserController();
+  private static _instance = new UserController();
 
-  static singleton() {
-    return this.instance;
+  static instance() {
+    return this._instance;
   }
 
   private constructor() {}
 
-  private userService = UserService.singleton();
+  private userService = UserService.instance();
 
   create: RequestHandler = async (request, response) => {
     type RequestBody = BlinkOperations['users/create']['request']['body'];

@@ -5,10 +5,10 @@ import { AuthenticationRequiredError, InvalidCredentialsError } from './errors';
 import { AccessTokenPayload } from './types';
 
 class AuthMiddleware {
-  private static instance = new AuthMiddleware();
+  private static _instance = new AuthMiddleware();
 
-  static singleton() {
-    return this.instance;
+  static instance() {
+    return this._instance;
   }
 
   private constructor() {}
