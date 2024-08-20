@@ -1,9 +1,10 @@
 import UserService from './UserService';
 import { BlinkSchema } from '@/types/generated';
-import { PathParamsSchemaFromPath, RequestHandler } from '../shared/controllers';
+import { RequestHandler } from '../shared/controllers';
 import { BlinkOperations } from '@/types/generated';
 import { toUserResponse } from './views';
 import { createUserSchema, getUserByIdSchema, updateUserSchema } from './validators';
+import { InferPathParams } from 'zimic/http';
 
 class UserController {
   private static instance = new UserController();
@@ -27,7 +28,7 @@ class UserController {
   };
 
   get: RequestHandler = async (request, response) => {
-    type RequestParams = PathParamsSchemaFromPath<BlinkSchema, '/users/:userId'>;
+    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
     type SuccessResponseBody = BlinkOperations['users/getById']['response']['200']['body'];
 
     const input = getUserByIdSchema.parse(request.params) satisfies RequestParams;
@@ -37,7 +38,7 @@ class UserController {
   };
 
   update: RequestHandler = async (request, response) => {
-    type RequestParams = PathParamsSchemaFromPath<BlinkSchema, '/users/:userId'>;
+    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
     type RequestBody = BlinkOperations['users/update']['request']['body'];
     type SuccessResponseBody = BlinkOperations['users/update']['response']['200']['body'];
 
