@@ -9,7 +9,7 @@
   },
   "author": "Diego Aquino <diegocruzdeaquino@gmail.com>",
   "scripts": {
-    "dev": "dotenv -c development -- tsx watch src/index.ts",
+    "dev": "dotenv -c development -- tsx watch --clear-screen=false src/index.ts",
     "build": "tsc",
     "start": "dotenv -c production -- node dist/index.js",
     "style:check": "prettier --check",
