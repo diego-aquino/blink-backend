@@ -28,22 +28,19 @@ class AuthController {
     type RequestBody = BlinkOperations['auth/refresh']['request']['body'];
     type SuccessResponseBody = BlinkOperations['auth/refresh']['response']['200']['body'];
 
-    const { userId, sessionId } = request.middlewares.authenticated;
     const { refreshToken } = refreshAuthSchema.parse(request.body) satisfies RequestBody;
-
-    const refreshResult = await this.authService.refresh(userId, sessionId, { refreshToken });
+    const refreshResult = await this.authService.refresh({ refreshToken });
 
     return response.status(200).json(refreshResult satisfies SuccessResponseBody);
   };
 
   logout: RequestHandler = async (request, response) => {
-    type LogoutStatus = keyof BlinkOperations['auth/logout']['response'];
+    type ResponseStatus = keyof BlinkOperations['auth/logout']['response'];
 
     const { sessionId } = request.middlewares.authenticated;
-
     await this.authService.logout({ sessionId });
 
-    return response.status(204 satisfies LogoutStatus).send();
+    return response.status(204 satisfies ResponseStatus).send();
   };
 }
 

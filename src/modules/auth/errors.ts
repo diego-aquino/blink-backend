@@ -12,8 +12,8 @@ export class InvalidCredentialsError extends UnauthorizedError {
   }
 }
 
-export class AccessNotAllowedError extends ForbiddenError {
+export class ForbiddenResourceAccessError extends ForbiddenError {
   constructor(resource: string) {
-    super(`User has no access to resource '${resource}'.`);
+    super(`Access not allowed to resource '${resource}'.`);
   }
 }

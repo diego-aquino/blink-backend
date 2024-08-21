@@ -19,7 +19,7 @@ const JWT_AUDIENCE = 'blink';
 export async function createJWT<Payload extends JWTPayload>(
   payload: Payload,
   options: {
-    expirationTime: string;
+    durationInMinutes: number;
   },
 ) {
   const jwt = await new EncryptJWT(payload)
@@ -27,7 +27,7 @@ export async function createJWT<Payload extends JWTPayload>(
     .setIssuedAt()
     .setIssuer(JWT_ISSUER)
     .setAudience(JWT_AUDIENCE)
-    .setExpirationTime(options.expirationTime)
+    .setExpirationTime(`${options.durationInMinutes}m`)
     .encrypt(DECODED_JWT_SECRET);
 
   return jwt;

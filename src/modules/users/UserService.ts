@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
-import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators';
+import { CreateUserInput, UserByIdInput, UpdateUserInput } from './validators';
 import { hashPassword } from '@/utils/auth';
 
 class UserService {
@@ -34,7 +34,7 @@ class UserService {
     return user;
   }
 
-  async getById(input: GetUserByIdInput) {
+  async getById(input: UserByIdInput) {
     const user = await database.user.findUnique({
       where: { id: input.userId },
     });
@@ -75,6 +75,20 @@ class UserService {
     });
 
     return updatedUser;
+  }
+
+  async delete(input: UserByIdInput) {
+    const user = await database.user.findUnique({
+      where: { id: input.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(input.userId);
+    }
+
+    await database.user.delete({
+      where: { id: input.userId },
+    });
   }
 }
 

@@ -3,7 +3,7 @@ import { BlinkSchema } from '@/types/generated';
 import { RequestHandler } from '../shared/controllers';
 import { BlinkOperations } from '@/types/generated';
 import { toUserResponse } from './views';
-import { createUserSchema, getUserByIdSchema, updateUserSchema } from './validators';
+import { createUserSchema, userByIdSchema, updateUserSchema } from './validators';
 import { InferPathParams } from 'zimic/http';
 
 class UserController {
@@ -31,7 +31,7 @@ class UserController {
     type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
     type SuccessResponseBody = BlinkOperations['users/getById']['response']['200']['body'];
 
-    const input = getUserByIdSchema.parse(request.params) satisfies RequestParams;
+    const input = userByIdSchema.parse(request.params) satisfies RequestParams;
     const user = await this.userService.getById(input);
 
     return response.status(200).json(toUserResponse(user) satisfies SuccessResponseBody);
@@ -50,6 +50,16 @@ class UserController {
     const user = await this.userService.update(input);
 
     return response.status(200).json(toUserResponse(user) satisfies SuccessResponseBody);
+  };
+
+  delete: RequestHandler = async (request, response) => {
+    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
+    type ResponseStatus = keyof BlinkOperations['auth/logout']['response'];
+
+    const input = userByIdSchema.parse(request.params) satisfies RequestParams;
+    await this.userService.delete(input);
+
+    return response.status(204 satisfies ResponseStatus).send();
   };
 }
 

@@ -7,7 +7,6 @@ import { LoginInput, RefreshAuthInput } from './validators';
 import { InvalidCredentialsError } from './errors';
 import environment from '@/config/environment';
 import { User, UserSession } from '@prisma/client';
-import { InternalServerError } from '@/errors/http';
 
 class AuthService {
   private static _instance = new AuthService();
@@ -33,66 +32,37 @@ class AuthService {
       throw new InvalidCredentialsError();
     }
 
-    const expiresAt = new Date();
-    const sessionDurationInDays = Number(environment.JWT_REFRESH_DURATION.replace(/^(\d+)d$/, '$1'));
+    await this.deleteExpiredSessions(user.id);
+    const session = await this.createSession(user.id);
 
-    if (Number.isNaN(sessionDurationInDays)) {
-      throw new InternalServerError(`Invalid session duration: ${environment.JWT_REFRESH_DURATION}`);
-    }
+    const [accessToken, refreshToken] = await Promise.all([
+      createJWT<AccessTokenPayload>(
+        { userId: user.id, sessionId: session.id },
+        { durationInMinutes: environment.JWT_ACCESS_DURATION_IN_MINUTES },
+      ),
 
-    expiresAt.setDate(expiresAt.getDate() + sessionDurationInDays);
-
-    const session = await database.userSession.create({
-      data: {
-        id: createId(),
-        userId: user.id,
-        expiresAt,
-      },
-    });
-
-    const accessTokenPromise = createJWT<AccessTokenPayload>(
-      { userId: user.id, sessionId: session.id },
-      { expirationTime: environment.JWT_ACCESS_DURATION },
-    );
-
-    const refreshTokenPromise = createJWT<RefreshTokenPayload>(
-      { sessionId: session.id },
-      { expirationTime: environment.JWT_REFRESH_DURATION },
-    );
-
-    const [accessToken, refreshToken] = await Promise.all([accessTokenPromise, refreshTokenPromise]);
+      createJWT<RefreshTokenPayload>(
+        { sessionId: session.id },
+        { durationInMinutes: environment.JWT_REFRESH_DURATION_IN_MINUTES },
+      ),
+    ]);
 
     return { accessToken, refreshToken };
   }
 
-  async refresh(userId: User['id'], sessionId: UserSession['id'], input: RefreshAuthInput) {
-    let refreshPayload: Partial<RefreshTokenPayload>;
+  private async createSession(userId: User['id']) {
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + environment.JWT_REFRESH_DURATION_IN_MINUTES);
 
-    try {
-      refreshPayload = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
-    } catch (error) {
-      await this.deleteExpiredSessions(userId);
-      throw error;
-    }
-
-    if (refreshPayload.sessionId !== sessionId) {
-      throw new InvalidCredentialsError();
-    }
-
-    const session = await database.userSession.findUnique({
-      where: { id: sessionId },
+    const session = await database.userSession.create({
+      data: {
+        id: createId(),
+        userId,
+        expiresAt,
+      },
     });
 
-    if (!session) {
-      throw new InvalidCredentialsError();
-    }
-
-    const accessToken = await createJWT<AccessTokenPayload>(
-      { userId: session.userId, sessionId: session.id },
-      { expirationTime: environment.JWT_ACCESS_DURATION },
-    );
-
-    return { accessToken };
+    return session;
   }
 
   private async deleteExpiredSessions(userId: string) {
@@ -102,6 +72,28 @@ class AuthService {
         expiresAt: { lte: new Date() },
       },
     });
+  }
+
+  async refresh(input: RefreshAuthInput) {
+    const refreshPayload = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
+
+    const session = await database.userSession.findUnique({
+      where: {
+        id: refreshPayload.sessionId,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!session) {
+      throw new InvalidCredentialsError();
+    }
+
+    const accessToken = await createJWT<AccessTokenPayload>(
+      { userId: session.userId, sessionId: session.id },
+      { durationInMinutes: environment.JWT_ACCESS_DURATION_IN_MINUTES },
+    );
+
+    return { accessToken };
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {
