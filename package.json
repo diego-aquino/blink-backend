@@ -18,6 +18,7 @@
     "typegen": "zimic typegen openapi ./docs/spec/openapi.yaml -o ./src/types/generated.ts --service-name Blink",
     "migration:create": "dotenv -c development -- prisma migrate dev --create-only",
     "migration:apply": "dotenv -c development -- prisma migrate deploy",
+    "migration:resolve": "dotenv -c development -- prisma migrate resolve",
     "db:studio": "dotenv -c development -- prisma studio",
     "deps:up": "docker compose up -d --wait blink-database",
     "postinstall": "prisma generate"
