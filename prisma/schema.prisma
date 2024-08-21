@@ -15,9 +15,14 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  sessions         UserSession[]
-  blinks           Blink[]
-  workspaceMembers WorkspaceMember[]
+  sessions UserSession[]
+
+  createdWorkspaces Workspace[]
+
+  workspaceMembers        WorkspaceMember[] @relation("workspace_member_user")
+  createdWorkspaceMembers WorkspaceMember[] @relation("workspace_member_creator")
+
+  createdBlinks Blink[]
 }
 
 model UserSession {
@@ -31,6 +36,9 @@ model Workspace {
   id   String @id
   name String
 
+  creatorId String?
+  creator   User?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -43,10 +51,13 @@ model WorkspaceMember {
   type WorkspaceMemberType @default(DEFAULT)
 
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation("workspace_member_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  creatorId String?
+  creator   User?   @relation("workspace_member_creator", fields: [creatorId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,7 +78,7 @@ model Blink {
   creator   User?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

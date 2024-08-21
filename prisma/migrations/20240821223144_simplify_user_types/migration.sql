@@ -1,10 +1,3 @@
-/*
-Warnings:
-
-- The values [WORKSPACE_OWNER,WORKSPACE_ADMINISTRATOR,NORMAL] on the enum `WorkspaceMemberType` will be removed. If these variants are still used in the database, this will fail.
-- You are about to drop the column `type` on the `User` table. All the data in the column will be lost.
-
-*/
 -- AlterEnum
 BEGIN;
 
