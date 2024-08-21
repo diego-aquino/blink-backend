@@ -6,7 +6,8 @@ import { AccessTokenPayload, LoginResult, RefreshTokenPayload } from './types';
 import { LoginInput, RefreshAuthInput } from './validators';
 import { InvalidCredentialsError } from './errors';
 import environment from '@/config/environment';
-import { UserSession } from '@prisma/client';
+import { User, UserSession } from '@prisma/client';
+import { InternalServerError } from '@/errors/http';
 
 class AuthService {
   private static _instance = new AuthService();
@@ -32,10 +33,20 @@ class AuthService {
       throw new InvalidCredentialsError();
     }
 
+    const expiresAt = new Date();
+    const sessionDurationInDays = Number(environment.JWT_REFRESH_DURATION.replace(/^(\d+)d$/, '$1'));
+
+    if (Number.isNaN(sessionDurationInDays)) {
+      throw new InternalServerError(`Invalid session duration: ${environment.JWT_REFRESH_DURATION}`);
+    }
+
+    expiresAt.setDate(expiresAt.getDate() + sessionDurationInDays);
+
     const session = await database.userSession.create({
       data: {
         id: createId(),
         userId: user.id,
+        expiresAt,
       },
     });
 
@@ -54,8 +65,19 @@ class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refresh(input: RefreshAuthInput) {
-    const { sessionId } = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
+  async refresh(userId: User['id'], sessionId: UserSession['id'], input: RefreshAuthInput) {
+    let refreshPayload: Partial<RefreshTokenPayload>;
+
+    try {
+      refreshPayload = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
+    } catch (error) {
+      await this.deleteExpiredSessions(userId);
+      throw error;
+    }
+
+    if (refreshPayload.sessionId !== sessionId) {
+      throw new InvalidCredentialsError();
+    }
 
     const session = await database.userSession.findUnique({
       where: { id: sessionId },
@@ -71,6 +93,15 @@ class AuthService {
     );
 
     return { accessToken };
+  }
+
+  private async deleteExpiredSessions(userId: string) {
+    await database.userSession.deleteMany({
+      where: {
+        userId,
+        expiresAt: { lte: new Date() },
+      },
+    });
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {
