@@ -11,6 +11,8 @@ export type BlinkSchema = HttpSchema.Paths<{
   '/users/:userId': {
     /** Buscar usuário */
     GET: BlinkOperations['users/getById'];
+    /** Remover usuário */
+    DELETE: BlinkOperations['users/delete'];
     /** Atualizar usuário */
     PATCH: BlinkOperations['users/update'];
   };
@@ -234,6 +236,28 @@ export interface BlinkOperations {
       200: {
         body: BlinkComponents['schemas']['User'];
       };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Não autorizado */
+      403: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Usuário não encontrado */
+      404: {
+        body: BlinkComponents['schemas']['NotFoundError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'users/delete': HttpSchema.Method<{
+    response: {
+      /** @description Usuário removido */
+      204: {};
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
