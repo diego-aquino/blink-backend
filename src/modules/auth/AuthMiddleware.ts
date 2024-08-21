@@ -1,6 +1,8 @@
-import { RequestMiddleware } from '../shared/controllers';
+import { JOSEError } from 'jose/errors';
+
 import { verifyJWT } from '@/utils/auth';
-import { JOSEError } from 'jose/dist/types/util/errors';
+
+import { RequestMiddleware } from '../shared/controllers';
 import { AuthenticationRequiredError, InvalidCredentialsError } from './errors';
 import { AccessTokenPayload } from './types';
 

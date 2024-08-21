@@ -7,11 +7,11 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
-export const refreshAccessTokenSchema = z.object({
+export const refreshAuthSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
-export type RefreshAccessTokenInput = z.infer<typeof refreshAccessTokenSchema>;
+export type RefreshAuthInput = z.infer<typeof refreshAuthSchema>;
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(8),

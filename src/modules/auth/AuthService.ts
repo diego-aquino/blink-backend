@@ -1,9 +1,9 @@
-import { createJWT, verifyPassword } from '@/utils/auth';
+import { createJWT, verifyJWT, verifyPassword } from '@/utils/auth';
 import database from '@/database/client';
 import { createId } from '@paralleldrive/cuid2';
 
 import { AccessTokenPayload, LoginResult, RefreshTokenPayload } from './types';
-import { LoginInput } from './validators';
+import { LoginInput, RefreshAuthInput } from './validators';
 import { InvalidCredentialsError } from './errors';
 import environment from '@/config/environment';
 import { UserSession } from '@prisma/client';
@@ -52,6 +52,25 @@ class AuthService {
     const [accessToken, refreshToken] = await Promise.all([accessTokenPromise, refreshTokenPromise]);
 
     return { accessToken, refreshToken };
+  }
+
+  async refresh(input: RefreshAuthInput) {
+    const { sessionId } = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
+
+    const session = await database.userSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      throw new InvalidCredentialsError();
+    }
+
+    const accessToken = await createJWT<AccessTokenPayload>(
+      { userId: session.userId, sessionId: session.id },
+      { expirationTime: environment.JWT_ACCESS_DURATION },
+    );
+
+    return { accessToken };
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {
