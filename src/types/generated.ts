@@ -24,7 +24,7 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/auth/refresh': {
     /** Gerar novo token de acesso */
-    POST: BlinkOperations['auth/tokens/refresh'];
+    POST: BlinkOperations['auth/refresh'];
   };
   '/auth/password': {
     /** Alterar senha */
@@ -169,15 +169,16 @@ export interface BlinkComponents {
       /** @description A mensagem de erro */
       message: string;
       /** @description Os problemas de validação */
-      issues?: {
+      issues?: ({
         /** @description A mensagem de erro */
         message?: string;
         /** @description O código do erro */
         code?: string;
         /** @description O caminho do erro */
         path?: (string | number)[];
+      } & {
         [key: string]: any;
-      }[];
+      })[];
     };
     AuthError: {
       /** @description A mensagem de erro */
@@ -344,7 +345,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'auth/tokens/refresh': HttpSchema.Method<{
+  'auth/refresh': HttpSchema.Method<{
     request: {
       body: {
         /** @description O token de atualização */

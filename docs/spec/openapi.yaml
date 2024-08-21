@@ -273,7 +273,7 @@ paths:
   /auth/refresh:
     post:
       summary: Gerar novo token de acesso
-      operationId: auth/tokens/refresh
+      operationId: auth/refresh
       tags:
         - Autenticação
       requestBody:
