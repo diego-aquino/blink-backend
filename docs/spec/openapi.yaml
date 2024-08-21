@@ -1085,14 +1085,6 @@ components:
           description: O email do usuário
           examples:
             - diego@email.com
-        type:
-          type: string
-          description: O tipo do usuário
-          enum:
-            - SYSTEM_ADMINISTRATOR
-            - NORMAL
-          examples:
-            - NORMAL
         createdAt:
           type: string
           format: date-time
@@ -1185,11 +1177,10 @@ components:
           type: string
           description: O tipo do membro
           enum:
-            - WORKSPACE_OWNER
-            - WORKSPACE_ADMINISTRATOR
-            - NORMAL
+            - ADMINISTRATOR
+            - DEFAULT
           examples:
-            - NORMAL
+            - DEFAULT
         createdAt:
           type: string
           format: date-time

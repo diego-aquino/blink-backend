@@ -83,11 +83,6 @@ export interface BlinkComponents {
        */
       email: string;
       /**
-       * @description O tipo do usuário
-       * @enum {string}
-       */
-      type: 'SYSTEM_ADMINISTRATOR' | 'NORMAL';
-      /**
        * Format: date-time
        * @description A data de criação do usuário
        */
@@ -132,7 +127,7 @@ export interface BlinkComponents {
        * @description O tipo do membro
        * @enum {string}
        */
-      type: 'WORKSPACE_OWNER' | 'WORKSPACE_ADMINISTRATOR' | 'NORMAL';
+      type: 'ADMINISTRATOR' | 'DEFAULT';
       /**
        * Format: date-time
        * @description A data de criação do membro

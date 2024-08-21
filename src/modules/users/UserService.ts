@@ -27,7 +27,6 @@ class UserService {
         id: createId(),
         name: input.name,
         email: input.email,
-        type: 'NORMAL',
         hashedPassword: await hashPassword(input.password),
       },
     });
