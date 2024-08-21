@@ -11,7 +11,6 @@ model User {
   id             String   @id
   name           String
   email          String   @unique
-  type           UserType @default(NORMAL)
   hashedPassword String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -21,22 +20,17 @@ model User {
   workspaceMembers WorkspaceMember[]
 }
 
-enum UserType {
-  SYSTEM_ADMINISTRATOR
-  NORMAL
-}
-
 model UserSession {
-  id        String   @id
-  expiresAt DateTime
+  id String @id
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Workspace {
-  id        String   @id
-  name      String
+  id   String @id
+  name String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -46,22 +40,21 @@ model Workspace {
 
 model WorkspaceMember {
   id   String              @id
-  type WorkspaceMemberType @default(NORMAL)
+  type WorkspaceMemberType @default(DEFAULT)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum WorkspaceMemberType {
-  WORKSPACE_OWNER
-  WORKSPACE_ADMINISTRATOR
-  NORMAL
+  ADMINISTRATOR
+  DEFAULT
 }
 
 model Blink {
@@ -70,8 +63,8 @@ model Blink {
   url        String
   redirectId String @unique
 
-  creatorId String
-  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String?
+  creator   User?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

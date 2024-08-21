@@ -193,6 +193,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    delete:
+      summary: Remover usuário
+      operationId: users/delete
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Usuário removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /auth/login:
     post:
       summary: Login
