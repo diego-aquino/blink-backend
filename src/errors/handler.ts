@@ -9,7 +9,7 @@ import {
 } from '@prisma/client/runtime/library';
 import { RequestErrorHandler } from '@/modules/shared/controllers';
 
-const handleUncaughtError: RequestErrorHandler = (error, _request, response) => {
+const handleUncaughtError: RequestErrorHandler = (error, _request, response, _next) => {
   if (error instanceof ZodError) {
     const httpError = new BadRequestError('Validation failed');
 
