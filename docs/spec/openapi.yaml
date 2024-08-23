@@ -30,6 +30,7 @@ paths:
             schema:
               type: object
               required:
+                - name
                 - email
                 - password
               properties:
@@ -1277,6 +1278,11 @@ components:
                 examples:
                   - - name
             additionalProperties: true
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - BAD_REQUEST
 
     AuthError:
       type: object
@@ -1288,6 +1294,11 @@ components:
           description: A mensagem de erro
           examples:
             - Unauthorized
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - UNAUTHORIZED
 
     NotFoundError:
       type: object
@@ -1299,6 +1310,11 @@ components:
           description: A mensagem de erro
           examples:
             - Not found
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - NOT_FOUND
 
     ConflictError:
       type: object
@@ -1310,6 +1326,11 @@ components:
           description: A mensagem de erro
           examples:
             - Conflict
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - CONFLICT
 
     InternalServerError:
       type: object
@@ -1321,6 +1342,11 @@ components:
           description: A mensagem de erro
           examples:
             - Internal server error
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - INTERNAL_SERVER_ERROR
 
   securitySchemes:
     bearerAuth:

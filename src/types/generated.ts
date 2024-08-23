@@ -176,22 +176,32 @@ export interface BlinkComponents {
       } & {
         [key: string]: any;
       })[];
+      /** @description O código do erro */
+      code?: string;
     };
     AuthError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     NotFoundError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     ConflictError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     InternalServerError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
   };
 }
@@ -201,7 +211,7 @@ export interface BlinkOperations {
     request: {
       body: {
         /** @description O nome do usuário */
-        name?: string;
+        name: string;
         /**
          * Format: email
          * @description O email do usuário
