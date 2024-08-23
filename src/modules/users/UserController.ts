@@ -5,6 +5,7 @@ import { BlinkOperations } from '@/types/generated';
 import { toUserResponse } from './views';
 import { createUserSchema, userByIdSchema, updateUserSchema } from './validators';
 import { InferPathParams } from 'zimic/http';
+import { CreateUserRequestBody, CreateUserResponseStatus, CreateUserSuccessResponseBody } from './types';
 
 class UserController {
   private static _instance = new UserController();
@@ -18,13 +19,12 @@ class UserController {
   private userService = UserService.instance();
 
   create: RequestHandler = async (request, response) => {
-    type RequestBody = BlinkOperations['users/create']['request']['body'];
-    type SuccessResponseBody = BlinkOperations['users/create']['response']['201']['body'];
-
-    const input = createUserSchema.parse(request.body) satisfies RequestBody;
+    const input = createUserSchema.parse(request.body) satisfies CreateUserRequestBody;
     const user = await this.userService.create(input);
 
-    return response.status(201).json(toUserResponse(user) satisfies SuccessResponseBody);
+    return response
+      .status(201 satisfies CreateUserResponseStatus)
+      .json(toUserResponse(user) satisfies CreateUserSuccessResponseBody);
   };
 
   get: RequestHandler = async (request, response) => {
