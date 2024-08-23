@@ -86,7 +86,7 @@ class UserService {
       throw new UserNotFoundError(input.userId);
     }
 
-    await database.user.delete({
+    await database.user.deleteMany({
       where: { id: input.userId },
     });
   }

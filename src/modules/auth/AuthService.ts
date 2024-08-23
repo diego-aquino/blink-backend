@@ -97,7 +97,7 @@ class AuthService {
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {
-    await database.userSession.delete({
+    await database.userSession.deleteMany({
       where: { id: input.sessionId },
     });
   }
