@@ -1,11 +1,19 @@
 import UserService from './UserService';
-import { BlinkSchema } from '@/types/generated';
 import { RequestHandler } from '../shared/controllers';
-import { BlinkOperations } from '@/types/generated';
 import { toUserResponse } from './views';
 import { createUserSchema, userByIdSchema, updateUserSchema } from './validators';
-import { InferPathParams } from 'zimic/http';
-import { CreateUserRequestBody, CreateUserResponseStatus, CreateUserSuccessResponseBody } from './types';
+import {
+  CreateUserRequestBody,
+  CreateUserResponseStatus,
+  CreateUserSuccessResponseBody,
+  DeleteUserResponseStatus,
+  GetUserByIdResponseStatus,
+  GetUserByIdSuccessResponseBody,
+  UpdateUserRequestBody,
+  UpdateUserResponseStatus,
+  UpdateUserSuccessResponseBody,
+  UserByIdPathParams,
+} from './types';
 
 class UserController {
   private static _instance = new UserController();
@@ -28,38 +36,32 @@ class UserController {
   };
 
   get: RequestHandler = async (request, response) => {
-    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
-    type SuccessResponseBody = BlinkOperations['users/getById']['response']['200']['body'];
-
-    const input = userByIdSchema.parse(request.params) satisfies RequestParams;
+    const input = userByIdSchema.parse(request.params) satisfies UserByIdPathParams;
     const user = await this.userService.getById(input);
 
-    return response.status(200).json(toUserResponse(user) satisfies SuccessResponseBody);
+    return response
+      .status(200 satisfies GetUserByIdResponseStatus)
+      .json(toUserResponse(user) satisfies GetUserByIdSuccessResponseBody);
   };
 
   update: RequestHandler = async (request, response) => {
-    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
-    type RequestBody = BlinkOperations['users/update']['request']['body'];
-    type SuccessResponseBody = BlinkOperations['users/update']['response']['200']['body'];
-
     const input = updateUserSchema.parse({
       ...request.body,
       ...request.params,
-    }) satisfies RequestBody & RequestParams;
+    }) satisfies UserByIdPathParams & UpdateUserRequestBody;
 
     const user = await this.userService.update(input);
 
-    return response.status(200).json(toUserResponse(user) satisfies SuccessResponseBody);
+    return response
+      .status(200 satisfies UpdateUserResponseStatus)
+      .json(toUserResponse(user) satisfies UpdateUserSuccessResponseBody);
   };
 
   delete: RequestHandler = async (request, response) => {
-    type RequestParams = InferPathParams<BlinkSchema, '/users/:userId'>;
-    type ResponseStatus = keyof BlinkOperations['auth/logout']['response'];
-
-    const input = userByIdSchema.parse(request.params) satisfies RequestParams;
+    const input = userByIdSchema.parse(request.params) satisfies UserByIdPathParams;
     await this.userService.delete(input);
 
-    return response.status(204 satisfies ResponseStatus).send();
+    return response.status(204 satisfies DeleteUserResponseStatus).send();
   };
 }
 

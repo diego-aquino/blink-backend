@@ -13,8 +13,9 @@ export async function verifyPassword(plainPassword: string, hashedPassword: stri
 }
 
 const DECODED_JWT_SECRET = base64url.decode(environment.JWT_SECRET);
-const JWT_ISSUER = 'blink';
-const JWT_AUDIENCE = 'blink';
+
+export const JWT_ISSUER = 'blink';
+export const JWT_AUDIENCE = 'blink';
 
 export async function createJWT<Payload extends JWTPayload>(
   payload: Payload,

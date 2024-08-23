@@ -14,7 +14,7 @@ class UserService {
   private constructor() {}
 
   async create(input: CreateUserInput) {
-    const numberOfEmailUses = await database.user.count({
+    const numberOfEmailUses = await database.client.user.count({
       where: { email: input.email },
     });
 
@@ -22,7 +22,7 @@ class UserService {
       throw new EmailAlreadyInUseError(input.email);
     }
 
-    const user = await database.user.create({
+    const user = await database.client.user.create({
       data: {
         id: createId(),
         name: input.name,
@@ -35,7 +35,7 @@ class UserService {
   }
 
   async getById(input: UserByIdInput) {
-    const user = await database.user.findUnique({
+    const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -47,7 +47,7 @@ class UserService {
   }
 
   async update(input: UpdateUserInput) {
-    const user = await database.user.findUnique({
+    const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -55,7 +55,7 @@ class UserService {
       throw new UserNotFoundError(input.userId);
     }
 
-    const numberOfEmailUses = await database.user.count({
+    const numberOfEmailUses = await database.client.user.count({
       where: {
         email: input.email,
         NOT: { id: input.userId },
@@ -66,7 +66,7 @@ class UserService {
       throw new EmailAlreadyInUseError(input.email);
     }
 
-    const updatedUser = await database.user.update({
+    const updatedUser = await database.client.user.update({
       where: { id: input.userId },
       data: {
         name: input.name,
@@ -78,7 +78,7 @@ class UserService {
   }
 
   async delete(input: UserByIdInput) {
-    const user = await database.user.findUnique({
+    const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -86,7 +86,7 @@ class UserService {
       throw new UserNotFoundError(input.userId);
     }
 
-    await database.user.deleteMany({
+    await database.client.user.deleteMany({
       where: { id: input.userId },
     });
   }

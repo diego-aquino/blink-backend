@@ -8,9 +8,9 @@ export function generateSchemaName(fileName: string) {
 }
 
 export async function clearDatabase() {
-  await database.blink.deleteMany();
-  await database.workspaceMember.deleteMany();
-  await database.userSession.deleteMany();
-  await database.user.deleteMany();
-  await database.workspace.deleteMany();
+  await database.client.blink.deleteMany();
+  await database.client.workspaceMember.deleteMany();
+  await database.client.userSession.deleteMany();
+  await database.client.user.deleteMany();
+  await database.client.workspace.deleteMany();
 }

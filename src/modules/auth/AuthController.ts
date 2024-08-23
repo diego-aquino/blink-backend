@@ -1,7 +1,15 @@
 import AuthService from './AuthService';
 import { RequestHandler } from '../shared/controllers';
-import { BlinkOperations } from '@/types/generated';
 import { loginSchema, refreshAuthSchema } from './validators';
+import {
+  LoginRequestBody,
+  LoginResponseStatus,
+  LoginSuccessResponseBody,
+  LogoutResponseStatus,
+  RefreshAuthRequestBody,
+  RefreshAuthResponseStatus,
+  RefreshAuthSuccessResponseBody,
+} from './types';
 
 class AuthController {
   private static _instance = new AuthController();
@@ -15,32 +23,26 @@ class AuthController {
   private authService = AuthService.instance();
 
   login: RequestHandler = async (request, response) => {
-    type RequestBody = BlinkOperations['auth/login']['request']['body'];
-    type SuccessResponseBody = BlinkOperations['auth/login']['response']['200']['body'];
-
-    const input = loginSchema.parse(request.body) satisfies RequestBody;
+    const input = loginSchema.parse(request.body) satisfies LoginRequestBody;
     const loginResult = await this.authService.login(input);
 
-    return response.status(200).json(loginResult satisfies SuccessResponseBody);
+    return response.status(200 satisfies LoginResponseStatus).json(loginResult satisfies LoginSuccessResponseBody);
   };
 
   refresh: RequestHandler = async (request, response) => {
-    type RequestBody = BlinkOperations['auth/refresh']['request']['body'];
-    type SuccessResponseBody = BlinkOperations['auth/refresh']['response']['200']['body'];
-
-    const { refreshToken } = refreshAuthSchema.parse(request.body) satisfies RequestBody;
+    const { refreshToken } = refreshAuthSchema.parse(request.body) satisfies RefreshAuthRequestBody;
     const refreshResult = await this.authService.refresh({ refreshToken });
 
-    return response.status(200).json(refreshResult satisfies SuccessResponseBody);
+    return response
+      .status(200 satisfies RefreshAuthResponseStatus)
+      .json(refreshResult satisfies RefreshAuthSuccessResponseBody);
   };
 
   logout: RequestHandler = async (request, response) => {
-    type ResponseStatus = keyof BlinkOperations['auth/logout']['response'];
-
     const { sessionId } = request.middlewares.authenticated;
     await this.authService.logout({ sessionId });
 
-    return response.status(204 satisfies ResponseStatus).send();
+    return response.status(204 satisfies LogoutResponseStatus).send();
   };
 }
 

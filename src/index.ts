@@ -2,8 +2,11 @@ import 'express-async-errors';
 
 import createApp from './server/app';
 import environment from './config/environment';
+import database from './database/client';
 
 async function startServer() {
+  database.initialize();
+
   const app = await createApp();
 
   return new Promise<void>((resolve) => {

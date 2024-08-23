@@ -18,7 +18,7 @@ class AuthService {
   private constructor() {}
 
   async login(input: LoginInput): Promise<LoginResult> {
-    const user = await database.user.findUnique({
+    const user = await database.client.user.findUnique({
       where: { email: input.email },
     });
 
@@ -54,7 +54,7 @@ class AuthService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + environment.JWT_REFRESH_DURATION_IN_MINUTES);
 
-    const session = await database.userSession.create({
+    const session = await database.client.userSession.create({
       data: {
         id: createId(),
         userId,
@@ -66,7 +66,7 @@ class AuthService {
   }
 
   private async deleteExpiredSessions(userId: string) {
-    await database.userSession.deleteMany({
+    await database.client.userSession.deleteMany({
       where: {
         userId,
         expiresAt: { lte: new Date() },
@@ -77,7 +77,7 @@ class AuthService {
   async refresh(input: RefreshAuthInput) {
     const refreshPayload = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
 
-    const session = await database.userSession.findUnique({
+    const session = await database.client.userSession.findUnique({
       where: {
         id: refreshPayload.sessionId,
         expiresAt: { gt: new Date() },
@@ -97,7 +97,7 @@ class AuthService {
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {
-    await database.userSession.deleteMany({
+    await database.client.userSession.deleteMany({
       where: { id: input.sessionId },
     });
   }
