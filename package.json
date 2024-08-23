@@ -15,6 +15,7 @@
     "style:check": "prettier --check",
     "style:format": "prettier --write",
     "types:check": "tsc --noEmit",
+    "test": "dotenv -c test -- dotenv -c development -- vitest",
     "typegen": "zimic typegen openapi ./docs/spec/openapi.yaml -o ./src/types/generated.ts --service-name Blink",
     "migration:create": "dotenv -c development -- prisma migrate dev --create-only",
     "migration:apply": "dotenv -c development -- prisma migrate deploy",
@@ -47,6 +48,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "execa": "^9.3.1",
     "gulp": "^5.0.0",
     "gulp-cli": "^3.0.0",
     "gulp-nodemon": "^2.5.0",
@@ -56,8 +58,10 @@
     "prettier-plugin-sh": "^0.14.0",
     "prettier-plugin-sql": "^0.18.1",
     "prisma": "^5.17.0",
+    "supertest": "^7.0.0",
     "tsx": "^4.16.3",
     "typescript": "^5.5.3",
+    "vitest": "^2.0.5",
     "zimic": "^0.9.0"
   }
 }

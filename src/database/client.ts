@@ -1,5 +1,12 @@
+import environment from '@/config/environment';
 import { PrismaClient } from '@prisma/client';
 
-const database = new PrismaClient();
+let database = new PrismaClient({
+  datasources: { db: { url: environment.DATABASE_URL } },
+});
+
+export function setDatabase(newDatabase: PrismaClient) {
+  database = newDatabase;
+}
 
 export default database;

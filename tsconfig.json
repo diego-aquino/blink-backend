@@ -13,10 +13,11 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
+      "@tests/*": ["tests/*"],
       "@@/package.json": ["package.json"]
     }
   },
 
   "include": ["./**/*.ts"],
-  "exclude": ["dist", "node_modules", "**/*.spec.ts"]
+  "exclude": ["dist", "node_modules"]
 }
