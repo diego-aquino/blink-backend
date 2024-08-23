@@ -35,7 +35,7 @@ userRouter.delete(
   '/users/:userId' satisfies UserPath,
   authMiddleware.authenticated,
   userMiddleware.ownUser,
-  userController.update,
+  userController.delete,
 );
 
 export default userRouter;
