@@ -26,11 +26,13 @@ model User {
 }
 
 model UserSession {
-  id        String   @id
-  expiresAt DateTime
+  id String @id
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
 model Workspace {
