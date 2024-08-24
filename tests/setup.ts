@@ -3,7 +3,7 @@ import 'express-async-errors';
 import { afterAll, beforeAll } from 'vitest';
 
 import environment from '@/config/environment';
-import { generateSchemaName } from './utils/database';
+import { clearDatabase, generateSchemaName } from './utils/database';
 import database from '@/database/client';
 
 let testSchemaName: string;
@@ -28,5 +28,5 @@ beforeAll(async (context) => {
 });
 
 afterAll(async () => {
-  await database.client.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${testSchemaName}" CASCADE;`);
+  await clearDatabase();
 });
