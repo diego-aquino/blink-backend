@@ -1,12 +1,20 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
-import { CreateUserInput, GetUserByIdInput, UpdateUserInput } from './validators';
+import { CreateUserInput, UserByIdInput, UpdateUserInput } from './validators';
 import { hashPassword } from '@/utils/auth';
 
 class UserService {
+  private static _instance = new UserService();
+
+  static instance() {
+    return this._instance;
+  }
+
+  private constructor() {}
+
   async create(input: CreateUserInput) {
-    const numberOfEmailUses = await database.user.count({
+    const numberOfEmailUses = await database.client.user.count({
       where: { email: input.email },
     });
 
@@ -14,12 +22,11 @@ class UserService {
       throw new EmailAlreadyInUseError(input.email);
     }
 
-    const user = await database.user.create({
+    const user = await database.client.user.create({
       data: {
         id: createId(),
         name: input.name,
         email: input.email,
-        type: 'NORMAL',
         hashedPassword: await hashPassword(input.password),
       },
     });
@@ -27,8 +34,8 @@ class UserService {
     return user;
   }
 
-  async getById(input: GetUserByIdInput) {
-    const user = await database.user.findUnique({
+  async getById(input: UserByIdInput) {
+    const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -40,7 +47,7 @@ class UserService {
   }
 
   async update(input: UpdateUserInput) {
-    const user = await database.user.findUnique({
+    const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -48,18 +55,20 @@ class UserService {
       throw new UserNotFoundError(input.userId);
     }
 
-    const numberOfEmailUses = await database.user.count({
-      where: {
-        email: input.email,
-        NOT: { id: input.userId },
-      },
-    });
+    if (input.email && input.email !== user.email) {
+      const numberOfEmailUses = await database.client.user.count({
+        where: {
+          email: input.email,
+          NOT: { id: input.userId },
+        },
+      });
 
-    if (numberOfEmailUses > 0) {
-      throw new EmailAlreadyInUseError(input.email);
+      if (numberOfEmailUses > 0) {
+        throw new EmailAlreadyInUseError(input.email);
+      }
     }
 
-    const updatedUser = await database.user.update({
+    const updatedUser = await database.client.user.update({
       where: { id: input.userId },
       data: {
         name: input.name,
@@ -68,6 +77,20 @@ class UserService {
     });
 
     return updatedUser;
+  }
+
+  async delete(input: UserByIdInput) {
+    const user = await database.client.user.findUnique({
+      where: { id: input.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(input.userId);
+    }
+
+    await database.client.user.deleteMany({
+      where: { id: input.userId },
+    });
   }
 }
 

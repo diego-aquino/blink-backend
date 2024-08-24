@@ -1,19 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
+    "target": "es2018",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "./dist",
+    "resolveJsonModule": true,
 
     "lib": ["esnext"],
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@tests/*": ["tests/*"],
+      "@@/package.json": ["package.json"]
     }
   },
 
   "include": ["./**/*.ts"],
-  "exclude": ["dist", "node_modules", "**/*.spec.ts"]
+  "exclude": ["dist", "node_modules"]
 }

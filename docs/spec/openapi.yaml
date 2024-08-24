@@ -30,6 +30,7 @@ paths:
             schema:
               type: object
               required:
+                - name
                 - email
                 - password
               properties:
@@ -193,6 +194,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    delete:
+      summary: Remover usuário
+      operationId: users/delete
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Usuário removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /auth/login:
     post:
       summary: Login
@@ -273,7 +309,7 @@ paths:
   /auth/refresh:
     post:
       summary: Gerar novo token de acesso
-      operationId: auth/tokens/refresh
+      operationId: auth/refresh
       tags:
         - Autenticação
       requestBody:
@@ -1050,14 +1086,6 @@ components:
           description: O email do usuário
           examples:
             - diego@email.com
-        type:
-          type: string
-          description: O tipo do usuário
-          enum:
-            - SYSTEM_ADMINISTRATOR
-            - NORMAL
-          examples:
-            - NORMAL
         createdAt:
           type: string
           format: date-time
@@ -1150,11 +1178,10 @@ components:
           type: string
           description: O tipo do membro
           enum:
-            - WORKSPACE_OWNER
-            - WORKSPACE_ADMINISTRATOR
-            - NORMAL
+            - ADMINISTRATOR
+            - DEFAULT
           examples:
-            - NORMAL
+            - DEFAULT
         createdAt:
           type: string
           format: date-time
@@ -1251,6 +1278,11 @@ components:
                 examples:
                   - - name
             additionalProperties: true
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - BAD_REQUEST
 
     AuthError:
       type: object
@@ -1262,6 +1294,11 @@ components:
           description: A mensagem de erro
           examples:
             - Unauthorized
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - UNAUTHORIZED
 
     NotFoundError:
       type: object
@@ -1273,6 +1310,11 @@ components:
           description: A mensagem de erro
           examples:
             - Not found
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - NOT_FOUND
 
     ConflictError:
       type: object
@@ -1284,6 +1326,11 @@ components:
           description: A mensagem de erro
           examples:
             - Conflict
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - CONFLICT
 
     InternalServerError:
       type: object
@@ -1295,6 +1342,11 @@ components:
           description: A mensagem de erro
           examples:
             - Internal server error
+        code:
+          type: string
+          description: O código do erro
+          examples:
+            - INTERNAL_SERVER_ERROR
 
   securitySchemes:
     bearerAuth:

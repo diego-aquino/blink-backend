@@ -5,8 +5,9 @@ import cors from 'cors';
 import { absolutePath as swaggerAbsolutePath } from 'swagger-ui-dist';
 
 import userRouter from '../modules/users/router';
-import deprecatedRouter from '../modules/deprecated/router';
 import handleUncaughtError from '../errors/handler';
+import authRouter from '@/modules/auth/router';
+import { prepareMiddlewares } from '@/modules/shared/middlewares';
 
 async function setSwaggerConfigURL(swaggerDirectory: string, newConfigURL: string) {
   const initializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
@@ -32,8 +33,9 @@ async function createApp() {
   await setSwaggerConfigURL(swaggerDirectory, '${window.location.origin}/openapi.yaml');
   app.use(express.static(swaggerDirectory));
 
+  app.use(prepareMiddlewares);
   app.use(userRouter);
-  app.use(deprecatedRouter);
+  app.use(authRouter);
 
   app.use(handleUncaughtError);
 

@@ -8,16 +8,15 @@ export const createUserSchema = z.object({
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
-export const getUserByIdSchema = z.object({
+export const userByIdSchema = z.object({
   userId: z.string().min(1),
 });
 
-export type GetUserByIdInput = z.infer<typeof getUserByIdSchema>;
+export type UserByIdInput = z.infer<typeof userByIdSchema>;
 
-export const updateUserSchema = z.object({
-  userId: z.string().min(1),
-  name: z.string().min(1),
-  email: z.string().email(),
+export const updateUserSchema = userByIdSchema.extend({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

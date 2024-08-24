@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { BadRequestError, HttpError, InternalServerError } from './http';
 import {
@@ -8,8 +7,9 @@ import {
   PrismaClientUnknownRequestError,
   PrismaClientValidationError,
 } from '@prisma/client/runtime/library';
+import { RequestErrorHandler } from '@/modules/shared/controllers';
 
-function handleError(error: unknown, _request: Request, response: Response, next: NextFunction) {
+const handleUncaughtError: RequestErrorHandler = (error, _request, response, _next) => {
   if (error instanceof ZodError) {
     const httpError = new BadRequestError('Validation failed');
 
@@ -54,6 +54,6 @@ function handleError(error: unknown, _request: Request, response: Response, next
       message: 'Unknown error',
     });
   }
-}
+};
 
-export default handleError;
+export default handleUncaughtError;

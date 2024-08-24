@@ -11,6 +11,8 @@ export type BlinkSchema = HttpSchema.Paths<{
   '/users/:userId': {
     /** Buscar usuário */
     GET: BlinkOperations['users/getById'];
+    /** Remover usuário */
+    DELETE: BlinkOperations['users/delete'];
     /** Atualizar usuário */
     PATCH: BlinkOperations['users/update'];
   };
@@ -24,7 +26,7 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/auth/refresh': {
     /** Gerar novo token de acesso */
-    POST: BlinkOperations['auth/tokens/refresh'];
+    POST: BlinkOperations['auth/refresh'];
   };
   '/auth/password': {
     /** Alterar senha */
@@ -83,11 +85,6 @@ export interface BlinkComponents {
        */
       email: string;
       /**
-       * @description O tipo do usuário
-       * @enum {string}
-       */
-      type: 'SYSTEM_ADMINISTRATOR' | 'NORMAL';
-      /**
        * Format: date-time
        * @description A data de criação do usuário
        */
@@ -132,7 +129,7 @@ export interface BlinkComponents {
        * @description O tipo do membro
        * @enum {string}
        */
-      type: 'WORKSPACE_OWNER' | 'WORKSPACE_ADMINISTRATOR' | 'NORMAL';
+      type: 'ADMINISTRATOR' | 'DEFAULT';
       /**
        * Format: date-time
        * @description A data de criação do membro
@@ -169,31 +166,42 @@ export interface BlinkComponents {
       /** @description A mensagem de erro */
       message: string;
       /** @description Os problemas de validação */
-      issues?: {
+      issues?: ({
         /** @description A mensagem de erro */
         message?: string;
         /** @description O código do erro */
         code?: string;
         /** @description O caminho do erro */
         path?: (string | number)[];
+      } & {
         [key: string]: any;
-      }[];
+      })[];
+      /** @description O código do erro */
+      code?: string;
     };
     AuthError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     NotFoundError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     ConflictError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
     InternalServerError: {
       /** @description A mensagem de erro */
       message: string;
+      /** @description O código do erro */
+      code?: string;
     };
   };
 }
@@ -203,7 +211,7 @@ export interface BlinkOperations {
     request: {
       body: {
         /** @description O nome do usuário */
-        name?: string;
+        name: string;
         /**
          * Format: email
          * @description O email do usuário
@@ -238,6 +246,28 @@ export interface BlinkOperations {
       200: {
         body: BlinkComponents['schemas']['User'];
       };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Não autorizado */
+      403: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Usuário não encontrado */
+      404: {
+        body: BlinkComponents['schemas']['NotFoundError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'users/delete': HttpSchema.Method<{
+    response: {
+      /** @description Usuário removido */
+      204: {};
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
@@ -344,7 +374,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'auth/tokens/refresh': HttpSchema.Method<{
+  'auth/refresh': HttpSchema.Method<{
     request: {
       body: {
         /** @description O token de atualização */
