@@ -40,5 +40,5 @@ export async function verifyJWT<Payload extends JWTPayload>(jwt: string) {
     audience: JWT_AUDIENCE,
   });
 
-  return payload as Partial<Payload>;
+  return payload as Payload;
 }

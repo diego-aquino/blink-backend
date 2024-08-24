@@ -14,7 +14,10 @@ const authMiddleware = AuthMiddleware.instance();
 const userMiddleware = UserMiddleware.instance();
 
 export type UserPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/users${string}`>;
-export type NonLiteralUserPath = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/users${string}`>;
+
+export namespace UserPath {
+  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/users${string}`>;
+}
 
 userRouter.post('/users' satisfies UserPath, userController.create);
 

@@ -10,7 +10,7 @@ const authRouter = Router();
 const authController = AuthController.instance();
 const authMiddleware = AuthMiddleware.instance();
 
-type AuthPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/auth${string}`>;
+export type AuthPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/auth${string}`>;
 
 authRouter.post('/auth/login' satisfies AuthPath, authController.login);
 authRouter.post('/auth/refresh' satisfies AuthPath, authController.refresh);

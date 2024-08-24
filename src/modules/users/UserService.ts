@@ -55,15 +55,17 @@ class UserService {
       throw new UserNotFoundError(input.userId);
     }
 
-    const numberOfEmailUses = await database.client.user.count({
-      where: {
-        email: input.email,
-        NOT: { id: input.userId },
-      },
-    });
+    if (input.email && input.email !== user.email) {
+      const numberOfEmailUses = await database.client.user.count({
+        where: {
+          email: input.email,
+          NOT: { id: input.userId },
+        },
+      });
 
-    if (numberOfEmailUses > 0) {
-      throw new EmailAlreadyInUseError(input.email);
+      if (numberOfEmailUses > 0) {
+        throw new EmailAlreadyInUseError(input.email);
+      }
     }
 
     const updatedUser = await database.client.user.update({

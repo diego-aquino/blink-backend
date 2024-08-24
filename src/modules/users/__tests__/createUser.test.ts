@@ -7,7 +7,6 @@ import {
   CreateUserRequestBody,
   CreateUserResponseStatus,
   CreateUserSuccessResponseBody,
-  UserResponse,
 } from '../types';
 import database from '@/database/client';
 import { UserPath } from '../router';
@@ -44,7 +43,12 @@ describe('Users: Create', async () => {
     const userInDatabase = await database.client.user.findUniqueOrThrow({
       where: { id: user.id },
     });
+    expect(userInDatabase.id).toBe(user.id);
+    expect(userInDatabase.name).toBe(user.name);
+    expect(userInDatabase.email).toBe(user.email);
     expect(userInDatabase.hashedPassword).not.toBe(input.password);
+    expect(userInDatabase.createdAt).toEqual(new Date(user.createdAt));
+    expect(userInDatabase.updatedAt).toEqual(new Date(user.updatedAt));
   });
 
   it('should not allow creating a user with email already in use', async () => {
