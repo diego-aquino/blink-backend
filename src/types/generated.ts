@@ -10,7 +10,7 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/users/:userId': {
     /** Buscar usuário */
-    GET: BlinkOperations['users/getById'];
+    GET: BlinkOperations['users/get'];
     /** Remover usuário */
     DELETE: BlinkOperations['users/delete'];
     /** Atualizar usuário */
@@ -30,7 +30,7 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/auth/password': {
     /** Alterar senha */
-    PUT: BlinkOperations['/auth/password/update'];
+    PUT: BlinkOperations['auth/password/update'];
   };
   '/workspaces': {
     /** Criar workspace */
@@ -38,7 +38,7 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/workspaces/:workspaceId': {
     /** Buscar workspace */
-    GET: BlinkOperations['workspaces/getById'];
+    GET: BlinkOperations['workspaces/get'];
     /** Remover workspace */
     DELETE: BlinkOperations['workspaces/delete'];
     /** Atualizar workspace */
@@ -46,25 +46,27 @@ export type BlinkSchema = HttpSchema.Paths<{
   };
   '/workspaces/:workspaceId/members': {
     /** Listar membros */
-    GET: BlinkOperations['workspaces/listMembers'];
+    GET: BlinkOperations['workspaces/members/list'];
+    /** Atualizar membro */
+    PUT: BlinkOperations['workspaces/members/update'];
     /** Adicionar membro */
-    POST: BlinkOperations['workspaces/addMember'];
+    POST: BlinkOperations['workspaces/members/create'];
   };
   '/workspaces/:workspaceId/members/:memberId': {
     /** Buscar membro */
-    GET: BlinkOperations['workspaces/getMember'];
+    GET: BlinkOperations['workspaces/members/get'];
     /** Remover membro */
-    DELETE: BlinkOperations['workspaces/removeMember'];
+    DELETE: BlinkOperations['workspaces/members/delete'];
   };
   '/workspaces/:workspaceId/blinks': {
     /** Criar blink */
-    POST: BlinkOperations['workspaces/createBlink'];
+    POST: BlinkOperations['workspaces/blinks/create'];
   };
   '/workspaces/:workspaceId/blinks/:blinkId': {
     /** Buscar blink */
-    GET: BlinkOperations['workspaces/getBlink'];
+    GET: BlinkOperations['workspaces/blinks/get'];
     /** Atualizar blink */
-    PATCH: BlinkOperations['workspaces/updateBlink'];
+    PATCH: BlinkOperations['workspaces/blinks/update'];
   };
   '/:redirectId': {
     /** Redirecionar */
@@ -125,11 +127,7 @@ export interface BlinkComponents {
       /** @description O id do membro */
       id: string;
       user: BlinkComponents['schemas']['User'];
-      /**
-       * @description O tipo do membro
-       * @enum {string}
-       */
-      type: 'ADMINISTRATOR' | 'DEFAULT';
+      type: BlinkComponents['schemas']['WorkspaceMemberType'];
       /**
        * Format: date-time
        * @description A data de criação do membro
@@ -141,6 +139,11 @@ export interface BlinkComponents {
        */
       updatedAt: string;
     };
+    /**
+     * @description O tipo do membro
+     * @enum {string}
+     */
+    WorkspaceMemberType: 'ADMINISTRATOR' | 'DEFAULT';
     Blink: {
       /** @description O id do blink */
       id: string;
@@ -240,7 +243,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'users/getById': HttpSchema.Method<{
+  'users/get': HttpSchema.Method<{
     response: {
       /** @description Usuário encontrado */
       200: {
@@ -400,7 +403,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  '/auth/password/update': HttpSchema.Method<{
+  'auth/password/update': HttpSchema.Method<{
     request: {
       body: {
         /** @description A senha atual */
@@ -460,7 +463,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/getById': HttpSchema.Method<{
+  'workspaces/get': HttpSchema.Method<{
     response: {
       /** @description Workspace encontrado */
       200: {
@@ -540,7 +543,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/listMembers': HttpSchema.Method<{
+  'workspaces/members/list': HttpSchema.Method<{
     response: {
       /** @description Membros listados */
       200: {
@@ -566,15 +569,51 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/addMember': HttpSchema.Method<{
+  'workspaces/members/update': HttpSchema.Method<{
+    request: {
+      body: {
+        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
+      };
+    };
+    response: {
+      /** @description Membro atualizado */
+      200: {
+        body: BlinkComponents['schemas']['WorkspaceMember'];
+      };
+      /** @description Erro de validação */
+      400: {
+        body: BlinkComponents['schemas']['ValidationError'];
+      };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Não autorizado */
+      403: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Membro não encontrado */
+      404: {
+        body: BlinkComponents['schemas']['NotFoundError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'workspaces/members/create': HttpSchema.Method<{
     request: {
       body: {
         userId: string;
+        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
       };
     };
     response: {
       /** @description Membro adicionado */
-      204: {};
+      201: {
+        body: BlinkComponents['schemas']['WorkspaceMember'];
+      };
       /** @description Erro de validação */
       400: {
         body: BlinkComponents['schemas']['ValidationError'];
@@ -597,7 +636,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/getMember': HttpSchema.Method<{
+  'workspaces/members/get': HttpSchema.Method<{
     response: {
       /** @description Membro encontrado */
       200: {
@@ -621,7 +660,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/removeMember': HttpSchema.Method<{
+  'workspaces/members/delete': HttpSchema.Method<{
     response: {
       /** @description Membro removido */
       204: {};
@@ -643,7 +682,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/createBlink': HttpSchema.Method<{
+  'workspaces/blinks/create': HttpSchema.Method<{
     request: {
       body: {
         /** @description O nome do blink */
@@ -685,7 +724,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/getBlink': HttpSchema.Method<{
+  'workspaces/blinks/get': HttpSchema.Method<{
     response: {
       /** @description Blink encontrado */
       200: {
@@ -709,7 +748,7 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/updateBlink': HttpSchema.Method<{
+  'workspaces/blinks/update': HttpSchema.Method<{
     request: {
       body: {
         /** @description O nome do blink */

@@ -37,7 +37,7 @@ class UserController {
 
   get: RequestHandler = async (request, response) => {
     const input = userByIdSchema.parse(request.params) satisfies UserByIdPathParams;
-    const user = await this.userService.getById(input);
+    const user = await this.userService.get(input);
 
     return response
       .status(200 satisfies GetUserByIdResponseStatus)

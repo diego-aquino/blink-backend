@@ -34,7 +34,7 @@ class UserService {
     return user;
   }
 
-  async getById(input: UserByIdInput) {
+  async get(input: UserByIdInput) {
     const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });

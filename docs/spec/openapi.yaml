@@ -88,7 +88,7 @@ paths:
 
     get:
       summary: Buscar usuário
-      operationId: users/getById
+      operationId: users/get
       tags:
         - Usuários
       security:
@@ -355,7 +355,7 @@ paths:
   /auth/password:
     put:
       summary: Alterar senha
-      operationId: /auth/password/update
+      operationId: auth/password/update
       tags:
         - Autenticação
       security:
@@ -474,7 +474,7 @@ paths:
 
     get:
       summary: Buscar workspace
-      operationId: workspaces/getById
+      operationId: workspaces/get
       tags:
         - Workspaces
       security:
@@ -614,7 +614,7 @@ paths:
 
     post:
       summary: Adicionar membro
-      operationId: workspaces/addMember
+      operationId: workspaces/members/create
       tags:
         - Workspaces
       security:
@@ -632,9 +632,15 @@ paths:
                   type: string
                   examples:
                     - tz4a98xxat96iws9zmbrgj3a
+                type:
+                  $ref: '#/components/schemas/WorkspaceMemberType'
       responses:
-        '204':
+        '201':
           description: Membro adicionado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
         '400':
           description: Erro de validação
           content:
@@ -668,7 +674,7 @@ paths:
 
     get:
       summary: Listar membros
-      operationId: workspaces/listMembers
+      operationId: workspaces/members/list
       tags:
         - Workspaces
       security:
@@ -710,6 +716,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    put:
+      summary: Atualizar membro
+      operationId: workspaces/members/update
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/WorkspaceMemberType'
+      responses:
+        '200':
+          description: Membro atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Membro não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /workspaces/{workspaceId}/members/{memberId}:
     parameters:
       - name: workspaceId
@@ -729,7 +789,7 @@ paths:
 
     get:
       summary: Buscar membro
-      operationId: workspaces/getMember
+      operationId: workspaces/members/get
       tags:
         - Workspaces
       security:
@@ -768,7 +828,7 @@ paths:
 
     delete:
       summary: Remover membro
-      operationId: workspaces/removeMember
+      operationId: workspaces/members/delete
       tags:
         - Workspaces
       security:
@@ -813,7 +873,7 @@ paths:
 
     post:
       summary: Criar blink
-      operationId: workspaces/createBlink
+      operationId: workspaces/blinks/create
       tags:
         - Blinks
       security:
@@ -906,7 +966,7 @@ paths:
 
     get:
       summary: Buscar blink
-      operationId: workspaces/getBlink
+      operationId: workspaces/blinks/get
       tags:
         - Blinks
       security:
@@ -945,7 +1005,7 @@ paths:
 
     patch:
       summary: Atualizar blink
-      operationId: workspaces/updateBlink
+      operationId: workspaces/blinks/update
       tags:
         - Blinks
       security:
@@ -1175,13 +1235,7 @@ components:
         user:
           $ref: '#/components/schemas/User'
         type:
-          type: string
-          description: O tipo do membro
-          enum:
-            - ADMINISTRATOR
-            - DEFAULT
-          examples:
-            - DEFAULT
+          $ref: '#/components/schemas/WorkspaceMemberType'
         createdAt:
           type: string
           format: date-time
@@ -1194,6 +1248,15 @@ components:
           description: A data de atualização do membro
           examples:
             - '2021-08-01T00:00:00.000Z'
+
+    WorkspaceMemberType:
+      type: string
+      description: O tipo do membro
+      enum:
+        - ADMINISTRATOR
+        - DEFAULT
+      examples:
+        - DEFAULT
 
     Blink:
       type: object
