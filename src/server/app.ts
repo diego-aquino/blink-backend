@@ -4,10 +4,12 @@ import path from 'path';
 import cors from 'cors';
 import { absolutePath as swaggerAbsolutePath } from 'swagger-ui-dist';
 
-import userRouter from '../modules/users/router';
-import handleUncaughtError from '../errors/handler';
 import authRouter from '@/modules/auth/router';
 import { prepareMiddlewares } from '@/modules/shared/middlewares';
+import workspaceRouter from '@/modules/workspaces/router';
+import userRouter from '@/modules/users/router';
+import handleUncaughtError from '@/errors/handler';
+import workspaceMemberRouter from '@/modules/workspaces/members/router';
 
 async function setSwaggerConfigURL(swaggerDirectory: string, newConfigURL: string) {
   const initializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
@@ -34,8 +36,10 @@ async function createApp() {
   app.use(express.static(swaggerDirectory));
 
   app.use(prepareMiddlewares);
-  app.use(userRouter);
   app.use(authRouter);
+  app.use(userRouter);
+  app.use(workspaceRouter);
+  app.use(workspaceMemberRouter);
 
   app.use(handleUncaughtError);
 
