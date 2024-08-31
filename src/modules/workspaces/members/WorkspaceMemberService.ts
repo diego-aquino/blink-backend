@@ -1,8 +1,13 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { WorkspaceMemberLastMemberError, WorkspaceMemberNotFoundError } from './errors';
-import { CreateWorkspaceMemberInput, WorkspaceMemberByIdInput, UpdateWorkspaceMemberInput } from './validators';
-import { User, Workspace } from '@prisma/client';
+import {
+  CreateWorkspaceMemberInput,
+  WorkspaceMemberByIdInput,
+  UpdateWorkspaceMemberInput,
+  ListWorkspaceMembersInput,
+} from './validators';
+import { Prisma, Workspace } from '@prisma/client';
 
 class WorkspaceMemberService {
   private static _instance = new WorkspaceMemberService();
@@ -25,6 +30,29 @@ class WorkspaceMemberService {
     });
 
     return member;
+  }
+
+  async list(input: ListWorkspaceMembersInput) {
+    const where: Prisma.WorkspaceMemberWhereInput = {
+      workspaceId: input.workspaceId,
+      type: input.type,
+      user: {
+        name: { contains: input.name, mode: 'insensitive' },
+      },
+    };
+
+    const [members, total] = await Promise.all([
+      database.client.workspaceMember.findMany({
+        where,
+        include: { user: true },
+        skip: (input.page - 1) * input.limit,
+        take: input.limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      database.client.workspaceMember.count({ where }),
+    ]);
+
+    return { list: members, total };
   }
 
   async get(input: WorkspaceMemberByIdInput) {

@@ -1,4 +1,5 @@
 import { BlinkComponents, BlinkOperations, BlinkSchema } from '@/types/generated';
+import { ParsedHttpSearchParams } from '@/types/zimic';
 import { Prisma } from '@prisma/client';
 import { InferPathParams } from 'zimic/http';
 
@@ -10,6 +11,19 @@ export type CreateWorkspaceMemberRequestBody = BlinkOperations['workspaces/membe
 export type CreateWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/create']['response'];
 export type CreateWorkspaceMemberSuccessResponseBody =
   BlinkOperations['workspaces/members/create']['response']['201']['body'];
+
+export type ListWorkspaceMembersParamsSuccessResponseBody = ParsedHttpSearchParams<
+  BlinkOperations['workspaces/members/list']['request']['searchParams']
+>;
+export type ListWorkspaceMembersSuccessResponseBody =
+  BlinkOperations['workspaces/members/list']['response']['200']['body'];
+export type ListWorkspaceMembersUnauthorizedResponseBody =
+  BlinkOperations['workspaces/members/list']['response']['401']['body'];
+export type ListWorkspaceMembersForbiddenResponseBody =
+  BlinkOperations['workspaces/members/list']['response']['403']['body'];
+export type ListWorkspaceMembersNotFoundResponseBody =
+  BlinkOperations['workspaces/members/list']['response']['404']['body'];
+export type ListWorkspaceMembersResponseStatus = keyof BlinkOperations['workspaces/members/get']['response'];
 
 export type WorkspaceMemberByIdPathParams = InferPathParams<BlinkSchema, '/workspaces/:workspaceId/members/:memberId'>;
 export type GetWorkspaceMemberByIdSuccessResponseBody =

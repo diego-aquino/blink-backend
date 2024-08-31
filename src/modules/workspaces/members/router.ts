@@ -31,6 +31,13 @@ workspaceMemberRouter.post(
 );
 
 workspaceMemberRouter.get(
+  '/workspaces/:workspaceId/members' satisfies WorkspaceMemberPath,
+  authMiddleware.authenticated,
+  workspaceMemberMiddleware.minimumType('DEFAULT'),
+  workspaceMemberController.list,
+);
+
+workspaceMemberRouter.get(
   '/workspaces/:workspaceId/members/:memberId' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
   workspaceMemberMiddleware.minimumType('DEFAULT'),

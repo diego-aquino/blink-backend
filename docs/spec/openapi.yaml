@@ -679,6 +679,38 @@ paths:
         - Workspaces
       security:
         - bearerAuth: []
+      parameters:
+        - memberName:
+          name: name
+          in: query
+          required: false
+          description: O nome do membro para filtrar
+          schema:
+            type: string
+            example: Diego Aquino
+        - memberType:
+          name: type
+          in: query
+          required: false
+          description: O tipo do membro para filtrar
+          schema:
+            $ref: '#/components/schemas/WorkspaceMemberType'
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de membros por página
+          schema:
+            type: integer
+            example: 10
       responses:
         '200':
           description: Membros listados
@@ -686,11 +718,17 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - members
+                  - total
                 properties:
                   members:
                     type: array
                     items:
                       $ref: '#/components/schemas/WorkspaceMember'
+                  total:
+                    type: integer
+                    example: 1
         '401':
           description: Não autenticado
           content:
@@ -705,60 +743,6 @@ paths:
                 $ref: '#/components/schemas/AuthError'
         '404':
           description: Workspace não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFoundError'
-        '500':
-          description: Erro no servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-
-    put:
-      summary: Atualizar membro
-      operationId: workspaces/members/update
-      tags:
-        - Workspaces
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                type:
-                  $ref: '#/components/schemas/WorkspaceMemberType'
-      responses:
-        '200':
-          description: Membro atualizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkspaceMember'
-        '400':
-          description: Erro de validação
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '403':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '404':
-          description: Membro não encontrado
           content:
             application/json:
               schema:
@@ -801,6 +785,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Membro não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    put:
+      summary: Atualizar membro
+      operationId: workspaces/members/update
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/WorkspaceMemberType'
+      responses:
+        '200':
+          description: Membro atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
         '401':
           description: Não autenticado
           content:
