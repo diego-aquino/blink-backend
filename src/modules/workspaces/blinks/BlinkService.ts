@@ -1,6 +1,6 @@
 import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
 import database from '@/database/client';
-import { BlinkNotFoundError, BlinkRedirectIdGenerationError } from './errors';
+import { BlinkByRedirectNotFoundError, BlinkNotFoundError, BlinkRedirectGenerationError } from './errors';
 import { CreateBlinkInput, BlinkByIdInput, UpdateBlinkInput, ListBlinksInput } from './validators';
 import { Prisma, User } from '@prisma/client';
 
@@ -47,7 +47,7 @@ class BlinkService {
       }
     }
 
-    throw new BlinkRedirectIdGenerationError();
+    throw new BlinkRedirectGenerationError();
   }
 
   async list(input: ListBlinksInput) {
@@ -81,6 +81,18 @@ class BlinkService {
 
     if (!blink) {
       throw new BlinkNotFoundError(input.blinkId);
+    }
+
+    return blink;
+  }
+
+  async getByRedirectId(redirectId: string) {
+    const blink = await database.client.blink.findUnique({
+      where: { redirectId },
+    });
+
+    if (!blink) {
+      throw new BlinkByRedirectNotFoundError(redirectId);
     }
 
     return blink;

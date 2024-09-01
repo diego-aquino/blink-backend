@@ -14,14 +14,13 @@ const workspaceMemberController = WorkspaceMemberController.instance();
 const authMiddleware = AuthMiddleware.instance();
 const workspaceMemberMiddleware = WorkspaceMemberMiddleware.instance();
 
+export namespace WorkspaceMemberPath {
+  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/:workspaceId/members${string}`>;
+}
 export type WorkspaceMemberPath = Extract<
   HttpSchemaPath.Literal<BlinkSchema>,
   `/workspaces/:workspaceId/members${string}`
 >;
-
-export namespace WorkspaceMemberPath {
-  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/:workspaceId/members${string}`>;
-}
 
 workspaceMemberRouter.post(
   '/workspaces/:workspaceId/members' satisfies WorkspaceMemberPath,
