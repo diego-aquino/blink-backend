@@ -16,11 +16,10 @@ const authMiddleware = AuthMiddleware.instance();
 const workspaceMemberMiddleware = WorkspaceMemberMiddleware.instance();
 const blinkMiddleware = BlinkMiddleware.instance();
 
-export type BlinkPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/workspaces/:workspaceId/blinks${string}`>;
-
 export namespace BlinkPath {
   export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/:workspaceId/blinks${string}`>;
 }
+export type BlinkPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/workspaces/:workspaceId/blinks${string}`>;
 
 blinkRouter.post(
   '/workspaces/:workspaceId/blinks' satisfies BlinkPath,

@@ -2,13 +2,19 @@ import { InternalServerError, NotFoundError } from '@/errors/http';
 import { Blink } from '@prisma/client';
 
 export class BlinkNotFoundError extends NotFoundError {
-  constructor(memberId: Blink['id']) {
-    super(`Workspace member '${memberId}' not found.`);
+  constructor(blinkId: Blink['id']) {
+    super(`Blink '${blinkId}' not found.`);
   }
 }
 
-export class BlinkRedirectIdGenerationError extends InternalServerError {
+export class BlinkByRedirectNotFoundError extends NotFoundError {
+  constructor(redirectId: Blink['redirectId']) {
+    super(`Blink with redirect '${redirectId}' not found.`);
+  }
+}
+
+export class BlinkRedirectGenerationError extends InternalServerError {
   constructor() {
-    super('Could not generate a unique blink redirect identifier.');
+    super('Could not generate a unique blink redirect.');
   }
 }
