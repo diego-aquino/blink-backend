@@ -3,11 +3,7 @@ import { workspaceByIdSchema } from '../validators';
 import { ForbiddenResourceAccessError } from '../../auth/errors';
 import { WorkspaceMemberType } from '@prisma/client';
 import database from '@/database/client';
-
-const WORKSPACE_MEMBER_TYPE_PRIORITY: Record<WorkspaceMemberType, number> = {
-  ADMINISTRATOR: 1,
-  DEFAULT: 0,
-};
+import WorkspaceMemberService from './WorkspaceMemberService';
 
 class WorkspaceMemberMiddleware {
   private static _instance = new WorkspaceMemberMiddleware();
@@ -16,32 +12,30 @@ class WorkspaceMemberMiddleware {
     return this._instance;
   }
 
+  private memberService = WorkspaceMemberService.instance();
+
   private constructor() {}
 
-  minimumType = (minimumType: WorkspaceMemberType): RequestMiddleware => {
+  memberTypeAtLeast = (minimumType: WorkspaceMemberType): RequestMiddleware => {
     return async (request, _response, next) => {
-      const { userId } = request.middlewares.authenticated;
+      const { userId } = request.middlewares.auth.authenticated;
       const { workspaceId } = workspaceByIdSchema.parse(request.params);
 
       const member = await database.client.workspaceMember.findUnique({
         where: { workspaceId_userId: { workspaceId, userId } },
       });
 
-      if (!member || !this.getTypesStartingAt(minimumType).includes(member.type)) {
+      const isAllowed = member !== null && this.memberService.hasTypeAtLeast(member, minimumType);
+
+      if (!isAllowed) {
         throw new ForbiddenResourceAccessError(`/workspaces/${workspaceId}`);
       }
+
+      request.middlewares.workspaceMember.typeAtLeast = { member };
 
       return next();
     };
   };
-
-  private getTypesStartingAt(minimumType: WorkspaceMemberType): WorkspaceMemberType[] {
-    const miniumPriority = WORKSPACE_MEMBER_TYPE_PRIORITY[minimumType];
-
-    return Object.entries(WORKSPACE_MEMBER_TYPE_PRIORITY)
-      .filter(([_type, priority]) => priority >= miniumPriority)
-      .map(([type]) => type);
-  }
 }
 
 export default WorkspaceMemberMiddleware;

@@ -22,9 +22,9 @@ class UserController {
     return this._instance;
   }
 
-  private constructor() {}
-
   private userService = UserService.instance();
+
+  private constructor() {}
 
   create: RequestHandler = async (request, response) => {
     const input = createUserSchema.parse(request.body) satisfies CreateUserRequestBody;

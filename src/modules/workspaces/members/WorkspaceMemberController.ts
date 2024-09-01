@@ -31,15 +31,15 @@ class WorkspaceMemberController {
     return this._instance;
   }
 
+  private memberService = WorkspaceMemberService.instance();
+
   private constructor() {}
 
-  private workspaceMemberService = WorkspaceMemberService.instance();
-
   create: RequestHandler = async (request, response) => {
-    const { userId } = request.middlewares.authenticated;
+    const { userId } = request.middlewares.auth.authenticated;
     const input = createWorkspaceMemberSchema.parse(request.body) satisfies CreateWorkspaceMemberRequestBody;
 
-    const member = await this.workspaceMemberService.create(userId, input);
+    const member = await this.memberService.create(userId, input);
 
     return response
       .status(201 satisfies CreateWorkspaceMemberResponseStatus)
@@ -52,7 +52,7 @@ class WorkspaceMemberController {
       ...request.query,
     }) satisfies ListWorkspaceMembersParamsSuccessResponseBody;
 
-    const members = await this.workspaceMemberService.list(input);
+    const members = await this.memberService.list(input);
 
     return response.status(200 satisfies ListWorkspaceMembersResponseStatus).json({
       members: members.list.map(toWorkspaceMemberResponse),
@@ -62,7 +62,7 @@ class WorkspaceMemberController {
 
   get: RequestHandler = async (request, response) => {
     const input = workspaceMemberByIdSchema.parse(request.params) satisfies WorkspaceMemberByIdPathParams;
-    const member = await this.workspaceMemberService.get(input);
+    const member = await this.memberService.get(input);
 
     return response
       .status(200 satisfies GetWorkspaceMemberByIdResponseStatus)
@@ -75,7 +75,7 @@ class WorkspaceMemberController {
       ...request.params,
     }) satisfies WorkspaceMemberByIdPathParams & UpdateWorkspaceMemberRequestBody;
 
-    const member = await this.workspaceMemberService.update(input);
+    const member = await this.memberService.update(input);
 
     return response
       .status(200 satisfies UpdateWorkspaceMemberResponseStatus)
@@ -84,7 +84,7 @@ class WorkspaceMemberController {
 
   delete: RequestHandler = async (request, response) => {
     const input = workspaceMemberByIdSchema.parse(request.params) satisfies WorkspaceMemberByIdPathParams;
-    await this.workspaceMemberService.delete(input);
+    await this.memberService.delete(input);
 
     return response.status(204 satisfies DeleteWorkspaceMemberResponseStatus).send();
   };

@@ -36,7 +36,7 @@ class AuthMiddleware {
         throw new InvalidCredentialsError();
       }
 
-      request.middlewares.authenticated = { userId, sessionId };
+      request.middlewares.auth.authenticated = { userId, sessionId };
 
       return next();
     } catch (error) {

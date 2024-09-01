@@ -1,4 +1,4 @@
-import { Prisma, User, WorkspaceMember } from '@prisma/client';
+import { User, WorkspaceMember } from '@prisma/client';
 import { WorkspaceMemberResponse } from './types';
 import { toUserResponse } from '@/modules/users/views';
 

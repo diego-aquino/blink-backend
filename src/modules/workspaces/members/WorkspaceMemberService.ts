@@ -7,7 +7,12 @@ import {
   UpdateWorkspaceMemberInput,
   ListWorkspaceMembersInput,
 } from './validators';
-import { Prisma, Workspace } from '@prisma/client';
+import { Prisma, User, Workspace, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
+
+const WORKSPACE_MEMBER_TYPE_PRIORITY: Record<WorkspaceMemberType, number> = {
+  ADMINISTRATOR: 1,
+  DEFAULT: 0,
+};
 
 class WorkspaceMemberService {
   private static _instance = new WorkspaceMemberService();
@@ -18,13 +23,14 @@ class WorkspaceMemberService {
 
   private constructor() {}
 
-  async create(workspaceId: Workspace['id'], input: CreateWorkspaceMemberInput) {
+  async create(creatorId: User['id'], input: CreateWorkspaceMemberInput) {
     const member = await database.client.workspaceMember.create({
       data: {
         id: createId(),
-        workspaceId,
+        workspaceId: input.workspaceId,
         userId: input.userId,
         type: input.type,
+        creatorId,
       },
       include: { user: true },
     });
@@ -113,6 +119,18 @@ class WorkspaceMemberService {
     await database.client.workspaceMember.deleteMany({
       where: { id: input.memberId },
     });
+  }
+
+  hasTypeAtLeast(member: WorkspaceMember, minimumType: WorkspaceMemberType) {
+    return this.getTypesAtLeast(minimumType).includes(member.type);
+  }
+
+  private getTypesAtLeast(minimumType: WorkspaceMemberType): WorkspaceMemberType[] {
+    const miniumPriority = WORKSPACE_MEMBER_TYPE_PRIORITY[minimumType];
+
+    return Object.entries(WORKSPACE_MEMBER_TYPE_PRIORITY)
+      .filter(([_type, priority]) => priority >= miniumPriority)
+      .map(([type]) => type);
   }
 }
 

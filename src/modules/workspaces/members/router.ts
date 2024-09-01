@@ -26,35 +26,35 @@ export namespace WorkspaceMemberPath {
 workspaceMemberRouter.post(
   '/workspaces/:workspaceId/members' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('ADMINISTRATOR'),
+  workspaceMemberMiddleware.memberTypeAtLeast('ADMINISTRATOR'),
   workspaceMemberController.create,
 );
 
 workspaceMemberRouter.get(
   '/workspaces/:workspaceId/members' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('DEFAULT'),
+  workspaceMemberMiddleware.memberTypeAtLeast('DEFAULT'),
   workspaceMemberController.list,
 );
 
 workspaceMemberRouter.get(
   '/workspaces/:workspaceId/members/:memberId' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('DEFAULT'),
+  workspaceMemberMiddleware.memberTypeAtLeast('DEFAULT'),
   workspaceMemberController.get,
 );
 
 workspaceMemberRouter.patch(
   '/workspaces/:workspaceId/members/:memberId' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('ADMINISTRATOR'),
+  workspaceMemberMiddleware.memberTypeAtLeast('ADMINISTRATOR'),
   workspaceMemberController.update,
 );
 
 workspaceMemberRouter.delete(
   '/workspaces/:workspaceId/members/:memberId' satisfies WorkspaceMemberPath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('ADMINISTRATOR'),
+  workspaceMemberMiddleware.memberTypeAtLeast('ADMINISTRATOR'),
   workspaceMemberController.delete,
 );
 

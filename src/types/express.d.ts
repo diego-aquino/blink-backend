@@ -1,11 +1,16 @@
 import type { AccessTokenPayload } from '@/modules/auth/types';
-import type { User } from '@prisma/client';
+import type { User, WorkspaceMember } from '@prisma/client';
 
 declare global {
   namespace Express {
     export interface Request {
       middlewares: {
-        authenticated: AccessTokenPayload;
+        auth: {
+          authenticated: AccessTokenPayload;
+        };
+        workspaceMember: {
+          typeAtLeast: { member: WorkspaceMember };
+        };
       };
     }
   }

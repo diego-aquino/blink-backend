@@ -30,14 +30,14 @@ workspaceRouter.get(
 workspaceRouter.patch(
   '/workspaces/:workspaceId' satisfies WorkspacePath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('ADMINISTRATOR'),
+  workspaceMemberMiddleware.memberTypeAtLeast('ADMINISTRATOR'),
   workspaceController.update,
 );
 
 workspaceRouter.delete(
   '/workspaces/:workspaceId' satisfies WorkspacePath,
   authMiddleware.authenticated,
-  workspaceMemberMiddleware.minimumType('ADMINISTRATOR'),
+  workspaceMemberMiddleware.memberTypeAtLeast('ADMINISTRATOR'),
   workspaceController.delete,
 );
 

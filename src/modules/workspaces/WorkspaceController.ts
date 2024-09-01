@@ -22,12 +22,12 @@ class WorkspaceController {
     return this._instance;
   }
 
-  private constructor() {}
-
   private workspaceService = WorkspaceService.instance();
 
+  private constructor() {}
+
   create: RequestHandler = async (request, response) => {
-    const { userId } = request.middlewares.authenticated;
+    const { userId } = request.middlewares.auth.authenticated;
     const input = createWorkspaceSchema.parse(request.body) satisfies CreateWorkspaceRequestBody;
 
     const workspace = await this.workspaceService.create(userId, input);

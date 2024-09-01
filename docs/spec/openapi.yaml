@@ -985,6 +985,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    get:
+      summary: Listar blinks
+      operationId: workspaces/blinks/list
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      parameters:
+        - blinkName:
+          name: name
+          in: query
+          required: false
+          description: O nome do blink para filtrar
+          schema:
+            type: string
+            example: Meu blink
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de blinks por página
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Blinks listados
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - blinks
+                  - total
+                properties:
+                  blinks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Blink'
+                  total:
+                    type: integer
+                    example: 1
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /workspaces/{workspaceId}/blinks/{blinkId}:
     parameters:
       - name: workspaceId
@@ -1107,6 +1182,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Remover blink
+      operationId: workspaces/blinks/delete
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Blink removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Blink não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
         '500':
           description: Erro no servidor
           content:
@@ -1303,7 +1413,6 @@ components:
         - name
         - url
         - redirectId
-        - creator
         - workspace
         - createdAt
         - updatedAt
