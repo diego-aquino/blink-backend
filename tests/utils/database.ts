@@ -1,10 +1,7 @@
-import crypto from 'crypto';
-
 import database from '@/database/client';
 
-export function generateSchemaName(fileName: string) {
-  const hashedFileName = crypto.createHash('shake256', { outputLength: 20 }).update(fileName).digest('hex');
-  return `test_${hashedFileName}`;
+export function generateWorkerSchemaName(workerId: string) {
+  return `test_worker_${workerId}`;
 }
 
 export async function clearDatabase() {
