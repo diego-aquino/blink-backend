@@ -1,8 +1,12 @@
-import { clearDatabase } from '@tests/utils/database';
+import { createId } from '@paralleldrive/cuid2';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import supertest from 'supertest';
+import database from '@/database/client';
+import { clearDatabase } from '@tests/utils/database';
+
 import { UserPath } from '../router';
 import {
   UpdateUserForbiddenResponseBody,
@@ -12,8 +16,6 @@ import {
   UpdateUserRequestBody,
   UpdateUserResponseStatus,
 } from '../types';
-import database from '@/database/client';
-import { createId } from '@paralleldrive/cuid2';
 
 describe('Users: Update', async () => {
   const app = await createApp();

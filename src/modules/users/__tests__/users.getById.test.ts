@@ -1,8 +1,11 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import supertest from 'supertest';
+import { clearDatabase } from '@tests/utils/database';
+import database from '@/database/client';
+
 import { UserPath } from '../router';
 import {
   GetUserByIdForbiddenResponseBody,
@@ -11,7 +14,6 @@ import {
   GetUserByIdSuccessResponseBody,
   GetUserByIdUnauthorizedResponseBody,
 } from '../types';
-import database from '@/database/client';
 
 describe('Users: Get by id', async () => {
   const app = await createApp();

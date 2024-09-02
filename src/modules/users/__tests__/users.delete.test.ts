@@ -1,11 +1,13 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import { UserPath } from '../router';
-import supertest from 'supertest';
-import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
+import { clearDatabase } from '@tests/utils/database';
 import database from '@/database/client';
+
+import { UserPath } from '../router';
+import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
 
 describe('Users: Delete', async () => {
   const app = await createApp();

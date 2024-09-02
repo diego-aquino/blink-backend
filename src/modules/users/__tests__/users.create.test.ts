@@ -1,15 +1,17 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
 import supertest from 'supertest';
+
 import createApp from '@/server/app';
+import database from '@/database/client';
+import { clearDatabase } from '@tests/utils/database';
+
+import { UserPath } from '../router';
 import {
   CreateUserConflictResponseBody,
   CreateUserRequestBody,
   CreateUserResponseStatus,
   CreateUserSuccessResponseBody,
 } from '../types';
-import database from '@/database/client';
-import { UserPath } from '../router';
 
 describe('Users: Create', async () => {
   const app = await createApp();

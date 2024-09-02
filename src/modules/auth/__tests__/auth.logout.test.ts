@@ -1,11 +1,13 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
+import { clearDatabase } from '@tests/utils/database';
 import { createAuthenticatedUser } from '@tests/utils/users';
 import { AccessTokenPayload, LogoutResponseStatus, LogoutUnauthorizedResponseBody } from '@/modules/auth/types';
 import { verifyJWT } from '@/utils/auth';
-import supertest from 'supertest';
 import database from '@/database/client';
+
 import { AuthPath } from '../router';
 
 describe('Auth: Log out', async () => {
