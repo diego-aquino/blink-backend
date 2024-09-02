@@ -1,9 +1,12 @@
+import { Request } from 'express';
+
 import { RequestHandler } from '@/modules/shared/controllers';
 
 import BlinkService from '../workspaces/blinks/BlinkService';
 import { redirectByIdSchema } from './validators';
 import { RedirectByIdPathParams } from './types';
 import environment from '@/config/environment';
+import { Blink } from '@prisma/client';
 
 const REDIRECT_CACHE_SECONDS = environment.NODE_ENV === 'production' ? 5 * 60 : 0;
 const REDIRECT_CACHE_CONTROL = `public, max-age=${REDIRECT_CACHE_SECONDS}, must-revalidate`;
@@ -24,15 +27,24 @@ class RedirectController {
     const input = redirectByIdSchema.parse(request.params) satisfies RedirectByIdPathParams;
     const blink = await this.blinkService.getByRedirectId(input.redirectId);
 
+    const redirectURL = this.createRedirectURL(request, blink);
+
+    response.header('cache-control', REDIRECT_CACHE_CONTROL).redirect(REDIRECT_STATUS_CODE, redirectURL.toString());
+    return response;
+  };
+
+  private createRedirectURL(request: Request, blink: Blink) {
     const requestURL = new URL(request.url);
 
     const redirectURL = new URL(blink.url);
     redirectURL.search = requestURL.search;
     redirectURL.hash = requestURL.hash;
 
-    response.header('cache-control', REDIRECT_CACHE_CONTROL).redirect(REDIRECT_STATUS_CODE, redirectURL.toString());
-    return response;
-  };
+    const requestPathname = requestURL.pathname.startsWith('/') ? requestURL.pathname.slice(1) : requestURL.pathname;
+    redirectURL.pathname += requestPathname;
+
+    return redirectURL;
+  }
 }
 
 export default RedirectController;
