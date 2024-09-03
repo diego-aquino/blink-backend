@@ -21,6 +21,7 @@
     "migration:apply": "dotenv -c development -- prisma migrate deploy",
     "migration:resolve": "dotenv -c development -- prisma migrate resolve",
     "db:studio": "dotenv -c development -- prisma studio",
+    "db:drop-test": "dotenv -c test -- dotenv -c development -- tsx ./scripts/database/dropTestSchemas.ts",
     "deps:up": "docker compose up -d --wait blink-database",
     "postinstall": "prisma generate"
   },
