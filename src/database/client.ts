@@ -11,7 +11,14 @@ export class Database {
     return this.prisma;
   }
 
-  initialize(databaseURL = environment.DATABASE_URL) {
+  async initialize(databaseURL = environment.DATABASE_URL) {
+    if (this.prisma) {
+      const prisma = this.prisma;
+      this.prisma = undefined;
+
+      await prisma.$disconnect();
+    }
+
     this.prisma = new PrismaClient({
       datasources: { db: { url: databaseURL } },
     });
