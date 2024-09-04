@@ -12,7 +12,7 @@ export type CreateWorkspaceMemberResponseStatus = keyof BlinkOperations['workspa
 export type CreateWorkspaceMemberSuccessResponseBody =
   BlinkOperations['workspaces/members/create']['response']['201']['body'];
 
-export type ListWorkspaceMembersParamsSuccessResponseBody = ParsedHttpSearchParams<
+export type ListWorkspaceMembersParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/members/list']['request']['searchParams']
 >;
 export type ListWorkspaceMembersSuccessResponseBody =

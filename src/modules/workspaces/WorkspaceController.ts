@@ -1,7 +1,7 @@
 import WorkspaceService from './WorkspaceService';
 import { RequestHandler } from '../shared/controllers';
 import { toWorkspaceResponse } from './views';
-import { createWorkspaceSchema, workspaceByIdSchema, updateWorkspaceSchema } from './validators';
+import { createWorkspaceSchema, workspaceByIdSchema, updateWorkspaceSchema, listWorkspacesSchema } from './validators';
 import {
   CreateWorkspaceRequestBody,
   CreateWorkspaceResponseStatus,
@@ -9,6 +9,9 @@ import {
   DeleteWorkspaceResponseStatus,
   GetWorkspaceByIdResponseStatus,
   GetWorkspaceByIdSuccessResponseBody,
+  ListWorkspacesParams,
+  ListWorkspacesResponseStatus,
+  ListWorkspacesSuccessResponseBody,
   UpdateWorkspaceRequestBody,
   UpdateWorkspaceResponseStatus,
   UpdateWorkspaceSuccessResponseBody,
@@ -35,6 +38,21 @@ class WorkspaceController {
     return response
       .status(201 satisfies CreateWorkspaceResponseStatus)
       .json(toWorkspaceResponse(workspace) satisfies CreateWorkspaceSuccessResponseBody);
+  };
+
+  listAsMember: RequestHandler = async (request, response) => {
+    const { userId } = request.middlewares.auth.authenticated;
+    const input = listWorkspacesSchema.parse({
+      ...request.params,
+      ...request.query,
+    }) satisfies ListWorkspacesParams;
+
+    const workspaces = await this.workspaceService.listByMember(userId, input);
+
+    return response.status(200 satisfies ListWorkspacesResponseStatus).json({
+      workspaces: workspaces.list.map(toWorkspaceResponse),
+      total: workspaces.total,
+    } satisfies ListWorkspacesSuccessResponseBody);
   };
 
   get: RequestHandler = async (request, response) => {

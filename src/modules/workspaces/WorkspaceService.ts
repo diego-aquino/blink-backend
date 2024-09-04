@@ -1,8 +1,9 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { WorkspaceNotFoundError } from './errors';
-import { CreateWorkspaceInput, WorkspaceByIdInput, UpdateWorkspaceInput } from './validators';
-import { User, WorkspaceMemberType } from '@prisma/client';
+import { CreateWorkspaceInput, WorkspaceByIdInput, UpdateWorkspaceInput, ListWorkspacesInput } from './validators';
+import { Prisma, User, WorkspaceMemberType } from '@prisma/client';
+import { TransactionOptions } from '@/types/database';
 
 class WorkspaceService {
   private static _instance = new WorkspaceService();
@@ -11,10 +12,16 @@ class WorkspaceService {
     return this._instance;
   }
 
+  private readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
+
   private constructor() {}
 
-  async create(creatorId: User['id'], input: CreateWorkspaceInput) {
-    const workspace = await database.client.workspace.create({
+  async create(
+    creatorId: User['id'],
+    input: CreateWorkspaceInput,
+    { transaction = database.client }: TransactionOptions = {},
+  ) {
+    const workspace = await transaction.workspace.create({
       data: {
         id: createId(),
         name: input.name,
@@ -23,13 +30,33 @@ class WorkspaceService {
           create: {
             id: createId(),
             userId: creatorId,
-            type: 'ADMINISTRATOR',
+            type: this.DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE,
           },
         },
       },
     });
 
     return workspace;
+  }
+
+  async listByMember(memberId: User['id'], input: ListWorkspacesInput) {
+    const where: Prisma.WorkspaceWhereInput = {
+      name: input.name ? { contains: input.name, mode: 'insensitive' } : undefined,
+      members: {
+        some: { userId: memberId },
+      },
+    };
+
+    const [list, total] = await Promise.all([
+      database.client.workspace.findMany({
+        where,
+        skip: (input.page - 1) * input.limit,
+        take: input.limit,
+      }),
+      database.client.workspace.count({ where }),
+    ]);
+
+    return { list, total };
   }
 
   async get(input: WorkspaceByIdInput) {

@@ -15,7 +15,7 @@ import {
   DeleteWorkspaceMemberResponseStatus,
   GetWorkspaceMemberByIdResponseStatus,
   GetWorkspaceMemberByIdSuccessResponseBody,
-  ListWorkspaceMembersParamsSuccessResponseBody,
+  ListWorkspaceMembersParams,
   ListWorkspaceMembersResponseStatus,
   ListWorkspaceMembersSuccessResponseBody,
   UpdateWorkspaceMemberRequestBody,
@@ -50,7 +50,7 @@ class WorkspaceMemberController {
     const input = listWorkspaceMembersSchema.parse({
       ...request.params,
       ...request.query,
-    }) satisfies ListWorkspaceMembersParamsSuccessResponseBody;
+    }) satisfies ListWorkspaceMembersParams;
 
     const members = await this.memberService.list(input);
 

@@ -52,7 +52,7 @@ class BlinkService {
 
   async list(input: ListBlinksInput) {
     const where: Prisma.BlinkWhereInput = {
-      name: { contains: input.name, mode: 'insensitive' },
+      name: input.name ? { contains: input.name, mode: 'insensitive' } : undefined,
       workspaceId: input.workspaceId,
     };
 

@@ -33,6 +33,8 @@ export type BlinkSchema = HttpSchema.Paths<{
     PUT: BlinkOperations['auth/password/update'];
   };
   '/workspaces': {
+    /** Listar workspaces */
+    GET: BlinkOperations['workspaces/list'];
     /** Criar workspace */
     POST: BlinkOperations['workspaces/create'];
   };
@@ -422,6 +424,40 @@ export interface BlinkOperations {
       /** @description Erro de validação ou senha atual inválida */
       400: {
         body: BlinkComponents['schemas']['ValidationError'];
+      };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Não autorizado */
+      403: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'workspaces/list': HttpSchema.Method<{
+    request: {
+      searchParams: HttpSearchParamsSerialized<{
+        /** @description O nome do workspace para filtrar */
+        name?: string;
+        /** @description O número da página */
+        page?: number;
+        /** @description O número de workspaces por página */
+        limit?: number;
+      }>;
+    };
+    response: {
+      /** @description Workspaces listados */
+      200: {
+        body: {
+          workspaces: BlinkComponents['schemas']['Workspace'][];
+          /** @example 1 */
+          total: number;
+        };
       };
       /** @description Não autenticado */
       401: {

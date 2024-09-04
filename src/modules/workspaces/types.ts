@@ -1,9 +1,18 @@
 import { BlinkComponents, BlinkOperations, BlinkSchema } from '@/types/generated';
+import { ParsedHttpSearchParams } from '@/types/zimic';
 import { InferPathParams } from 'zimic/http';
 
 export type CreateWorkspaceRequestBody = BlinkOperations['workspaces/create']['request']['body'];
 export type CreateWorkspaceResponseStatus = keyof BlinkOperations['workspaces/create']['response'];
 export type CreateWorkspaceSuccessResponseBody = BlinkOperations['workspaces/create']['response']['201']['body'];
+
+export type ListWorkspacesParams = ParsedHttpSearchParams<
+  BlinkOperations['workspaces/list']['request']['searchParams']
+>;
+export type ListWorkspacesSuccessResponseBody = BlinkOperations['workspaces/list']['response']['200']['body'];
+export type ListWorkspacesUnauthorizedResponseBody = BlinkOperations['workspaces/list']['response']['401']['body'];
+export type ListWorkspacesForbiddenResponseBody = BlinkOperations['workspaces/list']['response']['403']['body'];
+export type ListWorkspacesResponseStatus = keyof BlinkOperations['workspaces/list']['response'];
 
 export type WorkspaceByIdPathParams = InferPathParams<BlinkSchema, '/workspaces/:workspaceId'>;
 export type GetWorkspaceByIdSuccessResponseBody = BlinkOperations['workspaces/get']['response']['200']['body'];

@@ -462,6 +462,75 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    get:
+      summary: Listar workspaces
+      operationId: workspaces/list
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      parameters:
+        - workspaceName:
+          name: name
+          in: query
+          required: false
+          description: O nome do workspace para filtrar
+          schema:
+            type: string
+            example: Meu workspace
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de workspaces por página
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Workspaces listados
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - workspaces
+                  - total
+                properties:
+                  workspaces:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workspace'
+                  total:
+                    type: integer
+                    example: 1
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /workspaces/{workspaceId}:
     parameters:
       - name: workspaceId

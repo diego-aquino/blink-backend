@@ -6,7 +6,7 @@ export type CreateBlinkRequestBody = BlinkOperations['workspaces/blinks/create']
 export type CreateBlinkResponseStatus = keyof BlinkOperations['workspaces/blinks/create']['response'];
 export type CreateBlinkSuccessResponseBody = BlinkOperations['workspaces/blinks/create']['response']['201']['body'];
 
-export type ListBlinksParamsSuccessResponseBody = ParsedHttpSearchParams<
+export type ListBlinksParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/blinks/list']['request']['searchParams']
 >;
 export type ListBlinksSuccessResponseBody = BlinkOperations['workspaces/blinks/list']['response']['200']['body'];

@@ -21,8 +21,15 @@ export type WorkspacePath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/works
 workspaceRouter.post('/workspaces' satisfies WorkspacePath, authMiddleware.authenticated, workspaceController.create);
 
 workspaceRouter.get(
+  '/workspaces' satisfies WorkspacePath,
+  authMiddleware.authenticated,
+  workspaceController.listAsMember,
+);
+
+workspaceRouter.get(
   '/workspaces/:workspaceId' satisfies WorkspacePath,
   authMiddleware.authenticated,
+  workspaceMemberMiddleware.memberTypeAtLeast('DEFAULT'),
   workspaceController.get,
 );
 

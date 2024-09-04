@@ -42,9 +42,11 @@ class WorkspaceMemberService {
     const where: Prisma.WorkspaceMemberWhereInput = {
       workspaceId: input.workspaceId,
       type: input.type,
-      user: {
-        name: { contains: input.name, mode: 'insensitive' },
-      },
+      user: input.name
+        ? {
+            name: { contains: input.name, mode: 'insensitive' },
+          }
+        : undefined,
     };
 
     const [members, total] = await Promise.all([

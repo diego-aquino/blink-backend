@@ -10,7 +10,7 @@ import {
   DeleteBlinkResponseStatus,
   GetBlinkByIdResponseStatus,
   GetBlinkByIdSuccessResponseBody,
-  ListBlinksParamsSuccessResponseBody,
+  ListBlinksParams,
   ListBlinksResponseStatus,
   ListBlinksSuccessResponseBody,
   UpdateBlinkRequestBody,
@@ -45,7 +45,7 @@ class BlinkController {
     const input = listBlinksSchema.parse({
       ...request.params,
       ...request.query,
-    }) satisfies ListBlinksParamsSuccessResponseBody;
+    }) satisfies ListBlinksParams;
 
     const blinks = await this.blinkService.list(input);
 
