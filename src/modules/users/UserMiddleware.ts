@@ -12,7 +12,7 @@ class UserMiddleware {
   private constructor() {}
 
   ownUser: RequestMiddleware = (request, _response, next) => {
-    const { userId: authenticatedUserId } = request.middlewares.authenticated;
+    const { userId: authenticatedUserId } = request.middlewares.auth.authenticated;
     const { userId: accessedUserId } = userByIdSchema.parse(request.params);
 
     if (authenticatedUserId !== accessedUserId) {

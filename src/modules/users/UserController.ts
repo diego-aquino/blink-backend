@@ -22,9 +22,9 @@ class UserController {
     return this._instance;
   }
 
-  private constructor() {}
-
   private userService = UserService.instance();
+
+  private constructor() {}
 
   create: RequestHandler = async (request, response) => {
     const input = createUserSchema.parse(request.body) satisfies CreateUserRequestBody;
@@ -37,7 +37,7 @@ class UserController {
 
   get: RequestHandler = async (request, response) => {
     const input = userByIdSchema.parse(request.params) satisfies UserByIdPathParams;
-    const user = await this.userService.getById(input);
+    const user = await this.userService.get(input);
 
     return response
       .status(200 satisfies GetUserByIdResponseStatus)

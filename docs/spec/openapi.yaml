@@ -88,7 +88,7 @@ paths:
 
     get:
       summary: Buscar usuário
-      operationId: users/getById
+      operationId: users/get
       tags:
         - Usuários
       security:
@@ -355,7 +355,7 @@ paths:
   /auth/password:
     put:
       summary: Alterar senha
-      operationId: /auth/password/update
+      operationId: auth/password/update
       tags:
         - Autenticação
       security:
@@ -462,6 +462,75 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    get:
+      summary: Listar workspaces
+      operationId: workspaces/list
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      parameters:
+        - workspaceName:
+          name: name
+          in: query
+          required: false
+          description: O nome do workspace para filtrar
+          schema:
+            type: string
+            example: Meu workspace
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de workspaces por página
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Workspaces listados
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - workspaces
+                  - total
+                properties:
+                  workspaces:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workspace'
+                  total:
+                    type: integer
+                    example: 1
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /workspaces/{workspaceId}:
     parameters:
       - name: workspaceId
@@ -474,7 +543,7 @@ paths:
 
     get:
       summary: Buscar workspace
-      operationId: workspaces/getById
+      operationId: workspaces/get
       tags:
         - Workspaces
       security:
@@ -614,7 +683,7 @@ paths:
 
     post:
       summary: Adicionar membro
-      operationId: workspaces/addMember
+      operationId: workspaces/members/create
       tags:
         - Workspaces
       security:
@@ -632,9 +701,15 @@ paths:
                   type: string
                   examples:
                     - tz4a98xxat96iws9zmbrgj3a
+                type:
+                  $ref: '#/components/schemas/WorkspaceMemberType'
       responses:
-        '204':
+        '201':
           description: Membro adicionado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
         '400':
           description: Erro de validação
           content:
@@ -668,11 +743,43 @@ paths:
 
     get:
       summary: Listar membros
-      operationId: workspaces/listMembers
+      operationId: workspaces/members/list
       tags:
         - Workspaces
       security:
         - bearerAuth: []
+      parameters:
+        - memberName:
+          name: name
+          in: query
+          required: false
+          description: O nome do membro para filtrar
+          schema:
+            type: string
+            example: Diego Aquino
+        - memberType:
+          name: type
+          in: query
+          required: false
+          description: O tipo do membro para filtrar
+          schema:
+            $ref: '#/components/schemas/WorkspaceMemberType'
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de membros por página
+          schema:
+            type: integer
+            example: 10
       responses:
         '200':
           description: Membros listados
@@ -680,11 +787,17 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - members
+                  - total
                 properties:
                   members:
                     type: array
                     items:
                       $ref: '#/components/schemas/WorkspaceMember'
+                  total:
+                    type: integer
+                    example: 1
         '401':
           description: Não autenticado
           content:
@@ -729,7 +842,7 @@ paths:
 
     get:
       summary: Buscar membro
-      operationId: workspaces/getMember
+      operationId: workspaces/members/get
       tags:
         - Workspaces
       security:
@@ -766,9 +879,63 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    put:
+      summary: Atualizar membro
+      operationId: workspaces/members/update
+      tags:
+        - Workspaces
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/WorkspaceMemberType'
+      responses:
+        '200':
+          description: Membro atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Membro não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
     delete:
       summary: Remover membro
-      operationId: workspaces/removeMember
+      operationId: workspaces/members/delete
       tags:
         - Workspaces
       security:
@@ -813,7 +980,7 @@ paths:
 
     post:
       summary: Criar blink
-      operationId: workspaces/createBlink
+      operationId: workspaces/blinks/create
       tags:
         - Blinks
       security:
@@ -887,6 +1054,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+    get:
+      summary: Listar blinks
+      operationId: workspaces/blinks/list
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      parameters:
+        - blinkName:
+          name: name
+          in: query
+          required: false
+          description: O nome do blink para filtrar
+          schema:
+            type: string
+            example: Meu blink
+        - page:
+          name: page
+          in: query
+          required: false
+          description: O número da página
+          schema:
+            type: integer
+            example: 1
+        - limit:
+          name: limit
+          in: query
+          required: false
+          description: O número de blinks por página
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Blinks listados
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - blinks
+                  - total
+                properties:
+                  blinks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Blink'
+                  total:
+                    type: integer
+                    example: 1
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Workspace não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /workspaces/{workspaceId}/blinks/{blinkId}:
     parameters:
       - name: workspaceId
@@ -906,7 +1148,7 @@ paths:
 
     get:
       summary: Buscar blink
-      operationId: workspaces/getBlink
+      operationId: workspaces/blinks/get
       tags:
         - Blinks
       security:
@@ -945,7 +1187,7 @@ paths:
 
     patch:
       summary: Atualizar blink
-      operationId: workspaces/updateBlink
+      operationId: workspaces/blinks/update
       tags:
         - Blinks
       security:
@@ -1009,6 +1251,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Remover blink
+      operationId: workspaces/blinks/delete
+      tags:
+        - Blinks
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Blink removido
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Blink não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
         '500':
           description: Erro no servidor
           content:
@@ -1175,13 +1452,7 @@ components:
         user:
           $ref: '#/components/schemas/User'
         type:
-          type: string
-          description: O tipo do membro
-          enum:
-            - ADMINISTRATOR
-            - DEFAULT
-          examples:
-            - DEFAULT
+          $ref: '#/components/schemas/WorkspaceMemberType'
         createdAt:
           type: string
           format: date-time
@@ -1195,6 +1466,15 @@ components:
           examples:
             - '2021-08-01T00:00:00.000Z'
 
+    WorkspaceMemberType:
+      type: string
+      description: O tipo do membro
+      enum:
+        - ADMINISTRATOR
+        - DEFAULT
+      examples:
+        - DEFAULT
+
     Blink:
       type: object
       required:
@@ -1202,7 +1482,6 @@ components:
         - name
         - url
         - redirectId
-        - creator
         - workspace
         - createdAt
         - updatedAt

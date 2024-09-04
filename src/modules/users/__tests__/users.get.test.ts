@@ -1,8 +1,11 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import supertest from 'supertest';
+import { clearDatabase } from '@tests/utils/database';
+import database from '@/database/client';
+
 import { UserPath } from '../router';
 import {
   GetUserByIdForbiddenResponseBody,
@@ -11,16 +14,15 @@ import {
   GetUserByIdSuccessResponseBody,
   GetUserByIdUnauthorizedResponseBody,
 } from '../types';
-import database from '@/database/client';
 
-describe('Users: Get by id', async () => {
+describe('Users: Get', async () => {
   const app = await createApp();
 
   beforeEach(async () => {
     await clearDatabase();
   });
 
-  it('should support getting a user by id', async () => {
+  it('gets a user by id as oneself', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     const response = await supertest(app)
@@ -33,7 +35,7 @@ describe('Users: Get by id', async () => {
     expect(gotUser).toEqual(user);
   });
 
-  it('should return an error if the user does not exist', async () => {
+  it('returns an error if the user does not exist', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
@@ -51,7 +53,7 @@ describe('Users: Get by id', async () => {
     });
   });
 
-  it('should return an error if getting a user different than authenticated', async () => {
+  it('returns an error if trying to get a user as a different user', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
@@ -76,7 +78,7 @@ describe('Users: Get by id', async () => {
     });
   });
 
-  it('should return an error if not authenticated', async () => {
+  it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
@@ -88,7 +90,7 @@ describe('Users: Get by id', async () => {
     });
   });
 
-  it('should return an error if the access token is invalid', async () => {
+  it('returns an error if the access token is invalid', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).get(`/users/${user.id}`).auth('invalid', { type: 'bearer' });

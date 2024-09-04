@@ -5,7 +5,7 @@ import environment from './config/environment';
 import database from './database/client';
 
 async function startServer() {
-  database.initialize();
+  await database.initialize();
 
   const app = await createApp();
 

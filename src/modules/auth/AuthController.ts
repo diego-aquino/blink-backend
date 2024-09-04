@@ -18,9 +18,9 @@ class AuthController {
     return this._instance;
   }
 
-  private constructor() {}
-
   private authService = AuthService.instance();
+
+  private constructor() {}
 
   login: RequestHandler = async (request, response) => {
     const input = loginSchema.parse(request.body) satisfies LoginRequestBody;
@@ -39,7 +39,7 @@ class AuthController {
   };
 
   logout: RequestHandler = async (request, response) => {
-    const { sessionId } = request.middlewares.authenticated;
+    const { sessionId } = request.middlewares.auth.authenticated;
     await this.authService.logout({ sessionId });
 
     return response.status(204 satisfies LogoutResponseStatus).send();

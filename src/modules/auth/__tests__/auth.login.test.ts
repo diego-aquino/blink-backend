@@ -1,6 +1,8 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
+import { clearDatabase } from '@tests/utils/database';
 import { createAuthenticatedUser } from '@tests/utils/users';
 import {
   AccessTokenPayload,
@@ -10,8 +12,8 @@ import {
   RefreshTokenPayload,
 } from '@/modules/auth/types';
 import { JWT_AUDIENCE, JWT_ISSUER, verifyJWT } from '@/utils/auth';
-import supertest from 'supertest';
 import database from '@/database/client';
+
 import { AuthPath } from '../router';
 
 describe('Auth: Log in', async () => {
@@ -21,7 +23,7 @@ describe('Auth: Log in', async () => {
     await clearDatabase();
   });
 
-  it('should support logging in', async () => {
+  it('logs in', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     expect(auth).toEqual<LoginSuccessResponseBody>({
@@ -58,7 +60,7 @@ describe('Auth: Log in', async () => {
     expect(sessions[0].id).toBe(accessTokenPayload.sessionId);
   });
 
-  it('should support logging into multiple sessions', async () => {
+  it('logs into multiple sessions', async () => {
     const { user, password, auth } = await createAuthenticatedUser(app);
 
     const response = await supertest(app)
@@ -96,7 +98,7 @@ describe('Auth: Log in', async () => {
     expect(sessions[1].id).toBe(newAccessTokenPayload.sessionId);
   });
 
-  it('should return an error if the email does not exist', async () => {
+  it('returns an error if the email does not exist', async () => {
     const nonexistentEmail = 'nonexistent-email@email.com';
 
     expect(
@@ -120,7 +122,7 @@ describe('Auth: Log in', async () => {
     });
   });
 
-  it('should return an error if the password is incorrect', async () => {
+  it('returns an error if the password is incorrect', async () => {
     const { user, password } = await createAuthenticatedUser(app);
 
     const incorrectPassword = 'incorrect-password';
@@ -140,4 +142,6 @@ describe('Auth: Log in', async () => {
       message: 'Authentication credentials are not valid.',
     });
   });
+
+  it('returns an error if the login input are invalid', async () => {});
 });

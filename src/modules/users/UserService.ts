@@ -3,6 +3,7 @@ import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
 import { CreateUserInput, UserByIdInput, UpdateUserInput } from './validators';
 import { hashPassword } from '@/utils/auth';
+import WorkspaceService from '../workspaces/WorkspaceService';
 
 class UserService {
   private static _instance = new UserService();
@@ -10,6 +11,10 @@ class UserService {
   static instance() {
     return this._instance;
   }
+
+  private workspaceService = WorkspaceService.instance();
+
+  readonly DEFAULT_WORKSPACE_NAME = 'My Workspace';
 
   private constructor() {}
 
@@ -22,19 +27,25 @@ class UserService {
       throw new EmailAlreadyInUseError(input.email);
     }
 
-    const user = await database.client.user.create({
-      data: {
-        id: createId(),
-        name: input.name,
-        email: input.email,
-        hashedPassword: await hashPassword(input.password),
-      },
+    const user = await database.client.$transaction(async (transaction) => {
+      const user = await transaction.user.create({
+        data: {
+          id: createId(),
+          name: input.name,
+          email: input.email,
+          hashedPassword: await hashPassword(input.password),
+        },
+      });
+
+      await this.workspaceService.create(user.id, { name: this.DEFAULT_WORKSPACE_NAME }, { transaction });
+
+      return user;
     });
 
     return user;
   }
 
-  async getById(input: UserByIdInput) {
+  async get(input: UserByIdInput) {
     const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });

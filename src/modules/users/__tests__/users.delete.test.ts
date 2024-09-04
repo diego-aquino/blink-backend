@@ -1,11 +1,13 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import { UserPath } from '../router';
-import supertest from 'supertest';
-import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
+import { clearDatabase } from '@tests/utils/database';
 import database from '@/database/client';
+
+import { UserPath } from '../router';
+import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
 
 describe('Users: Delete', async () => {
   const app = await createApp();
@@ -14,7 +16,7 @@ describe('Users: Delete', async () => {
     await clearDatabase();
   });
 
-  it('should support deleting a user', async () => {
+  it('deletes a user', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     const response = await supertest(app)
@@ -28,7 +30,7 @@ describe('Users: Delete', async () => {
     expect(userInDatabase).toBe(null);
   });
 
-  it('should return an error if the user does not exist', async () => {
+  it('returns an error if the user does not exist', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
@@ -46,7 +48,7 @@ describe('Users: Delete', async () => {
     });
   });
 
-  it('should return an error if deleting a user different than authenticated', async () => {
+  it('returns an error if trying to delete a user as a different user', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
@@ -81,7 +83,7 @@ describe('Users: Delete', async () => {
     expect(otherUserInDatabase.id).toBe(otherUser.id);
   });
 
-  it('should return an error if not authenticated', async () => {
+  it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).delete(`/users/${user.id}` satisfies UserPath.NonLiteral);
@@ -93,7 +95,7 @@ describe('Users: Delete', async () => {
     });
   });
 
-  it('should return an error if the access token is invalid', async () => {
+  it('returns an error if the access token is invalid', async () => {
     const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
     expect(response.status).toBe(401 satisfies DeleteUserResponseStatus);

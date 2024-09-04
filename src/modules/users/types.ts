@@ -7,11 +7,11 @@ export type CreateUserSuccessResponseBody = BlinkOperations['users/create']['res
 export type CreateUserConflictResponseBody = BlinkOperations['users/create']['response']['409']['body'];
 
 export type UserByIdPathParams = InferPathParams<BlinkSchema, '/users/:userId'>;
-export type GetUserByIdSuccessResponseBody = BlinkOperations['users/getById']['response']['200']['body'];
-export type GetUserByIdUnauthorizedResponseBody = BlinkOperations['users/getById']['response']['401']['body'];
-export type GetUserByIdForbiddenResponseBody = BlinkOperations['users/getById']['response']['403']['body'];
-export type GetUserByIdNotFoundResponseBody = BlinkOperations['users/getById']['response']['404']['body'];
-export type GetUserByIdResponseStatus = keyof BlinkOperations['users/getById']['response'];
+export type GetUserByIdSuccessResponseBody = BlinkOperations['users/get']['response']['200']['body'];
+export type GetUserByIdUnauthorizedResponseBody = BlinkOperations['users/get']['response']['401']['body'];
+export type GetUserByIdForbiddenResponseBody = BlinkOperations['users/get']['response']['403']['body'];
+export type GetUserByIdNotFoundResponseBody = BlinkOperations['users/get']['response']['404']['body'];
+export type GetUserByIdResponseStatus = keyof BlinkOperations['users/get']['response'];
 
 export type UpdateUserRequestBody = BlinkOperations['users/update']['request']['body'];
 export type UpdateUserResponseStatus = keyof BlinkOperations['users/update']['response'];

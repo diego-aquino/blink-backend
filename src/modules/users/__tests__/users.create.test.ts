@@ -1,15 +1,17 @@
-import { clearDatabase } from '@tests/utils/database';
 import { beforeEach, describe, expect, it } from 'vitest';
 import supertest from 'supertest';
+
 import createApp from '@/server/app';
+import database from '@/database/client';
+import { clearDatabase } from '@tests/utils/database';
+
+import { UserPath } from '../router';
 import {
   CreateUserConflictResponseBody,
   CreateUserRequestBody,
   CreateUserResponseStatus,
   CreateUserSuccessResponseBody,
 } from '../types';
-import database from '@/database/client';
-import { UserPath } from '../router';
 
 describe('Users: Create', async () => {
   const app = await createApp();
@@ -18,7 +20,7 @@ describe('Users: Create', async () => {
     await clearDatabase();
   });
 
-  it('should support creating a user', async () => {
+  it('creates a user with a default workspace', async () => {
     const input: CreateUserRequestBody = {
       name: 'User',
       email: 'user@email.com',
@@ -51,7 +53,7 @@ describe('Users: Create', async () => {
     expect(userInDatabase.updatedAt).toEqual(new Date(user.updatedAt));
   });
 
-  it('should not allow creating a user with email already in use', async () => {
+  it('returns an error if trying to create a user with email already in use', async () => {
     const input: CreateUserRequestBody = {
       name: 'User',
       email: 'user@email.com',
@@ -78,4 +80,6 @@ describe('Users: Create', async () => {
     });
     expect(usersInDatabase).toHaveLength(1);
   });
+
+  it('returns an error if trying to create a user with invalid inputs', async () => {});
 });

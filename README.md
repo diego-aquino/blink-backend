@@ -37,7 +37,7 @@ o projeto.
    npm run deps:up
    ```
 
-5. Rode as migrations:
+5. Execute as migrations:
 
    ```bash
    npm run migration:apply
@@ -50,3 +50,17 @@ o projeto.
    ```
 
 O servidor estará disponível em `http://localhost:3000`.
+
+## Executando os testes
+
+1. Inicie o banco de dados:
+
+   ```bash
+   npm run deps:up
+   ```
+
+2. Execute os testes em modo `watch`:
+
+   ```bash
+   npm run test
+   ```

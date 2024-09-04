@@ -1,8 +1,12 @@
-import { clearDatabase } from '@tests/utils/database';
+import { createId } from '@paralleldrive/cuid2';
 import { beforeEach, describe, expect, it } from 'vitest';
+import supertest from 'supertest';
+
 import createApp from '@/server/app';
 import { createAuthenticatedUser } from '@tests/utils/users';
-import supertest from 'supertest';
+import database from '@/database/client';
+import { clearDatabase } from '@tests/utils/database';
+
 import { UserPath } from '../router';
 import {
   UpdateUserForbiddenResponseBody,
@@ -12,8 +16,6 @@ import {
   UpdateUserRequestBody,
   UpdateUserResponseStatus,
 } from '../types';
-import database from '@/database/client';
-import { createId } from '@paralleldrive/cuid2';
 
 describe('Users: Update', async () => {
   const app = await createApp();
@@ -22,14 +24,16 @@ describe('Users: Update', async () => {
     await clearDatabase();
   });
 
-  it("should support updating a user's name", async () => {
+  it('updates a user as oneself', async () => {
     const { user, auth, password } = await createAuthenticatedUser(app);
 
     const updateInput = {
       name: 'User (updated)',
+      email: `user-${createId()}-updated@email.com`,
     } satisfies UpdateUserRequestBody;
 
     expect(updateInput.name).not.toBe(user.name);
+    expect(updateInput.email).not.toBe(user.email);
 
     const response = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
@@ -42,42 +46,6 @@ describe('Users: Update', async () => {
     expect(updatedUser).toEqual<UpdateUserSuccessResponseBody>({
       ...user,
       name: updateInput.name,
-      updatedAt: expect.any(String),
-    });
-
-    expect(new Date(updatedUser.updatedAt).getTime()).toBeGreaterThan(new Date(user.updatedAt).getTime());
-
-    const userInDatabase = await database.client.user.findUniqueOrThrow({
-      where: { id: user.id },
-    });
-    expect(userInDatabase.id).toBe(user.id);
-    expect(userInDatabase.name).toBe(updatedUser.name);
-    expect(userInDatabase.email).toBe(user.email);
-    expect(userInDatabase.hashedPassword).not.toBe(password);
-    expect(userInDatabase.createdAt).toEqual(new Date(user.createdAt));
-    expect(userInDatabase.updatedAt).toEqual(new Date(updatedUser.updatedAt));
-  });
-
-  it("should support updating a user's email", async () => {
-    const { user, auth, password } = await createAuthenticatedUser(app);
-
-    const updateInput = {
-      email: `user-${createId()}@email.com`,
-    } satisfies UpdateUserRequestBody;
-
-    expect(updateInput.email).not.toBe(user.email);
-
-    const response = await supertest(app)
-      .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
-      .send(updateInput);
-
-    expect(response.status).toBe(200 satisfies UpdateUserResponseStatus);
-
-    const updatedUser = response.body as UpdateUserSuccessResponseBody;
-
-    expect(updatedUser).toEqual<UpdateUserSuccessResponseBody>({
-      ...user,
       email: updateInput.email,
       updatedAt: expect.any(String),
     });
@@ -88,14 +56,14 @@ describe('Users: Update', async () => {
       where: { id: user.id },
     });
     expect(userInDatabase.id).toBe(user.id);
-    expect(userInDatabase.name).toBe(user.name);
+    expect(userInDatabase.name).toBe(updatedUser.name);
     expect(userInDatabase.email).toBe(updatedUser.email);
     expect(userInDatabase.hashedPassword).not.toBe(password);
     expect(userInDatabase.createdAt).toEqual(new Date(user.createdAt));
     expect(userInDatabase.updatedAt).toEqual(new Date(updatedUser.updatedAt));
   });
 
-  it('should allow updating a user with same data', async () => {
+  it('updates a user with unchanged inputs', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     const updateInput = {
@@ -128,7 +96,7 @@ describe('Users: Update', async () => {
     expect(userInDatabase.updatedAt).toEqual(new Date(updatedUser.updatedAt));
   });
 
-  it('should not allow updating a user with email already in use', async () => {
+  it('returns an error if trying to update a user with email already in use', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser } = await createAuthenticatedUser(app);
 
@@ -156,7 +124,9 @@ describe('Users: Update', async () => {
     expect(userInDatabase.email).toBe(user.email);
   });
 
-  it('should return an error if the user does not exist', async () => {
+  it('returns an error if trying to update a user with invalid inputs', async () => {});
+
+  it('returns an error if the user does not exist', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
@@ -175,7 +145,7 @@ describe('Users: Update', async () => {
     });
   });
 
-  it('should return an error if updating a user different than authenticated', async () => {
+  it('returns an error if trying to update a user as a different user', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
@@ -219,7 +189,7 @@ describe('Users: Update', async () => {
     expect(otherUserInDatabase.name).toBe(otherUser.name);
   });
 
-  it('should return an error if not authenticated', async () => {
+  it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
@@ -231,7 +201,7 @@ describe('Users: Update', async () => {
     });
   });
 
-  it('should return an error if the access token is invalid', async () => {
+  it('returns an error if the access token is invalid', async () => {
     const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
     expect(response.status).toBe(401 satisfies UpdateUserResponseStatus);
 
