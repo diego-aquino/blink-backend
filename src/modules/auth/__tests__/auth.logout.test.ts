@@ -17,7 +17,7 @@ describe('Auth: Log out', async () => {
     await clearDatabase();
   });
 
-  it('should support logging out', async () => {
+  it('logs out', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
     const response = await supertest(app)
@@ -34,7 +34,7 @@ describe('Auth: Log out', async () => {
     expect(session).toBe(null);
   });
 
-  it('should still allow authenticated requests auth access token after logout, until expired', async () => {
+  it('accepts an existing access token, even after logout, until expired', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
     let response = await supertest(app)
@@ -50,7 +50,7 @@ describe('Auth: Log out', async () => {
     expect(response.status).toBe(204 satisfies LogoutResponseStatus);
   });
 
-  it('should return an error if not authenticated', async () => {
+  it('returns an error if not authenticated', async () => {
     const response = await supertest(app).post('/auth/logout');
 
     expect(response.status).toBe(401 satisfies LogoutResponseStatus);
@@ -61,7 +61,7 @@ describe('Auth: Log out', async () => {
     });
   });
 
-  it('should return an error if the access token is invalid', async () => {
+  it('returns an error if the access token is invalid', async () => {
     const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
     expect(response.status).toBe(401 satisfies LogoutResponseStatus);

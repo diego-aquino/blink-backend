@@ -8,7 +8,7 @@ export function generateTestSchemaName(workerId: number) {
 }
 
 export class TestSchemaCache {
-  private CACHE_DIRECTORY = path.join(__dirname, '.cache', 'ready-test-schemas');
+  private readonly CACHE_DIRECTORY = path.join(__dirname, '.cache', 'ready-test-schemas');
 
   async markAsReady(workerId: number, isReady: boolean) {
     const readyFile = this.getReadyTestSchemaFile(workerId);

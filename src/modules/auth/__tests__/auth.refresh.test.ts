@@ -24,7 +24,7 @@ describe('Auth: Refresh', async () => {
     await clearDatabase();
   });
 
-  it('should support generating a new access token', async () => {
+  it('generates a new access token', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     const response = await supertest(app)
@@ -53,7 +53,7 @@ describe('Auth: Refresh', async () => {
     expect(sessions[0].id).toBe(newAccessTokenPayload.sessionId);
   });
 
-  it('should return an error if the session does not exist', async () => {
+  it('returns an error if the session does not exist', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
     const logoutResponse = await supertest(app)
@@ -76,4 +76,6 @@ describe('Auth: Refresh', async () => {
       message: 'Authentication credentials are not valid.',
     });
   });
+
+  it('returns an error if trying to refresh with invalid inputs', async () => {});
 });
