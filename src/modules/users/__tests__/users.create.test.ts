@@ -7,11 +7,13 @@ import { clearDatabase } from '@tests/utils/database';
 
 import { UserPath } from '../router';
 import {
+  CreateUserBadRequestResponseBody,
   CreateUserConflictResponseBody,
   CreateUserRequestBody,
   CreateUserResponseStatus,
   CreateUserSuccessResponseBody,
 } from '../types';
+import { CreateUserInput } from '../validators';
 
 describe('Users: Create', async () => {
   const app = await createApp();
@@ -30,6 +32,7 @@ describe('Users: Create', async () => {
     const response = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
+
     expect(response.status).toBe(201 satisfies CreateUserResponseStatus);
 
     const user = response.body as CreateUserSuccessResponseBody;
@@ -49,8 +52,8 @@ describe('Users: Create', async () => {
     expect(userInDatabase.name).toBe(user.name);
     expect(userInDatabase.email).toBe(user.email);
     expect(userInDatabase.hashedPassword).not.toBe(input.password);
-    expect(userInDatabase.createdAt).toEqual(new Date(user.createdAt));
-    expect(userInDatabase.updatedAt).toEqual(new Date(user.updatedAt));
+    expect(userInDatabase.createdAt.toISOString()).toEqual(user.createdAt);
+    expect(userInDatabase.updatedAt.toISOString()).toEqual(user.updatedAt);
   });
 
   it('returns an error if trying to create a user with email already in use', async () => {
@@ -63,13 +66,14 @@ describe('Users: Create', async () => {
     let response = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
+
     expect(response.status).toBe(201 satisfies CreateUserResponseStatus);
 
     response = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
-    expect(response.status).toBe(409 satisfies CreateUserResponseStatus);
 
+    expect(response.status).toBe(409 satisfies CreateUserResponseStatus);
     expect(response.body).toEqual<CreateUserConflictResponseBody>({
       code: 'CONFLICT',
       message: "Email 'user@email.com' is already in use.",
@@ -81,5 +85,41 @@ describe('Users: Create', async () => {
     expect(usersInDatabase).toHaveLength(1);
   });
 
-  it('returns an error if trying to create a user with invalid inputs', async () => {});
+  it('returns an error if trying to create a user with invalid inputs', async () => {
+    // @ts-expect-error
+    const input: CreateUserInput = {};
+
+    const response = await supertest(app)
+      .post('/users' satisfies UserPath)
+      .send(input);
+
+    expect(response.status).toBe(400 satisfies CreateUserResponseStatus);
+    expect(response.body).toEqual<CreateUserBadRequestResponseBody>({
+      message: 'Validation failed',
+      code: 'BAD_REQUEST',
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'undefined',
+          path: ['name'],
+          message: 'Required',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'undefined',
+          path: ['email'],
+          message: 'Required',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'undefined',
+          path: ['password'],
+          message: 'Required',
+        },
+      ],
+    });
+  });
 });

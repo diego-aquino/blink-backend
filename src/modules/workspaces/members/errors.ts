@@ -7,6 +7,12 @@ export class WorkspaceMemberNotFoundError extends NotFoundError {
   }
 }
 
+export class WorkspaceMemberLastAdministratorError extends BadRequestError {
+  constructor(memberId: WorkspaceMember['id']) {
+    super(`Workspace member '${memberId}' is the last administrator of the workspace.`);
+  }
+}
+
 export class WorkspaceMemberLastMemberError extends BadRequestError {
   constructor(memberId: WorkspaceMember['id']) {
     super(`Workspace member '${memberId}' is the last member of the workspace.`);

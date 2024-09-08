@@ -2,12 +2,20 @@ import { WorkspaceMemberType } from '@prisma/client';
 import { z } from 'zod';
 import { workspaceByIdSchema } from '../validators';
 
+export const createWorkspaceMemberBodySchema = z.object({
+  userId: z.string().min(1),
+  type: z.nativeEnum(WorkspaceMemberType),
+});
+
 export const createWorkspaceMemberSchema = workspaceByIdSchema.extend({
   userId: z.string().min(1),
   type: z.nativeEnum(WorkspaceMemberType),
 });
 
 export type CreateWorkspaceMemberInput = z.infer<typeof createWorkspaceMemberSchema>;
+export namespace CreateWorkspaceMemberInput {
+  export type Body = z.infer<typeof createWorkspaceMemberBodySchema>;
+}
 
 export const listWorkspaceMembersSchema = workspaceByIdSchema.extend({
   name: z.string().optional(),

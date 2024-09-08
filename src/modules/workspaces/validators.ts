@@ -13,6 +13,9 @@ export const listWorkspacesSchema = z.object({
 });
 
 export type ListWorkspacesInput = z.infer<typeof listWorkspacesSchema>;
+export namespace ListWorkspacesInput {
+  export type Raw = z.input<typeof listWorkspacesSchema>;
+}
 
 export const workspaceByIdSchema = z.object({
   workspaceId: z.string().min(1),

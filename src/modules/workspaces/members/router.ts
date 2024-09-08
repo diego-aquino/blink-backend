@@ -15,7 +15,7 @@ const authMiddleware = AuthMiddleware.instance();
 const workspaceMemberMiddleware = WorkspaceMemberMiddleware.instance();
 
 export namespace WorkspaceMemberPath {
-  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/:workspaceId/members${string}`>;
+  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/${string}/members${string}`>;
 }
 export type WorkspaceMemberPath = Extract<
   HttpSchemaPath.Literal<BlinkSchema>,

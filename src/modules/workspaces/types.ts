@@ -5,6 +5,8 @@ import { InferPathParams } from 'zimic/http';
 export type CreateWorkspaceRequestBody = BlinkOperations['workspaces/create']['request']['body'];
 export type CreateWorkspaceResponseStatus = keyof BlinkOperations['workspaces/create']['response'];
 export type CreateWorkspaceSuccessResponseBody = BlinkOperations['workspaces/create']['response']['201']['body'];
+export type CreateWorkspaceBadRequestResponseBody = BlinkOperations['workspaces/create']['response']['400']['body'];
+export type CreateWorkspaceUnauthorizedResponseBody = BlinkOperations['workspaces/create']['response']['401']['body'];
 
 export type ListWorkspacesParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/list']['request']['searchParams']
@@ -24,6 +26,7 @@ export type GetWorkspaceByIdResponseStatus = keyof BlinkOperations['workspaces/g
 export type UpdateWorkspaceRequestBody = BlinkOperations['workspaces/update']['request']['body'];
 export type UpdateWorkspaceResponseStatus = keyof BlinkOperations['workspaces/update']['response'];
 export type UpdateWorkspaceSuccessResponseBody = BlinkOperations['workspaces/update']['response']['200']['body'];
+export type UpdateWorkspaceBadRequestResponseBody = BlinkOperations['workspaces/update']['response']['400']['body'];
 export type UpdateWorkspaceUnauthorizedResponseBody = BlinkOperations['workspaces/update']['response']['401']['body'];
 export type UpdateWorkspaceForbiddenResponseBody = BlinkOperations['workspaces/update']['response']['403']['body'];
 export type UpdateWorkspaceNotFoundResponseBody = BlinkOperations['workspaces/update']['response']['404']['body'];

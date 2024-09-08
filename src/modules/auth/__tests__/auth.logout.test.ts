@@ -54,7 +54,6 @@ describe('Auth: Log out', async () => {
     const response = await supertest(app).post('/auth/logout');
 
     expect(response.status).toBe(401 satisfies LogoutResponseStatus);
-
     expect(response.body).toEqual<LogoutUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
@@ -65,7 +64,6 @@ describe('Auth: Log out', async () => {
     const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
     expect(response.status).toBe(401 satisfies LogoutResponseStatus);
-
     expect(response.body).toEqual<LogoutUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',

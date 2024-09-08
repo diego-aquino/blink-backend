@@ -37,7 +37,11 @@ class WorkspaceMemberController {
 
   create: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = createWorkspaceMemberSchema.parse(request.body) satisfies CreateWorkspaceMemberRequestBody;
+
+    const input = createWorkspaceMemberSchema.parse({
+      ...request.params,
+      ...request.body,
+    }) satisfies CreateWorkspaceMemberRequestBody;
 
     const member = await this.memberService.create(userId, input);
 
@@ -71,8 +75,8 @@ class WorkspaceMemberController {
 
   update: RequestHandler = async (request, response) => {
     const input = updateWorkspaceMemberSchema.parse({
-      ...request.body,
       ...request.params,
+      ...request.body,
     }) satisfies WorkspaceMemberByIdPathParams & UpdateWorkspaceMemberRequestBody;
 
     const member = await this.memberService.update(input);

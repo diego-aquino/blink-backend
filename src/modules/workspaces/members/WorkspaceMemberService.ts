@@ -1,13 +1,17 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
-import { WorkspaceMemberLastMemberError, WorkspaceMemberNotFoundError } from './errors';
+import {
+  WorkspaceMemberLastAdministratorError,
+  WorkspaceMemberLastMemberError,
+  WorkspaceMemberNotFoundError,
+} from './errors';
 import {
   CreateWorkspaceMemberInput,
   WorkspaceMemberByIdInput,
   UpdateWorkspaceMemberInput,
   ListWorkspaceMembersInput,
 } from './validators';
-import { Prisma, User, Workspace, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
+import { Prisma, User, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
 
 const WORKSPACE_MEMBER_TYPE_PRIORITY: Record<WorkspaceMemberType, number> = {
   ADMINISTRATOR: 1,
@@ -85,10 +89,28 @@ class WorkspaceMemberService {
         id: input.memberId,
         workspaceId: input.workspaceId,
       },
+      include: {
+        workspace: {
+          include: {
+            members: {
+              where: { type: 'ADMINISTRATOR' },
+            },
+          },
+        },
+      },
     });
 
     if (!member) {
       throw new WorkspaceMemberNotFoundError(input.memberId);
+    }
+
+    const isLastAdministrator =
+      member.type === 'ADMINISTRATOR' &&
+      member.workspace.members.length === 1 &&
+      member.workspace.members[0].id === member.id;
+
+    if (isLastAdministrator) {
+      throw new WorkspaceMemberLastAdministratorError(input.memberId);
     }
 
     const updatedMember = await database.client.workspaceMember.update({

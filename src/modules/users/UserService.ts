@@ -14,8 +14,6 @@ class UserService {
 
   private workspaceService = WorkspaceService.instance();
 
-  readonly DEFAULT_WORKSPACE_NAME = 'My Workspace';
-
   private constructor() {}
 
   async create(input: CreateUserInput) {
@@ -37,7 +35,11 @@ class UserService {
         },
       });
 
-      await this.workspaceService.create(user.id, { name: this.DEFAULT_WORKSPACE_NAME }, { transaction });
+      await this.workspaceService.create(
+        user.id,
+        { name: this.workspaceService.DEFAULT_WORKSPACE_NAME },
+        { transaction },
+      );
 
       return user;
     });

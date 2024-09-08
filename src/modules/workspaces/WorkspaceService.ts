@@ -12,7 +12,8 @@ class WorkspaceService {
     return this._instance;
   }
 
-  private readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
+  readonly DEFAULT_WORKSPACE_NAME = 'My Workspace';
+  readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
 
   private constructor() {}
 
@@ -52,6 +53,7 @@ class WorkspaceService {
         where,
         skip: (input.page - 1) * input.limit,
         take: input.limit,
+        orderBy: { createdAt: 'desc' },
       }),
       database.client.workspace.count({ where }),
     ]);
@@ -67,6 +69,17 @@ class WorkspaceService {
     if (!workspace) {
       throw new WorkspaceNotFoundError(input.workspaceId);
     }
+
+    return workspace;
+  }
+
+  async getDefaultWorkspace(userId: User['id']) {
+    const workspace = await database.client.workspace.findFirst({
+      where: {
+        name: this.DEFAULT_WORKSPACE_NAME,
+        members: { some: { userId } },
+      },
+    });
 
     return workspace;
   }

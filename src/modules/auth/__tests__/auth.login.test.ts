@@ -6,6 +6,7 @@ import { clearDatabase } from '@tests/utils/database';
 import { createAuthenticatedUser } from '@tests/utils/users';
 import {
   AccessTokenPayload,
+  LoginBadRequestResponseBody,
   LoginResponseStatus,
   LoginSuccessResponseBody,
   LoginUnauthorizedResponseBody,
@@ -115,7 +116,6 @@ describe('Auth: Log in', async () => {
       });
 
     expect(response.status).toBe(401 satisfies LoginResponseStatus);
-
     expect(response.body).toEqual<LoginUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
@@ -136,12 +136,36 @@ describe('Auth: Log in', async () => {
       });
 
     expect(response.status).toBe(401 satisfies LoginResponseStatus);
-
     expect(response.body).toEqual<LoginUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });
   });
 
-  it('returns an error if the login input are invalid', async () => {});
+  it('returns an error if the login input are invalid', async () => {
+    const response = await supertest(app)
+      .post('/auth/login' satisfies AuthPath)
+      .send({ email: 'invalid' });
+
+    expect(response.status).toBe(400 satisfies LoginResponseStatus);
+    expect(response.body).toEqual<LoginBadRequestResponseBody>({
+      message: 'Validation failed',
+      code: 'BAD_REQUEST',
+      issues: [
+        {
+          validation: 'email',
+          code: 'invalid_string',
+          message: 'Invalid email',
+          path: ['email'],
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'undefined',
+          path: ['password'],
+          message: 'Required',
+        },
+      ],
+    });
+  });
 });

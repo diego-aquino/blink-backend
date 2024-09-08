@@ -28,6 +28,7 @@ describe('Users: Get', async () => {
     const response = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
+
     expect(response.status).toBe(200 satisfies GetUserByIdResponseStatus);
 
     const gotUser = response.body as GetUserByIdSuccessResponseBody;
@@ -45,8 +46,8 @@ describe('Users: Get', async () => {
     const response = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(404 satisfies GetUserByIdResponseStatus);
 
+    expect(response.status).toBe(404 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `User '${user.id}' not found.`,
@@ -60,8 +61,8 @@ describe('Users: Get', async () => {
     let response = await supertest(app)
       .get(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
 
+    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Access not allowed to resource '/users/${otherUser.id}'.`,
@@ -70,8 +71,8 @@ describe('Users: Get', async () => {
     response = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
 
+    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Access not allowed to resource '/users/${user.id}'.`,
@@ -82,8 +83,8 @@ describe('Users: Get', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
-    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
 
+    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
@@ -94,8 +95,8 @@ describe('Users: Get', async () => {
     const { user } = await createAuthenticatedUser(app);
 
     const response = await supertest(app).get(`/users/${user.id}`).auth('invalid', { type: 'bearer' });
-    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
 
+    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
