@@ -129,13 +129,13 @@ describe('Users: Update', async () => {
   it('returns an error if trying to update a user with invalid inputs', async () => {
     const { user, auth, password } = await createAuthenticatedUser(app);
 
-    // @ts-expect-error
-    const updateInput: UpdateUserRequestBody = { name: 1 };
-
     const response = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(updateInput);
+      .send(
+        // @ts-expect-error
+        { name: 1 } satisfies UpdateUserRequestBody,
+      );
 
     expect(response.status).toBe(400 satisfies UpdateUserResponseStatus);
 
@@ -202,7 +202,7 @@ describe('Users: Update', async () => {
     expect(response.status).toBe(403 satisfies UpdateUserResponseStatus);
     expect(response.body).toEqual<UpdateUserForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${otherUser.id}'.`,
+      message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
 
     const userInDatabase = await database.client.user.findUniqueOrThrow({
@@ -218,7 +218,7 @@ describe('Users: Update', async () => {
     expect(response.status).toBe(403 satisfies UpdateUserResponseStatus);
     expect(response.body).toEqual<UpdateUserForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${user.id}'.`,
+      message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
 
     const otherUserInDatabase = await database.client.user.findUniqueOrThrow({

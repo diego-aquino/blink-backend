@@ -11,6 +11,16 @@ export type CreateWorkspaceMemberRequestBody = BlinkOperations['workspaces/membe
 export type CreateWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/create']['response'];
 export type CreateWorkspaceMemberSuccessResponseBody =
   BlinkOperations['workspaces/members/create']['response']['201']['body'];
+export type CreateWorkspaceMemberBadRequestResponseBody =
+  BlinkOperations['workspaces/members/create']['response']['400']['body'];
+export type CreateWorkspaceMemberUnauthorizedResponseBody =
+  BlinkOperations['workspaces/members/create']['response']['401']['body'];
+export type CreateWorkspaceMemberForbiddenResponseBody =
+  BlinkOperations['workspaces/members/create']['response']['403']['body'];
+export type CreateWorkspaceMemberNotFoundResponseBody =
+  BlinkOperations['workspaces/members/create']['response']['404']['body'];
+export type CreateWorkspaceMemberConflictResponseBody =
+  BlinkOperations['workspaces/members/create']['response']['409']['body'];
 
 export type ListWorkspaceMembersParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/members/list']['request']['searchParams']
@@ -50,6 +60,8 @@ export type UpdateWorkspaceMemberNotFoundResponseBody =
 export type DeleteWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/delete']['response'];
 export type DeleteWorkspaceMemberUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/delete']['response']['401']['body'];
+export type DeleteWorkspaceMemberForbiddenResponseBody =
+  BlinkOperations['workspaces/members/delete']['response']['403']['body'];
 export type DeleteWorkspaceMemberNotFoundResponseBody =
   BlinkOperations['workspaces/members/delete']['response']['404']['body'];
 

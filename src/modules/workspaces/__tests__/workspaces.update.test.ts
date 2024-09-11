@@ -123,26 +123,22 @@ describe('Workspaces: Update', async () => {
   it('returns an error if trying to update a workspace with invalid inputs', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
     const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
 
-    // @ts-expect-error
-    const updateInput: UpdateWorkspaceRequestBody = { name: 1 };
-
     const response = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(updateInput);
+      .send(
+        // @ts-expect-error
+        { name: 1 } satisfies UpdateWorkspaceRequestBody,
+      );
 
     expect(response.status).toBe(400 satisfies UpdateWorkspaceResponseStatus);
     expect(response.body).toEqual<UpdateWorkspaceBadRequestResponseBody>({
@@ -172,33 +168,27 @@ describe('Workspaces: Update', async () => {
   it('returns an error if the workspace does not exist', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const updateInput: UpdateWorkspaceRequestBody = {
-      name: 'Workspace (updated)',
-    };
-
     const response = await supertest(app)
       .patch('/workspaces/unknown' satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(updateInput);
+      .send({
+        name: 'Workspace (updated)',
+      } satisfies UpdateWorkspaceRequestBody);
 
     expect(response.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
     expect(response.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: "Access not allowed to resource '/workspaces/unknown'.",
+      message: "Operation not allowed on resource '/workspaces/unknown'.",
     });
   });
 
   it('returns an error if not an administrator of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -236,7 +226,7 @@ describe('Workspaces: Update', async () => {
     expect(response.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
     expect(response.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/workspaces/${workspace.id}'.`,
+      message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
 
     workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
@@ -253,14 +243,10 @@ describe('Workspaces: Update', async () => {
   it('returns an error if not a member of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -282,7 +268,7 @@ describe('Workspaces: Update', async () => {
     expect(response.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
     expect(response.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/workspaces/${workspace.id}'.`,
+      message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
 
     const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
@@ -298,14 +284,10 @@ describe('Workspaces: Update', async () => {
   it('returns an error if not authenticated', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -323,14 +305,10 @@ describe('Workspaces: Update', async () => {
   it('returns an error if the access token is invalid', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 

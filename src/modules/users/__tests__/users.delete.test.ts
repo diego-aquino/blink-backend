@@ -60,7 +60,7 @@ describe('Users: Delete', async () => {
     expect(response.status).toBe(403 satisfies DeleteUserResponseStatus);
     expect(response.body).toEqual<DeleteUserNotFoundResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${otherUser.id}'.`,
+      message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
 
     const userInDatabase = await database.client.user.findUniqueOrThrow({
@@ -75,7 +75,7 @@ describe('Users: Delete', async () => {
     expect(response.status).toBe(403 satisfies DeleteUserResponseStatus);
     expect(response.body).toEqual<DeleteUserNotFoundResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${user.id}'.`,
+      message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
 
     const otherUserInDatabase = await database.client.user.findUniqueOrThrow({

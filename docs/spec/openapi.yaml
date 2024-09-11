@@ -734,6 +734,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: Usuário já é membro do workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '500':
           description: Erro no servidor
           content:

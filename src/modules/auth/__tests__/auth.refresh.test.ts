@@ -92,12 +92,12 @@ describe('Auth: Refresh', async () => {
     });
     expect(sessions).toHaveLength(0);
 
-    // @ts-expect-error
-    const input: RefreshAuthRequestBody = {};
-
     const response = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
-      .send(input);
+      .send(
+        // @ts-expect-error
+        {} satisfies RefreshAuthRequestBody,
+      );
 
     expect(response.status).toBe(400 satisfies RefreshAuthResponseStatus);
     expect(response.body).toEqual<RefreshAuthBadRequestResponseBody>({

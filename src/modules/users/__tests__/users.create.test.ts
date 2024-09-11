@@ -86,12 +86,12 @@ describe('Users: Create', async () => {
   });
 
   it('returns an error if trying to create a user with invalid inputs', async () => {
-    // @ts-expect-error
-    const input: CreateUserInput = {};
-
     const response = await supertest(app)
       .post('/users' satisfies UserPath)
-      .send(input);
+      .send(
+        // @ts-expect-error
+        {} satisfies CreateUserInput,
+      );
 
     expect(response.status).toBe(400 satisfies CreateUserResponseStatus);
     expect(response.body).toEqual<CreateUserBadRequestResponseBody>({

@@ -24,14 +24,10 @@ describe('Workspaces: Get', async () => {
   it('gets a workspace by id', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -60,21 +56,17 @@ describe('Workspaces: Get', async () => {
     expect(response.status).toBe(403 satisfies GetWorkspaceByIdResponseStatus);
     expect(response.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/workspaces/invalid'.`,
+      message: `Operation not allowed on resource '/workspaces/invalid'.`,
     });
   });
 
   it('returns an error if not a member of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -89,7 +81,7 @@ describe('Workspaces: Get', async () => {
     expect(response.status).toBe(403 satisfies GetWorkspaceByIdResponseStatus);
     expect(response.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/workspaces/${workspace.id}'.`,
+      message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
   });
 

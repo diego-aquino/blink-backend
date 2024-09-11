@@ -56,13 +56,13 @@ describe('Workspaces: Create', async () => {
   it('returns an error if trying to create a workspace with invalid inputs', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    // @ts-expect-error
-    const input: CreateWorkspaceInput = {};
-
     const response = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send(
+        // @ts-expect-error
+        {} satisfies CreateWorkspaceInput,
+      );
 
     expect(response.status).toBe(400 satisfies CreateWorkspaceResponseStatus);
     expect(response.body).toEqual<CreateWorkspaceBadRequestResponseBody>({

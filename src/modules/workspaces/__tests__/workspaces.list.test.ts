@@ -27,14 +27,10 @@ describe('Workspaces: List', async () => {
   it('lists workspaces as a member with pagination', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     let creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -43,7 +39,7 @@ describe('Workspaces: List', async () => {
     creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -100,27 +96,19 @@ describe('Workspaces: List', async () => {
   it('filters workspaces as a member by case-insensitive name', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     let creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
     const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
 
-    const otherInput: CreateWorkspaceInput = {
-      name: 'Other Workspace',
-    };
-
     creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(otherInput);
+      .send({ name: 'Other Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
@@ -163,14 +151,10 @@ describe('Workspaces: List', async () => {
   it('does not list workspaces as not a member', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 

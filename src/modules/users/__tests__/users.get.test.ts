@@ -65,7 +65,7 @@ describe('Users: Get', async () => {
     expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${otherUser.id}'.`,
+      message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
 
     response = await supertest(app)
@@ -75,7 +75,7 @@ describe('Users: Get', async () => {
     expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
     expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${user.id}'.`,
+      message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
   });
 
