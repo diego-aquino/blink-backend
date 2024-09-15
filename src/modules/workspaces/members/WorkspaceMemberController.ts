@@ -6,7 +6,7 @@ import {
   workspaceMemberCreationSchema,
   workspaceMemberByIdSchema,
   workspaceMemberUpdateSchema,
-  workspaceMembersListSchema,
+  workspaceMemberListSchema,
 } from './validators';
 import {
   WorkspaceMemberCreationRequestBody,
@@ -51,7 +51,7 @@ class WorkspaceMemberController {
   };
 
   list: RequestHandler = async (request, response) => {
-    const input = workspaceMembersListSchema.parse({
+    const input = workspaceMemberListSchema.parse({
       ...request.query,
       ...request.params,
     }) satisfies WorkspaceMemberListParams;

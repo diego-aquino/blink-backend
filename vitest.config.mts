@@ -14,7 +14,7 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     globalSetup: './tests/globalSetup.ts',
     minWorkers: 1,
-    maxWorkers: hasPostgresDatabase ? '50%' : 1,
+    maxWorkers: hasPostgresDatabase ? '75%' : 1,
   },
   resolve: {
     alias: {

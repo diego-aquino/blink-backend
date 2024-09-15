@@ -11,17 +11,17 @@ export class TestSchemaCache {
   private readonly CACHE_DIRECTORY = path.join(__dirname, '.cache', 'ready-test-schemas');
 
   async markAsReady(workerId: number, isReady: boolean) {
-    const readyFile = this.getReadyTestSchemaFile(workerId);
+    const readyFilePath = this.getReadyTestSchemaFilePath(workerId);
 
     if (isReady) {
-      await filesystem.promises.mkdir(path.dirname(readyFile), { recursive: true });
-      await filesystem.promises.writeFile(readyFile, '');
+      await filesystem.promises.mkdir(path.dirname(readyFilePath), { recursive: true });
+      await filesystem.promises.writeFile(readyFilePath, '');
     } else {
-      await filesystem.promises.rm(readyFile, { force: true });
+      await filesystem.promises.rm(readyFilePath, { force: true });
     }
   }
 
-  async markAllAsUnready() {
+  async markAllAsNotReady() {
     await filesystem.promises.rm(this.CACHE_DIRECTORY, {
       recursive: true,
       force: true,
@@ -29,11 +29,11 @@ export class TestSchemaCache {
   }
 
   isReady(workerId: number) {
-    const readyFile = this.getReadyTestSchemaFile(workerId);
-    return pathExists(readyFile);
+    const readyFilePath = this.getReadyTestSchemaFilePath(workerId);
+    return pathExists(readyFilePath);
   }
 
-  private getReadyTestSchemaFile(workerId: number) {
+  private getReadyTestSchemaFilePath(workerId: number) {
     return path.join(this.CACHE_DIRECTORY, generateTestSchemaName(workerId));
   }
 }

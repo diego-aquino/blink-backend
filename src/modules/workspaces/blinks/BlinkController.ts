@@ -2,7 +2,7 @@ import { RequestHandler } from '@/modules/shared/controllers';
 
 import BlinkService from './BlinkService';
 import { toBlinkResponse } from './views';
-import { blinkCreationSchema, blinkByIdSchema, blinkUpdateSchema, blinksListSchema } from './validators';
+import { blinkCreationSchema, blinkByIdSchema, blinkUpdateSchema, blinkListSchema } from './validators';
 import {
   BlinkCreationRequestBody,
   BlinkCreationResponseStatus,
@@ -45,7 +45,7 @@ class BlinkController {
   };
 
   list: RequestHandler = async (request, response) => {
-    const input = blinksListSchema.parse({
+    const input = blinkListSchema.parse({
       ...request.query,
       ...request.params,
     }) satisfies BlinkListParams;

@@ -15,13 +15,19 @@ export namespace BlinkCreationInput {
   export type Body = z.infer<typeof blinkCreationBodySchema>;
 }
 
-export const blinksListSchema = workspaceByIdSchema.extend({
+export const blinkListQuerySchema = z.object({
   name: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
 
-export type BlinkListInput = z.infer<typeof blinksListSchema>;
+export const blinkListSchema = workspaceByIdSchema.and(blinkListQuerySchema);
+
+export type BlinkListInput = z.infer<typeof blinkListSchema>;
+
+export namespace BlinkListInput {
+  export type RawQuery = z.input<typeof blinkListQuerySchema>;
+}
 
 export const blinkByIdSchema = workspaceByIdSchema.extend({
   blinkId: z.string().min(1),
@@ -29,10 +35,16 @@ export const blinkByIdSchema = workspaceByIdSchema.extend({
 
 export type BlinkByIdInput = z.infer<typeof blinkByIdSchema>;
 
-export const blinkUpdateSchema = blinkByIdSchema.extend({
+export const blinkUpdateBodySchema = z.object({
   name: z.string().min(1).optional(),
   url: z.string().url().optional(),
   redirectId: z.string().optional(),
 });
 
+export const blinkUpdateSchema = blinkByIdSchema.and(blinkUpdateBodySchema);
+
 export type BlinkUpdateInput = z.infer<typeof blinkUpdateSchema>;
+
+export namespace BlinkUpdateInput {
+  export type Body = z.infer<typeof blinkUpdateBodySchema>;
+}

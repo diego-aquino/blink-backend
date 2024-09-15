@@ -1,12 +1,7 @@
 import WorkspaceService from './WorkspaceService';
 import { RequestHandler } from '../shared/controllers';
 import { toWorkspaceResponse } from './views';
-import {
-  workspaceCreationSchema,
-  workspaceByIdSchema,
-  workspaceUpdateSchema,
-  workspacesListSchema,
-} from './validators';
+import { workspaceCreationSchema, workspaceByIdSchema, workspaceUpdateSchema, workspaceListSchema } from './validators';
 import {
   WorkspaceCreationRequestBody,
   WorkspaceCreationResponseStatus,
@@ -47,7 +42,7 @@ class WorkspaceController {
 
   listAsMember: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = workspacesListSchema.parse({
+    const input = workspaceListSchema.parse({
       ...request.query,
       ...request.params,
     }) satisfies WorkspaceListParams;

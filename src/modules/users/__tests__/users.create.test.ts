@@ -15,6 +15,7 @@ import {
 } from '../types';
 import { UserCreationInput } from '../validators';
 import WorkspaceService from '@/modules/workspaces/WorkspaceService';
+import { WorkspaceMemberType } from '@prisma/client';
 
 describe('Users: Create', async () => {
   const app = await createApp();
@@ -67,6 +68,7 @@ describe('Users: Create', async () => {
 
     expect(members).toHaveLength(1);
     expect(members[0].userId).toBe(user.id);
+    expect(members[0].type).toBe('ADMINISTRATOR' satisfies WorkspaceMemberType);
   });
 
   it('returns an error if trying to create a user with email already in use', async () => {

@@ -6,15 +6,15 @@ export const workspaceCreationSchema = z.object({
 
 export type WorkspaceCreationInput = z.infer<typeof workspaceCreationSchema>;
 
-export const workspacesListSchema = z.object({
+export const workspaceListSchema = z.object({
   name: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
 
-export type WorkspaceListInput = z.infer<typeof workspacesListSchema>;
+export type WorkspaceListInput = z.infer<typeof workspaceListSchema>;
 export namespace WorkspaceListInput {
-  export type Raw = z.input<typeof workspacesListSchema>;
+  export type Raw = z.input<typeof workspaceListSchema>;
 }
 
 export const workspaceByIdSchema = z.object({

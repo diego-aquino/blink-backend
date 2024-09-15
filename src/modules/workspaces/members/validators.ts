@@ -15,14 +15,14 @@ export namespace WorkspaceCreationMemberInput {
   export type Body = z.infer<typeof workspaceMemberCreationBodySchema>;
 }
 
-export const workspaceMembersListSchema = workspaceByIdSchema.extend({
+export const workspaceMemberListSchema = workspaceByIdSchema.extend({
   name: z.string().optional(),
   type: z.nativeEnum(WorkspaceMemberType).optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
 
-export type WorkspaceMemberListInput = z.infer<typeof workspaceMembersListSchema>;
+export type WorkspaceMemberListInput = z.infer<typeof workspaceMemberListSchema>;
 
 export const workspaceMemberByIdSchema = workspaceByIdSchema.extend({
   memberId: z.string().min(1),

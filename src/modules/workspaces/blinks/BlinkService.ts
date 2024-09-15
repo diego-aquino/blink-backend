@@ -125,6 +125,19 @@ class BlinkService {
       throw new BlinkNotFoundError(input.blinkId);
     }
 
+    if (input.redirectId) {
+      const existingBlinkWithRedirectId = await database.client.blink.findUnique({
+        where: {
+          NOT: { id: input.blinkId },
+          redirectId: input.redirectId,
+        },
+      });
+
+      if (existingBlinkWithRedirectId) {
+        throw new BlinkRedirectConflictError(input.redirectId);
+      }
+    }
+
     const updatedBlink = await database.client.blink.update({
       where: { id: input.blinkId },
       data: {
