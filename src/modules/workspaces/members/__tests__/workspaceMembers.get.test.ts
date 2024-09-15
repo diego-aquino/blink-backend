@@ -4,7 +4,11 @@ import { createAuthenticatedUser } from '@tests/utils/users';
 import supertest from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WorkspacePath } from '../../router';
-import { CreateWorkspaceResponseStatus, CreateWorkspaceUnauthorizedResponseBody } from '../../types';
+import {
+  CreateWorkspaceResponseStatus,
+  CreateWorkspaceUnauthorizedResponseBody,
+  GetWorkspaceByIdForbiddenResponseBody,
+} from '../../types';
 import { CreateWorkspaceInput } from '../../validators';
 import { WorkspaceMemberPath } from '../router';
 import {
@@ -96,10 +100,10 @@ describe('Workspace members: Get', async () => {
       .get('/workspaces/unknown/members/unknown' satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(404 satisfies GetWorkspaceMemberByIdResponseStatus);
-    expect(response.body).toEqual<GetWorkspaceMemberByIdNotFoundResponseBody>({
-      code: 'NOT_FOUND',
-      message: 'Resource not found.',
+    expect(response.status).toBe(403 satisfies GetWorkspaceMemberByIdResponseStatus);
+    expect(response.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+      code: 'FORBIDDEN',
+      message: `Operation not allowed on resource '/workspaces/unknown'.`,
     });
   });
 
@@ -132,10 +136,10 @@ describe('Workspace members: Get', async () => {
       .get(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(404 satisfies GetWorkspaceMemberByIdResponseStatus);
-    expect(response.body).toEqual<GetWorkspaceMemberByIdNotFoundResponseBody>({
-      code: 'NOT_FOUND',
-      message: 'Resource not found.',
+    expect(response.status).toBe(403 satisfies GetWorkspaceMemberByIdResponseStatus);
+    expect(response.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+      code: 'FORBIDDEN',
+      message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
   });
 

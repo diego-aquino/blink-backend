@@ -22,6 +22,7 @@ import {
   CreateWorkspaceMemberSuccessResponseBody,
 } from '../types';
 import { CreateWorkspaceMemberInput } from '../validators';
+import { WorkspaceMemberType } from '@prisma/client';
 
 describe('Workspace members: Update', async () => {
   const app = await createApp();
@@ -186,16 +187,18 @@ describe('Workspace members: Update', async () => {
       .send(updateInput);
 
     expect(response.status).toBe(400 satisfies UpdateWorkspaceMemberResponseStatus);
+
+    const validMemberTypes = Object.values(WorkspaceMemberType).sort();
     expect(response.body).toEqual<CreateWorkspaceMemberBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
         {
-          code: 'invalid_type',
-          expected: 'string',
-          received: 'number',
+          code: 'invalid_enum_value',
+          message: `Invalid enum value. Expected ${validMemberTypes.map((type) => `'${type}'`).join(' | ')}, received '1'`,
+          options: validMemberTypes,
           path: ['type'],
-          message: 'Expected string, received number',
+          received: 1,
         },
       ],
     });

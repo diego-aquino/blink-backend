@@ -3,7 +3,9 @@
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 
-const hasPostgresDatabase = process.env.DATABASE_URL?.startsWith('postgres:');
+import environment from './src/config/environment';
+
+const hasPostgresDatabase = environment.DATABASE_URL?.startsWith('postgresql://');
 
 export default defineConfig({
   test: {
