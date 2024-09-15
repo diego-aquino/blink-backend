@@ -1,13 +1,17 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
-import { WorkspaceMemberLastMemberError, WorkspaceMemberNotFoundError } from './errors';
 import {
-  CreateWorkspaceMemberInput,
+  WorkspaceMemberLastAdministratorError,
+  WorkspaceMemberLastMemberError,
+  WorkspaceMemberNotFoundError,
+} from './errors';
+import {
+  WorkspaceCreationMemberInput,
   WorkspaceMemberByIdInput,
-  UpdateWorkspaceMemberInput,
-  ListWorkspaceMembersInput,
+  WorkspaceUpdateMemberInput,
+  WorkspaceMemberListInput,
 } from './validators';
-import { Prisma, User, Workspace, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
+import { Prisma, User, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
 
 const WORKSPACE_MEMBER_TYPE_PRIORITY: Record<WorkspaceMemberType, number> = {
   ADMINISTRATOR: 1,
@@ -23,7 +27,7 @@ class WorkspaceMemberService {
 
   private constructor() {}
 
-  async create(creatorId: User['id'], input: CreateWorkspaceMemberInput) {
+  async create(creatorId: User['id'], input: WorkspaceCreationMemberInput) {
     const member = await database.client.workspaceMember.create({
       data: {
         id: createId(),
@@ -38,7 +42,7 @@ class WorkspaceMemberService {
     return member;
   }
 
-  async list(input: ListWorkspaceMembersInput) {
+  async list(input: WorkspaceMemberListInput) {
     const where: Prisma.WorkspaceMemberWhereInput = {
       workspaceId: input.workspaceId,
       type: input.type,
@@ -79,16 +83,34 @@ class WorkspaceMemberService {
     return member;
   }
 
-  async update(input: UpdateWorkspaceMemberInput) {
+  async update(input: WorkspaceUpdateMemberInput) {
     const member = await database.client.workspaceMember.findUnique({
       where: {
         id: input.memberId,
         workspaceId: input.workspaceId,
       },
+      include: {
+        workspace: {
+          include: {
+            members: {
+              where: { type: 'ADMINISTRATOR' },
+            },
+          },
+        },
+      },
     });
 
     if (!member) {
       throw new WorkspaceMemberNotFoundError(input.memberId);
+    }
+
+    const isLastAdministrator =
+      member.type === 'ADMINISTRATOR' &&
+      member.workspace.members.length === 1 &&
+      member.workspace.members[0].id === member.id;
+
+    if (isLastAdministrator) {
+      throw new WorkspaceMemberLastAdministratorError(input.memberId);
     }
 
     const updatedMember = await database.client.workspaceMember.update({

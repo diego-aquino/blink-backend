@@ -1,5 +1,3 @@
-import 'express-async-errors';
-
 import { afterAll, beforeAll, expect } from 'vitest';
 
 import environment from '@/config/environment';
@@ -14,7 +12,11 @@ const PRISMA_CLI_SCRIPT_PATH = path.join('node_modules', 'prisma', 'build', 'ind
 
 const schemaCache = new TestSchemaCache();
 
-beforeAll(async () => {
+async function prepareSQLiteTestDatabase() {
+  await database.initialize();
+}
+
+async function preparePostgresTestDatabase() {
   const testSchemaName = generateTestSchemaName(testWorkerId);
   const testDatabaseURL = environment.DATABASE_URL.replace('schema=public', `schema=${testSchemaName}`);
 
@@ -38,6 +40,14 @@ beforeAll(async () => {
   environment.DATABASE_URL = testDatabaseURL;
 
   await schemaCache.markAsReady(testWorkerId, true);
+}
+
+beforeAll(async () => {
+  if (environment.DATABASE_URL.startsWith('file:')) {
+    await prepareSQLiteTestDatabase();
+  } else if (environment.DATABASE_URL.startsWith('postgresql:')) {
+    await preparePostgresTestDatabase();
+  }
 });
 
 afterAll(async () => {

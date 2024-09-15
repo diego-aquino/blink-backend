@@ -6,6 +6,7 @@ import { clearDatabase } from '@tests/utils/database';
 import { createAuthenticatedUser } from '@tests/utils/users';
 import {
   AccessTokenPayload,
+  LoginBadRequestResponseBody,
   LoginResponseStatus,
   LoginSuccessResponseBody,
   LoginUnauthorizedResponseBody,
@@ -63,16 +64,16 @@ describe('Auth: Log in', async () => {
   it('logs into multiple sessions', async () => {
     const { user, password, auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const loginResponse = await supertest(app)
       .post('/auth/login' satisfies AuthPath)
       .send({
         email: user.email,
         password,
       });
 
-    expect(response.status).toBe(200 satisfies LoginResponseStatus);
+    expect(loginResponse.status).toBe(200 satisfies LoginResponseStatus);
 
-    const newAuth = response.body as LoginSuccessResponseBody;
+    const newAuth = loginResponse.body as LoginSuccessResponseBody;
 
     expect(newAuth).toEqual<LoginSuccessResponseBody>({
       accessToken: expect.any(String),
@@ -107,16 +108,15 @@ describe('Auth: Log in', async () => {
       }),
     ).toHaveLength(0);
 
-    const response = await supertest(app)
+    const loginResponse = await supertest(app)
       .post('/auth/login' satisfies AuthPath)
       .send({
         email: 'nonexistent-email@email.com',
         password: 'password',
       });
 
-    expect(response.status).toBe(401 satisfies LoginResponseStatus);
-
-    expect(response.body).toEqual<LoginUnauthorizedResponseBody>({
+    expect(loginResponse.status).toBe(401 satisfies LoginResponseStatus);
+    expect(loginResponse.body).toEqual<LoginUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });
@@ -128,20 +128,44 @@ describe('Auth: Log in', async () => {
     const incorrectPassword = 'incorrect-password';
     expect(password).not.toBe(incorrectPassword);
 
-    const response = await supertest(app)
+    const loginResponse = await supertest(app)
       .post('/auth/login' satisfies AuthPath)
       .send({
         email: user.email,
         password: incorrectPassword,
       });
 
-    expect(response.status).toBe(401 satisfies LoginResponseStatus);
-
-    expect(response.body).toEqual<LoginUnauthorizedResponseBody>({
+    expect(loginResponse.status).toBe(401 satisfies LoginResponseStatus);
+    expect(loginResponse.body).toEqual<LoginUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });
   });
 
-  it('returns an error if the login input are invalid', async () => {});
+  it('returns an error if the login input are invalid', async () => {
+    const loginResponse = await supertest(app)
+      .post('/auth/login' satisfies AuthPath)
+      .send({ email: 'invalid' });
+
+    expect(loginResponse.status).toBe(400 satisfies LoginResponseStatus);
+    expect(loginResponse.body).toEqual<LoginBadRequestResponseBody>({
+      message: 'Validation failed',
+      code: 'BAD_REQUEST',
+      issues: [
+        {
+          validation: 'email',
+          code: 'invalid_string',
+          message: 'Invalid email',
+          path: ['email'],
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'undefined',
+          path: ['password'],
+          message: 'Required',
+        },
+      ],
+    });
+  });
 });

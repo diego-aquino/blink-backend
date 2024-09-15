@@ -1,13 +1,17 @@
 import { Express } from 'express';
 
-import { CreateUserRequestBody, CreateUserResponseStatus, CreateUserSuccessResponseBody } from '@/modules/users/types';
+import {
+  UserCreationRequestBody,
+  UserCreationResponseStatus,
+  UserCreationSuccessResponseBody,
+} from '@/modules/users/types';
 import supertest from 'supertest';
 import { expect } from 'vitest';
 import { LoginResponseStatus, LoginSuccessResponseBody } from '@/modules/auth/types';
 import { createId } from '@paralleldrive/cuid2';
 
-export async function createAuthenticatedUser(app: Express, partialInput: Partial<CreateUserRequestBody> = {}) {
-  const creationInput: CreateUserRequestBody = {
+export async function createAuthenticatedUser(app: Express, partialInput: Partial<UserCreationRequestBody> = {}) {
+  const creationInput: UserCreationRequestBody = {
     name: 'User',
     email: `user-${createId()}@email.com`,
     password: 'password',
@@ -15,9 +19,9 @@ export async function createAuthenticatedUser(app: Express, partialInput: Partia
   };
 
   const creationResponse = await supertest(app).post('/users').send(creationInput);
-  expect(creationResponse.status).toBe(201 satisfies CreateUserResponseStatus);
+  expect(creationResponse.status).toBe(201 satisfies UserCreationResponseStatus);
 
-  const user = creationResponse.body as CreateUserSuccessResponseBody;
+  const user = creationResponse.body as UserCreationSuccessResponseBody;
 
   const loginResponse = await supertest(app).post('/auth/login').send({
     email: creationInput.email,

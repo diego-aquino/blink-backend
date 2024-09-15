@@ -17,9 +17,9 @@ const workspaceMemberMiddleware = WorkspaceMemberMiddleware.instance();
 const blinkMiddleware = BlinkMiddleware.instance();
 
 export namespace BlinkPath {
-  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/:workspaceId/blinks${string}`>;
+  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/workspaces/${string}/blinks${string}`>;
 }
-export type BlinkPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/workspaces/:workspaceId/blinks${string}`>;
+export type BlinkPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/workspaces/${string}/blinks${string}`>;
 
 blinkRouter.post(
   '/workspaces/:workspaceId/blinks' satisfies BlinkPath,

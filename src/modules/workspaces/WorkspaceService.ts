@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { WorkspaceNotFoundError } from './errors';
-import { CreateWorkspaceInput, WorkspaceByIdInput, UpdateWorkspaceInput, ListWorkspacesInput } from './validators';
+import { WorkspaceCreationInput, WorkspaceByIdInput, WorkspaceUpdateInput, WorkspaceListInput } from './validators';
 import { Prisma, User, WorkspaceMemberType } from '@prisma/client';
 import { TransactionOptions } from '@/types/database';
 
@@ -12,13 +12,14 @@ class WorkspaceService {
     return this._instance;
   }
 
-  private readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
+  readonly DEFAULT_WORKSPACE_NAME = 'My Workspace';
+  readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
 
   private constructor() {}
 
   async create(
     creatorId: User['id'],
-    input: CreateWorkspaceInput,
+    input: WorkspaceCreationInput,
     { transaction = database.client }: TransactionOptions = {},
   ) {
     const workspace = await transaction.workspace.create({
@@ -39,7 +40,7 @@ class WorkspaceService {
     return workspace;
   }
 
-  async listByMember(memberId: User['id'], input: ListWorkspacesInput) {
+  async listByMember(memberId: User['id'], input: WorkspaceListInput) {
     const where: Prisma.WorkspaceWhereInput = {
       name: input.name ? { contains: input.name, mode: 'insensitive' } : undefined,
       members: {
@@ -52,6 +53,7 @@ class WorkspaceService {
         where,
         skip: (input.page - 1) * input.limit,
         take: input.limit,
+        orderBy: { createdAt: 'desc' },
       }),
       database.client.workspace.count({ where }),
     ]);
@@ -71,7 +73,18 @@ class WorkspaceService {
     return workspace;
   }
 
-  async update(input: UpdateWorkspaceInput) {
+  async getDefaultWorkspace(userId: User['id']) {
+    const workspace = await database.client.workspace.findFirst({
+      where: {
+        name: this.DEFAULT_WORKSPACE_NAME,
+        members: { some: { userId } },
+      },
+    });
+
+    return workspace;
+  }
+
+  async update(input: WorkspaceUpdateInput) {
     const workspace = await database.client.workspace.findUnique({
       where: { id: input.workspaceId },
     });

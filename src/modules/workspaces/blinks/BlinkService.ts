@@ -1,7 +1,12 @@
 import { createId, init as createIdFactory } from '@paralleldrive/cuid2';
 import database from '@/database/client';
-import { BlinkByRedirectNotFoundError, BlinkNotFoundError, BlinkRedirectGenerationError } from './errors';
-import { CreateBlinkInput, BlinkByIdInput, UpdateBlinkInput, ListBlinksInput } from './validators';
+import {
+  BlinkByRedirectNotFoundError,
+  BlinkNotFoundError,
+  BlinkRedirectConflictError,
+  BlinkRedirectGenerationError,
+} from './errors';
+import { BlinkCreationInput, BlinkByIdInput, BlinkUpdateInput, BlinkListInput } from './validators';
 import { Prisma, User } from '@prisma/client';
 
 const MAX_BLINK_REDIRECT_ID_GENERATION_RETRIES = 5;
@@ -17,7 +22,17 @@ class BlinkService {
 
   private constructor() {}
 
-  async create(creatorId: User['id'], input: CreateBlinkInput) {
+  async create(creatorId: User['id'], input: BlinkCreationInput) {
+    if (input.redirectId) {
+      const existingBlinkWithRedirectId = await database.client.blink.findUnique({
+        where: { redirectId: input.redirectId },
+      });
+
+      if (existingBlinkWithRedirectId) {
+        throw new BlinkRedirectConflictError(input.redirectId);
+      }
+    }
+
     const blink = await database.client.blink.create({
       data: {
         id: createId(),
@@ -50,7 +65,7 @@ class BlinkService {
     throw new BlinkRedirectGenerationError();
   }
 
-  async list(input: ListBlinksInput) {
+  async list(input: BlinkListInput) {
     const where: Prisma.BlinkWhereInput = {
       name: input.name ? { contains: input.name, mode: 'insensitive' } : undefined,
       workspaceId: input.workspaceId,
@@ -98,7 +113,7 @@ class BlinkService {
     return blink;
   }
 
-  async update(input: UpdateBlinkInput) {
+  async update(input: BlinkUpdateInput) {
     const blink = await database.client.blink.findUnique({
       where: {
         id: input.blinkId,
@@ -108,6 +123,19 @@ class BlinkService {
 
     if (!blink) {
       throw new BlinkNotFoundError(input.blinkId);
+    }
+
+    if (input.redirectId) {
+      const existingBlinkWithRedirectId = await database.client.blink.findUnique({
+        where: {
+          NOT: { id: input.blinkId },
+          redirectId: input.redirectId,
+        },
+      });
+
+      if (existingBlinkWithRedirectId) {
+        throw new BlinkRedirectConflictError(input.redirectId);
+      }
     }
 
     const updatedBlink = await database.client.blink.update({

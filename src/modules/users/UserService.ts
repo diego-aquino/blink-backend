@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2';
 import database from '@/database/client';
 import { EmailAlreadyInUseError, UserNotFoundError } from './errors';
-import { CreateUserInput, UserByIdInput, UpdateUserInput } from './validators';
+import { UserCreationInput, UserByIdInput, UserUpdateInput } from './validators';
 import { hashPassword } from '@/utils/auth';
 import WorkspaceService from '../workspaces/WorkspaceService';
 
@@ -14,11 +14,9 @@ class UserService {
 
   private workspaceService = WorkspaceService.instance();
 
-  readonly DEFAULT_WORKSPACE_NAME = 'My Workspace';
-
   private constructor() {}
 
-  async create(input: CreateUserInput) {
+  async create(input: UserCreationInput) {
     const numberOfEmailUses = await database.client.user.count({
       where: { email: input.email },
     });
@@ -37,7 +35,11 @@ class UserService {
         },
       });
 
-      await this.workspaceService.create(user.id, { name: this.DEFAULT_WORKSPACE_NAME }, { transaction });
+      await this.workspaceService.create(
+        user.id,
+        { name: this.workspaceService.DEFAULT_WORKSPACE_NAME },
+        { transaction },
+      );
 
       return user;
     });
@@ -57,7 +59,7 @@ class UserService {
     return user;
   }
 
-  async update(input: UpdateUserInput) {
+  async update(input: UserUpdateInput) {
     const user = await database.client.user.findUnique({
       where: { id: input.userId },
     });

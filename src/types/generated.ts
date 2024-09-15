@@ -651,6 +651,10 @@ export interface BlinkOperations {
       404: {
         body: BlinkComponents['schemas']['NotFoundError'];
       };
+      /** @description Usuário já é membro do workspace */
+      409: {
+        body: BlinkComponents['schemas']['ConflictError'];
+      };
       /** @description Erro no servidor */
       500: {
         body: BlinkComponents['schemas']['InternalServerError'];

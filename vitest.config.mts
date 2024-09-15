@@ -3,6 +3,10 @@
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 
+import environment from './src/config/environment';
+
+const hasPostgresDatabase = environment.DATABASE_URL?.startsWith('postgresql://');
+
 export default defineConfig({
   test: {
     environment: 'node',
@@ -10,7 +14,7 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     globalSetup: './tests/globalSetup.ts',
     minWorkers: 1,
-    maxWorkers: '50%',
+    maxWorkers: hasPostgresDatabase ? '75%' : 1,
   },
   resolve: {
     alias: {

@@ -14,6 +14,6 @@ export class InvalidCredentialsError extends UnauthorizedError {
 
 export class ForbiddenResourceAccessError extends ForbiddenError {
   constructor(resource: string) {
-    super(`Access not allowed to resource '${resource}'.`);
+    super(`Operation not allowed on resource '${resource}'.`);
   }
 }

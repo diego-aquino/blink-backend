@@ -7,7 +7,11 @@ import { clearDatabase } from '@tests/utils/database';
 import database from '@/database/client';
 
 import { UserPath } from '../router';
-import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
+import {
+  UserDeletionNotFoundResponseBody,
+  UserDeletionResponseStatus,
+  UserDeletionUnauthorizedResponseBody,
+} from '../types';
 
 describe('Users: Delete', async () => {
   const app = await createApp();
@@ -19,10 +23,11 @@ describe('Users: Delete', async () => {
   it('deletes a user', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(204 satisfies DeleteUserResponseStatus);
+
+    expect(userDeletionResponse.status).toBe(204 satisfies UserDeletionResponseStatus);
 
     const userInDatabase = await database.client.user.findUnique({
       where: { id: user.id },
@@ -37,12 +42,12 @@ describe('Users: Delete', async () => {
       where: { id: user.id },
     });
 
-    const response = await supertest(app)
+    const userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(404 satisfies DeleteUserResponseStatus);
 
-    expect(response.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(404 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `User '${user.id}' not found.`,
     });
@@ -52,14 +57,14 @@ describe('Users: Delete', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
-    let response = await supertest(app)
+    let userDeletionResponse = await supertest(app)
       .delete(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(403 satisfies DeleteUserResponseStatus);
 
-    expect(response.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${otherUser.id}'.`,
+      message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
 
     const userInDatabase = await database.client.user.findUniqueOrThrow({
@@ -67,14 +72,14 @@ describe('Users: Delete', async () => {
     });
     expect(userInDatabase.id).toBe(user.id);
 
-    response = await supertest(app)
+    userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
-    expect(response.status).toBe(403 satisfies DeleteUserResponseStatus);
 
-    expect(response.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'FORBIDDEN',
-      message: `Access not allowed to resource '/users/${user.id}'.`,
+      message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
 
     const otherUserInDatabase = await database.client.user.findUniqueOrThrow({
@@ -86,21 +91,20 @@ describe('Users: Delete', async () => {
   it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app).delete(`/users/${user.id}` satisfies UserPath.NonLiteral);
-    expect(response.status).toBe(401 satisfies DeleteUserResponseStatus);
+    const userDeletionResponse = await supertest(app).delete(`/users/${user.id}` satisfies UserPath.NonLiteral);
 
-    expect(response.body).toEqual<DeleteUserUnauthorizedResponseBody>({
+    expect(userDeletionResponse.status).toBe(401 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const userDeletionResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies DeleteUserResponseStatus);
-
-    expect(response.body).toEqual<DeleteUserUnauthorizedResponseBody>({
+    expect(userDeletionResponse.status).toBe(401 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

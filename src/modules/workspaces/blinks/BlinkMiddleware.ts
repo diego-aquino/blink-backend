@@ -17,29 +17,27 @@ class BlinkMiddleware {
 
   private constructor() {}
 
-  blinkWriter = (): RequestMiddleware => {
-    return async (request, _response, next) => {
-      const { userId } = request.middlewares.auth.authenticated;
-      const { workspaceId } = workspaceByIdSchema.parse(request.params);
-      const { blinkId } = blinkByIdSchema.parse(request.params);
+  blinkWriter: RequestMiddleware = async (request, _response, next) => {
+    const { userId } = request.middlewares.auth.authenticated;
+    const { workspaceId } = workspaceByIdSchema.parse(request.params);
+    const { blinkId } = blinkByIdSchema.parse(request.params);
 
-      const blink = await database.client.blink.findUnique({
-        where: { id: blinkId, workspaceId },
-      });
+    const blink = await database.client.blink.findUnique({
+      where: { id: blinkId, workspaceId },
+    });
 
-      if (!blink) {
-        throw new BlinkNotFoundError(blinkId);
-      }
+    if (!blink) {
+      throw new BlinkNotFoundError(blinkId);
+    }
 
-      const { member } = request.middlewares.workspaceMember.typeAtLeast;
-      const isAllowed = blink.creatorId === userId || this.memberService.hasTypeAtLeast(member, 'ADMINISTRATOR');
+    const { member } = request.middlewares.workspaceMember.typeAtLeast;
+    const isAllowed = blink.creatorId === userId || this.memberService.hasTypeAtLeast(member, 'ADMINISTRATOR');
 
-      if (isAllowed) {
-        throw new ForbiddenResourceAccessError(`/workspaces/${workspaceId}`);
-      }
+    if (!isAllowed) {
+      throw new ForbiddenResourceAccessError(`/workspaces/${workspaceId}/blinks/${blinkId}`);
+    }
 
-      return next();
-    };
+    return next();
   };
 }
 
