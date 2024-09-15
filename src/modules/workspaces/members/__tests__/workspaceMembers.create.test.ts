@@ -53,7 +53,7 @@ describe('Workspace members: Create', async () => {
 
     expect(response.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = response.body as WorkspaceMemberResponse;
+    const member = response.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(member).toEqual<CreateWorkspaceMemberSuccessResponseBody>({
       id: expect.any(String),
@@ -97,7 +97,7 @@ describe('Workspace members: Create', async () => {
 
     expect(response.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = response.body as WorkspaceMemberResponse;
+    const member = response.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(member).toEqual<CreateWorkspaceMemberSuccessResponseBody>({
       id: expect.any(String),

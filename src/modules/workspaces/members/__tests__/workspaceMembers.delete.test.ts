@@ -5,18 +5,15 @@ import { createAuthenticatedUser } from '@tests/utils/users';
 import supertest from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WorkspacePath } from '../../router';
-import {
-  CreateWorkspaceResponseStatus,
-  CreateWorkspaceSuccessResponseBody,
-} from '../../types';
+import { CreateWorkspaceResponseStatus, CreateWorkspaceSuccessResponseBody } from '../../types';
 import { CreateWorkspaceInput } from '../../validators';
 import { WorkspaceMemberPath } from '../router';
 import {
   CreateWorkspaceMemberResponseStatus,
-  WorkspaceMemberResponse,
   DeleteWorkspaceMemberResponseStatus,
   DeleteWorkspaceMemberNotFoundResponseBody,
   DeleteWorkspaceMemberForbiddenResponseBody,
+  CreateWorkspaceMemberSuccessResponseBody,
 } from '../types';
 import { CreateWorkspaceMemberInput } from '../validators';
 
@@ -54,7 +51,7 @@ describe.only('Workspace members: Delete', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const response = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
@@ -138,7 +135,7 @@ describe.only('Workspace members: Delete', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const response = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
@@ -224,7 +221,7 @@ describe.only('Workspace members: Delete', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const response = await supertest(app).delete(
       `/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral,
@@ -264,7 +261,7 @@ describe.only('Workspace members: Delete', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const response = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)

@@ -14,12 +14,12 @@ import { CreateWorkspaceInput } from '../../validators';
 import { WorkspaceMemberPath } from '../router';
 import {
   CreateWorkspaceMemberResponseStatus,
-  WorkspaceMemberResponse,
   CreateWorkspaceMemberBadRequestResponseBody,
   CreateWorkspaceMemberForbiddenResponseBody,
   UpdateWorkspaceMemberRequestBody,
   UpdateWorkspaceMemberResponseStatus,
   UpdateWorkspaceMemberSuccessResponseBody,
+  CreateWorkspaceMemberSuccessResponseBody,
 } from '../types';
 import { CreateWorkspaceMemberInput } from '../validators';
 
@@ -57,7 +57,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const updateInput = { type: 'ADMINISTRATOR' } satisfies UpdateWorkspaceMemberRequestBody;
 
@@ -68,7 +68,7 @@ describe('Workspace members: Update', async () => {
 
     expect(response.status).toBe(200 satisfies UpdateWorkspaceMemberResponseStatus);
 
-    const updatedMember = response.body as WorkspaceMemberResponse;
+    const updatedMember = response.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(updatedMember).toEqual<UpdateWorkspaceMemberSuccessResponseBody>({
       id: member.id,
@@ -117,7 +117,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const response = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
@@ -126,7 +126,7 @@ describe('Workspace members: Update', async () => {
 
     expect(response.status).toBe(200 satisfies UpdateWorkspaceMemberResponseStatus);
 
-    const updatedMember = response.body as WorkspaceMemberResponse;
+    const updatedMember = response.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(updatedMember).toEqual<UpdateWorkspaceMemberSuccessResponseBody>({
       id: member.id,
@@ -175,7 +175,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     // @ts-expect-error
     const updateInput = { type: 1 } satisfies UpdateWorkspaceMemberRequestBody;
@@ -275,7 +275,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const updateInput = { type: 'ADMINISTRATOR' } satisfies UpdateWorkspaceMemberRequestBody;
 
@@ -327,7 +327,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const { auth: anotherAuth } = await createAuthenticatedUser(app);
 
@@ -381,7 +381,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
     const updateInput = { type: 'ADMINISTRATOR' } satisfies UpdateWorkspaceMemberRequestBody;
 
     const response = await supertest(app)
@@ -431,7 +431,7 @@ describe('Workspace members: Update', async () => {
 
     expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = memberResponse.body as WorkspaceMemberResponse;
+    const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     const updateInput = { type: 'ADMINISTRATOR' } satisfies UpdateWorkspaceMemberRequestBody;
 
