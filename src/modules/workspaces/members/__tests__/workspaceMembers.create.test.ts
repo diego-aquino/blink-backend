@@ -17,7 +17,6 @@ import {
   WorkspaceMemberCreationForbiddenResponseBody,
   WorkspaceMemberCreationResponseStatus,
   WorkspaceMemberCreationSuccessResponseBody,
-  WorkspaceMemberResponse,
 } from '../types';
 import { WorkspaceCreationMemberInput } from '../validators';
 

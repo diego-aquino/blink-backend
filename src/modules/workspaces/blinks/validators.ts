@@ -1,13 +1,19 @@
 import { z } from 'zod';
 import { workspaceByIdSchema } from '../validators';
 
-export const blinkCreationSchema = workspaceByIdSchema.extend({
+export const blinkCreationBodySchema = z.object({
   name: z.string().min(1),
   url: z.string().url(),
   redirectId: z.string().optional(),
 });
 
+export const blinkCreationSchema = workspaceByIdSchema.and(blinkCreationBodySchema);
+
 export type BlinkCreationInput = z.infer<typeof blinkCreationSchema>;
+
+export namespace BlinkCreationInput {
+  export type Body = z.infer<typeof blinkCreationBodySchema>;
+}
 
 export const blinksListSchema = workspaceByIdSchema.extend({
   name: z.string().optional(),

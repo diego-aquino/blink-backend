@@ -48,8 +48,8 @@ class WorkspaceController {
   listAsMember: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
     const input = workspacesListSchema.parse({
-      ...request.params,
       ...request.query,
+      ...request.params,
     }) satisfies WorkspaceListParams;
 
     const workspaces = await this.workspaceService.listByMember(userId, input);

@@ -39,8 +39,8 @@ class WorkspaceMemberController {
     const { userId } = request.middlewares.auth.authenticated;
 
     const input = workspaceMemberCreationSchema.parse({
-      ...request.params,
       ...request.body,
+      ...request.params,
     }) satisfies WorkspaceMemberCreationRequestBody;
 
     const member = await this.memberService.create(userId, input);
@@ -52,8 +52,8 @@ class WorkspaceMemberController {
 
   list: RequestHandler = async (request, response) => {
     const input = workspaceMembersListSchema.parse({
-      ...request.params,
       ...request.query,
+      ...request.params,
     }) satisfies WorkspaceMemberListParams;
 
     const members = await this.memberService.list(input);
@@ -75,8 +75,8 @@ class WorkspaceMemberController {
 
   update: RequestHandler = async (request, response) => {
     const input = workspaceMemberUpdateSchema.parse({
-      ...request.params,
       ...request.body,
+      ...request.params,
     }) satisfies WorkspaceMemberByIdPathParams & WorkspaceMemberUpdateRequestBody;
 
     const member = await this.memberService.update(input);

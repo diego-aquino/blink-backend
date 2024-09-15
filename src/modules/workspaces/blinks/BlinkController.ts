@@ -32,7 +32,10 @@ class BlinkController {
 
   create: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = blinkCreationSchema.parse(request.body) satisfies BlinkCreationRequestBody;
+    const input = blinkCreationSchema.parse({
+      ...request.body,
+      ...request.params,
+    }) satisfies BlinkCreationRequestBody;
 
     const blink = await this.blinkService.create(userId, input);
 
@@ -43,8 +46,8 @@ class BlinkController {
 
   list: RequestHandler = async (request, response) => {
     const input = blinksListSchema.parse({
-      ...request.params,
       ...request.query,
+      ...request.params,
     }) satisfies BlinkListParams;
 
     const blinks = await this.blinkService.list(input);

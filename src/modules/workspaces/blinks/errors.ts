@@ -1,4 +1,4 @@
-import { InternalServerError, NotFoundError } from '@/errors/http';
+import { ConflictError, InternalServerError, NotFoundError } from '@/errors/http';
 import { Blink } from '@prisma/client';
 
 export class BlinkNotFoundError extends NotFoundError {
@@ -10,6 +10,12 @@ export class BlinkNotFoundError extends NotFoundError {
 export class BlinkByRedirectNotFoundError extends NotFoundError {
   constructor(redirectId: Blink['redirectId']) {
     super(`Blink with redirect '${redirectId}' not found.`);
+  }
+}
+
+export class BlinkRedirectConflictError extends ConflictError {
+  constructor(redirectId: Blink['redirectId']) {
+    super(`Blink redirect '${redirectId}' already exists.`);
   }
 }
 

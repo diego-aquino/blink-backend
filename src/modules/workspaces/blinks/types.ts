@@ -5,6 +5,13 @@ import { InferPathParams } from 'zimic/http';
 export type BlinkCreationRequestBody = BlinkOperations['workspaces/blinks/create']['request']['body'];
 export type BlinkCreationResponseStatus = keyof BlinkOperations['workspaces/blinks/create']['response'];
 export type BlinkCreationSuccessResponseBody = BlinkOperations['workspaces/blinks/create']['response']['201']['body'];
+export type BlinkCreationBadRequestResponseBody =
+  BlinkOperations['workspaces/blinks/create']['response']['400']['body'];
+export type BlinkCreationUnauthorizedResponseBody =
+  BlinkOperations['workspaces/blinks/create']['response']['401']['body'];
+export type BlinkCreationForbiddenResponseBody = BlinkOperations['workspaces/blinks/create']['response']['403']['body'];
+export type BlinkCreationNotFoundResponseBody = BlinkOperations['workspaces/blinks/create']['response']['404']['body'];
+export type BlinkCreationConflictResponseBody = BlinkOperations['workspaces/blinks/create']['response']['409']['body'];
 
 export type BlinkListParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/blinks/list']['request']['searchParams']
