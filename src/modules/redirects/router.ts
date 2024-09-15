@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { HttpSchemaPath } from 'zimic/http';
+import { HttpMethod, HttpSchemaPath } from 'zimic/http';
 
 import { BlinkSchema } from '@/types/generated';
 
@@ -10,10 +10,15 @@ const redirectRouter = Router();
 const redirectController = RedirectController.instance();
 
 export namespace RedirectPath {
-  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, '/:redirectId'>;
+  export type NonLiteral = Extract<HttpSchemaPath.NonLiteral<BlinkSchema>, `/${string}`>;
 }
 export type RedirectPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, '/:redirectId'>;
 
-redirectRouter.all('/:redirectId' satisfies RedirectPath, redirectController.all);
+export const REDIRECT_HTTP_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
+
+for (const method of REDIRECT_HTTP_METHODS) {
+  const lowerCaseMethod = method.toLowerCase() as Lowercase<HttpMethod>;
+  redirectRouter[lowerCaseMethod]('/:redirectId' satisfies RedirectPath, redirectController.all);
+}
 
 export default redirectRouter;

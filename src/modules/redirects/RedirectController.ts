@@ -9,8 +9,8 @@ import environment from '@/config/environment';
 import { Blink } from '@prisma/client';
 
 const REDIRECT_CACHE_SECONDS = environment.NODE_ENV === 'production' ? 5 * 60 : 0;
-const REDIRECT_CACHE_CONTROL = `public, max-age=${REDIRECT_CACHE_SECONDS}, must-revalidate`;
-const REDIRECT_STATUS_CODE = 308;
+export const REDIRECT_CACHE_CONTROL = `public, max-age=${REDIRECT_CACHE_SECONDS}, must-revalidate`;
+export const REDIRECT_STATUS_CODE = 308;
 
 class RedirectController {
   private static _instance = new RedirectController();
@@ -34,7 +34,10 @@ class RedirectController {
   };
 
   private createRedirectURL(request: Request, blink: Blink) {
-    const requestURL = new URL(request.url);
+    const requestURL = new URL(
+      request.url.replace(`/${blink.redirectId}`, ''),
+      `http://${environment.HOSTNAME}:${environment.PORT}`,
+    );
 
     const redirectURL = new URL(blink.url);
     redirectURL.search = requestURL.search;

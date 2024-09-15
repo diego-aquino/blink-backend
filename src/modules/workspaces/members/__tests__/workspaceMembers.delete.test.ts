@@ -17,7 +17,7 @@ import {
 } from '../types';
 import { WorkspaceCreationMemberInput } from '../validators';
 
-describe.only('Workspace members: Delete', async () => {
+describe('Workspace members: Delete', async () => {
   const app = await createApp();
 
   beforeEach(async () => {
