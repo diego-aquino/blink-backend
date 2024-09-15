@@ -34,14 +34,10 @@ describe('Workspace members: Get', async () => {
   it('gets a workspace member by id', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
     const creationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
     expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
