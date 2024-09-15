@@ -1,5 +1,3 @@
-import 'express-async-errors';
-
 import { afterAll, beforeAll, expect } from 'vitest';
 
 import environment from '@/config/environment';

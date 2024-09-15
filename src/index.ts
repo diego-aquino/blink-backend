@@ -1,6 +1,3 @@
-import 'express-async-errors';
-
-import { Express } from 'express';
 import createApp from './server/app';
 import environment from './config/environment';
 import database from './database/client';
