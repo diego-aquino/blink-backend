@@ -6,10 +6,10 @@ import {
   WorkspaceMemberNotFoundError,
 } from './errors';
 import {
-  CreateWorkspaceMemberInput,
+  WorkspaceCreationMemberInput,
   WorkspaceMemberByIdInput,
-  UpdateWorkspaceMemberInput,
-  ListWorkspaceMembersInput,
+  WorkspaceUpdateMemberInput,
+  WorkspaceMemberListInput,
 } from './validators';
 import { Prisma, User, WorkspaceMember, WorkspaceMemberType } from '@prisma/client';
 
@@ -27,7 +27,7 @@ class WorkspaceMemberService {
 
   private constructor() {}
 
-  async create(creatorId: User['id'], input: CreateWorkspaceMemberInput) {
+  async create(creatorId: User['id'], input: WorkspaceCreationMemberInput) {
     const member = await database.client.workspaceMember.create({
       data: {
         id: createId(),
@@ -42,7 +42,7 @@ class WorkspaceMemberService {
     return member;
   }
 
-  async list(input: ListWorkspaceMembersInput) {
+  async list(input: WorkspaceMemberListInput) {
     const where: Prisma.WorkspaceMemberWhereInput = {
       workspaceId: input.workspaceId,
       type: input.type,
@@ -83,7 +83,7 @@ class WorkspaceMemberService {
     return member;
   }
 
-  async update(input: UpdateWorkspaceMemberInput) {
+  async update(input: WorkspaceUpdateMemberInput) {
     const member = await database.client.workspaceMember.findUnique({
       where: {
         id: input.memberId,

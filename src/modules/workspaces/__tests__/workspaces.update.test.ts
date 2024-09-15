@@ -6,19 +6,19 @@ import supertest from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WorkspacePath } from '../router';
 import {
-  CreateWorkspaceResponseStatus,
-  CreateWorkspaceSuccessResponseBody,
-  UpdateWorkspaceBadRequestResponseBody,
-  UpdateWorkspaceForbiddenResponseBody,
-  UpdateWorkspaceRequestBody,
-  UpdateWorkspaceResponseStatus,
-  UpdateWorkspaceSuccessResponseBody,
-  UpdateWorkspaceUnauthorizedResponseBody,
+  WorkspaceCreationResponseStatus,
+  WorkspaceCreationSuccessResponseBody,
+  WorkspaceUpdateBadRequestResponseBody,
+  WorkspaceUpdateForbiddenResponseBody,
+  WorkspaceUpdateRequestBody,
+  WorkspaceUpdateResponseStatus,
+  WorkspaceUpdateSuccessResponseBody,
+  WorkspaceUpdateUnauthorizedResponseBody,
 } from '../types';
-import { CreateWorkspaceInput } from '../validators';
+import { WorkspaceCreationInput } from '../validators';
 import { WorkspaceMemberPath } from '../members/router';
-import { CreateWorkspaceMemberInput } from '../members/validators';
-import { CreateWorkspaceMemberResponseStatus } from '../members/types';
+import { WorkspaceCreationMemberInput } from '../members/validators';
+import { WorkspaceMemberCreationResponseStatus } from '../members/types';
 
 describe('Workspaces: Update', async () => {
   const app = await createApp();
@@ -33,28 +33,28 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
     const updateInput = {
       name: 'Workspace (updated)',
-    } satisfies UpdateWorkspaceRequestBody;
+    } satisfies WorkspaceUpdateRequestBody;
 
     expect(updateInput.name).not.toBe(workspace.name);
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(updateWorkspaceResponse.status).toBe(200 satisfies UpdateWorkspaceResponseStatus);
+    expect(workspaceUpdateResponse.status).toBe(200 satisfies WorkspaceUpdateResponseStatus);
 
-    const updatedWorkspace = updateWorkspaceResponse.body as UpdateWorkspaceSuccessResponseBody;
+    const updatedWorkspace = workspaceUpdateResponse.body as WorkspaceUpdateSuccessResponseBody;
 
-    expect(updatedWorkspace).toEqual<UpdateWorkspaceSuccessResponseBody>({
+    expect(updatedWorkspace).toEqual<WorkspaceUpdateSuccessResponseBody>({
       ...workspace,
       name: updateInput.name,
       updatedAt: expect.any(String),
@@ -75,7 +75,7 @@ describe('Workspaces: Update', async () => {
   it('updates a workspace with unchanged inputs', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
+    const input: WorkspaceCreationInput = {
       name: 'Workspace',
     };
 
@@ -84,22 +84,22 @@ describe('Workspaces: Update', async () => {
       .auth(auth.accessToken, { type: 'bearer' })
       .send(input);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const updateInput = input satisfies UpdateWorkspaceRequestBody;
+    const updateInput = input satisfies WorkspaceUpdateRequestBody;
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(updateWorkspaceResponse.status).toBe(200 satisfies UpdateWorkspaceResponseStatus);
+    expect(workspaceUpdateResponse.status).toBe(200 satisfies WorkspaceUpdateResponseStatus);
 
-    const updatedWorkspace = updateWorkspaceResponse.body as UpdateWorkspaceSuccessResponseBody;
+    const updatedWorkspace = workspaceUpdateResponse.body as WorkspaceUpdateSuccessResponseBody;
 
-    expect(updatedWorkspace).toEqual<UpdateWorkspaceSuccessResponseBody>({
+    expect(updatedWorkspace).toEqual<WorkspaceUpdateSuccessResponseBody>({
       ...workspace,
       updatedAt: expect.any(String),
     });
@@ -122,22 +122,22 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(
         // @ts-expect-error
-        { name: 1 } satisfies UpdateWorkspaceRequestBody,
+        { name: 1 } satisfies WorkspaceUpdateRequestBody,
       );
 
-    expect(updateWorkspaceResponse.status).toBe(400 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceBadRequestResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(400 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
@@ -164,15 +164,15 @@ describe('Workspaces: Update', async () => {
   it('returns an error if the workspace does not exist', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch('/workspaces/unknown' satisfies WorkspacePath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send({
         name: 'Workspace (updated)',
-      } satisfies UpdateWorkspaceRequestBody);
+      } satisfies WorkspaceUpdateRequestBody);
 
-    expect(updateWorkspaceResponse.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(403 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: "Operation not allowed on resource '/workspaces/unknown'.",
     });
@@ -184,15 +184,15 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
     const updateInput = {
       name: 'Workspace (updated)',
-    } satisfies UpdateWorkspaceRequestBody;
+    } satisfies WorkspaceUpdateRequestBody;
 
     expect(updateInput.name).not.toBe(workspace.name);
 
@@ -201,9 +201,9 @@ describe('Workspaces: Update', async () => {
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
+      .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
-    expect(memberCreationResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
     let workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
       where: { id: workspace.id },
@@ -214,13 +214,13 @@ describe('Workspaces: Update', async () => {
     expect(workspaceInDatabase.members[0].userId).toBe(user.id);
     expect(workspaceInDatabase.members[1].userId).toBe(otherUser.id);
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(updateWorkspaceResponse.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(403 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -242,27 +242,27 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
     const updateInput = {
       name: 'Workspace (updated)',
-    } satisfies UpdateWorkspaceRequestBody;
+    } satisfies WorkspaceUpdateRequestBody;
 
     expect(updateInput.name).not.toBe(workspace.name);
 
     const { auth: otherAuth } = await createAuthenticatedUser(app);
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(updateWorkspaceResponse.status).toBe(403 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceForbiddenResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(403 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -283,18 +283,18 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const updateWorkspaceResponse = await supertest(app).patch(
+    const workspaceUpdateResponse = await supertest(app).patch(
       `/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral,
     );
 
-    expect(updateWorkspaceResponse.status).toBe(401 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceUnauthorizedResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(401 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -306,18 +306,18 @@ describe('Workspaces: Update', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const updateWorkspaceResponse = await supertest(app)
+    const workspaceUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
       .auth('invalid', { type: 'bearer' });
 
-    expect(updateWorkspaceResponse.status).toBe(401 satisfies UpdateWorkspaceResponseStatus);
-    expect(updateWorkspaceResponse.body).toEqual<UpdateWorkspaceUnauthorizedResponseBody>({
+    expect(workspaceUpdateResponse.status).toBe(401 satisfies WorkspaceUpdateResponseStatus);
+    expect(workspaceUpdateResponse.body).toEqual<WorkspaceUpdateUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

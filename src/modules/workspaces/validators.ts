@@ -1,20 +1,20 @@
 import { z } from 'zod';
 
-export const createWorkspaceSchema = z.object({
+export const workspaceCreationSchema = z.object({
   name: z.string().min(1),
 });
 
-export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
+export type WorkspaceCreationInput = z.infer<typeof workspaceCreationSchema>;
 
-export const listWorkspacesSchema = z.object({
+export const workspacesListSchema = z.object({
   name: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
 
-export type ListWorkspacesInput = z.infer<typeof listWorkspacesSchema>;
-export namespace ListWorkspacesInput {
-  export type Raw = z.input<typeof listWorkspacesSchema>;
+export type WorkspaceListInput = z.infer<typeof workspacesListSchema>;
+export namespace WorkspaceListInput {
+  export type Raw = z.input<typeof workspacesListSchema>;
 }
 
 export const workspaceByIdSchema = z.object({
@@ -23,8 +23,8 @@ export const workspaceByIdSchema = z.object({
 
 export type WorkspaceByIdInput = z.infer<typeof workspaceByIdSchema>;
 
-export const updateWorkspaceSchema = workspaceByIdSchema.extend({
+export const workspaceUpdateSchema = workspaceByIdSchema.extend({
   name: z.string().min(1).optional(),
 });
 
-export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>;
+export type WorkspaceUpdateInput = z.infer<typeof workspaceUpdateSchema>;

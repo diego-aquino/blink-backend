@@ -5,19 +5,19 @@ import supertest from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WorkspacePath } from '../../router';
 import {
-  CreateWorkspaceResponseStatus,
-  GetWorkspaceByIdForbiddenResponseBody,
-  ListWorkspacesResponseStatus,
+  WorkspaceCreationResponseStatus,
+  WorkspaceGetByIdForbiddenResponseBody,
+  WorkspaceListResponseStatus,
 } from '../../types';
-import { CreateWorkspaceInput, ListWorkspacesInput } from '../../validators';
+import { WorkspaceCreationInput, WorkspaceListInput } from '../../validators';
 import { WorkspaceMemberPath } from '../router';
 import {
-  CreateWorkspaceMemberResponseStatus,
-  CreateWorkspaceMemberSuccessResponseBody,
-  ListWorkspaceMembersResponseStatus,
-  ListWorkspaceMembersSuccessResponseBody,
+  WorkspaceMemberCreationResponseStatus,
+  WorkspaceMemberCreationSuccessResponseBody,
+  WorkspaceMemberListResponseStatus,
+  WorkspaceMemberListSuccessResponseBody,
 } from '../types';
-import { CreateWorkspaceMemberInput } from '../validators';
+import { WorkspaceCreationMemberInput } from '../validators';
 import WorkspaceService from '../../WorkspaceService';
 import database from '@/database/client';
 import { toWorkspaceMemberResponse } from '../views';
@@ -48,62 +48,62 @@ describe('Workspace members: List', async () => {
     let memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies CreateWorkspaceMemberInput.Body);
+      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
-    expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
-    const otherMember = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
+    const otherMember = memberResponse.body as WorkspaceMemberCreationSuccessResponseBody;
 
-    let listMembersResponse = await supertest(app)
+    let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspaceMembersResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
-    let { members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody;
+    let { members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody;
 
     expect(members).toHaveLength(2);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(otherMember);
-    expect(members[1]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(toWorkspaceMemberResponse(member));
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(otherMember);
+    expect(members[1]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(toWorkspaceMemberResponse(member));
 
     expect(total).toBe(2);
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .query({ page: 1, limit: 1 } satisfies ListWorkspacesInput);
+      .query({ page: 1, limit: 1 } satisfies WorkspaceListInput);
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspacesResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
 
-    ({ members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody);
+    ({ members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody);
 
     expect(members).toHaveLength(1);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(otherMember);
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(otherMember);
 
     expect(total).toBe(2);
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .query({ page: 2, limit: 1 } satisfies ListWorkspacesInput);
+      .query({ page: 2, limit: 1 } satisfies WorkspaceListInput);
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspacesResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
 
-    ({ members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody);
+    ({ members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody);
 
     expect(members).toHaveLength(1);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(toWorkspaceMemberResponse(member));
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(toWorkspaceMemberResponse(member));
 
     expect(total).toBe(2);
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .query({ page: 3, limit: 1 } satisfies ListWorkspacesInput);
+      .query({ page: 3, limit: 1 } satisfies WorkspaceListInput);
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspacesResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
 
-    ({ members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody);
+    ({ members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody);
 
     expect(members).toHaveLength(0);
     expect(total).toBe(2);
@@ -129,44 +129,44 @@ describe('Workspace members: List', async () => {
     let memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies CreateWorkspaceMemberInput.Body);
+      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
-    expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
-    const otherMember = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
+    const otherMember = memberResponse.body as WorkspaceMemberCreationSuccessResponseBody;
 
     let searchName = otherUser.name.slice(0, 10).toUpperCase();
     expect(searchName).not.toBe(user.name);
     expect(searchName).not.toBe(otherUser.name);
 
-    let listMembersResponse = await supertest(app)
+    let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .query({ name: searchName } satisfies ListWorkspacesInput.Raw);
+      .query({ name: searchName } satisfies WorkspaceListInput.Raw);
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspaceMembersResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
-    let { members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody;
+    let { members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody;
 
     expect(members).toHaveLength(1);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(otherMember);
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(otherMember);
 
     expect(total).toBe(1);
 
     searchName = user.name;
     expect(searchName).not.toBe(otherUser.name);
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .query({ name: searchName } satisfies ListWorkspacesInput.Raw);
+      .query({ name: searchName } satisfies WorkspaceListInput.Raw);
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspaceMembersResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
-    ({ members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody);
+    ({ members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody);
 
     expect(members).toHaveLength(1);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(toWorkspaceMemberResponse(member));
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(toWorkspaceMemberResponse(member));
 
     expect(total).toBe(1);
   });
@@ -187,11 +187,11 @@ describe('Workspace members: List', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
+      .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
-    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
-    const otherWorkspace = workspaceCreationResponse.body as CreateWorkspaceMemberSuccessResponseBody;
+    const otherWorkspace = workspaceCreationResponse.body as WorkspaceMemberCreationSuccessResponseBody;
 
     const memberInOtherWorkspace = await database.client.workspaceMember.findUniqueOrThrow({
       where: { workspaceId_userId: { workspaceId: otherWorkspace.id, userId: user.id } },
@@ -201,36 +201,36 @@ describe('Workspace members: List', async () => {
     const memberResponse = await supertest(app)
       .post(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies CreateWorkspaceMemberInput.Body);
+      .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
-    expect(memberResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
-    const otherMember = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
+    const otherMember = memberResponse.body as WorkspaceMemberCreationSuccessResponseBody;
 
-    let listMembersResponse = await supertest(app)
+    let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspaceMembersResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
-    let { members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody;
+    let { members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody;
 
     expect(members).toHaveLength(1);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(toWorkspaceMemberResponse(member));
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(toWorkspaceMemberResponse(member));
 
     expect(total).toBe(1);
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(200 satisfies ListWorkspaceMembersResponseStatus);
+    expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
-    ({ members, total } = listMembersResponse.body as ListWorkspaceMembersSuccessResponseBody);
+    ({ members, total } = memberListResponse.body as WorkspaceMemberListSuccessResponseBody);
 
     expect(members).toHaveLength(2);
-    expect(members[0]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(otherMember);
-    expect(members[1]).toEqual<CreateWorkspaceMemberSuccessResponseBody>(
+    expect(members[0]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(otherMember);
+    expect(members[1]).toEqual<WorkspaceMemberCreationSuccessResponseBody>(
       toWorkspaceMemberResponse(memberInOtherWorkspace),
     );
 
@@ -240,12 +240,12 @@ describe('Workspace members: List', async () => {
   it('returns an error if the workspace does not exist', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const listMembersResponse = await supertest(app)
+    const memberListResponse = await supertest(app)
       .get(`/workspaces/unknown/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(403 satisfies ListWorkspaceMembersResponseStatus);
-    expect(listMembersResponse.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+    expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
+    expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/unknown'.`,
     });
@@ -262,22 +262,22 @@ describe('Workspace members: List', async () => {
     const otherWorkspace = (await workspaceService.getDefaultWorkspace(otherUser.id))!;
     expect(otherWorkspace).not.toBeNull();
 
-    let listMembersResponse = await supertest(app)
+    let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(403 satisfies ListWorkspaceMembersResponseStatus);
-    expect(listMembersResponse.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+    expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
+    expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
 
-    listMembersResponse = await supertest(app)
+    memberListResponse = await supertest(app)
       .get(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(403 satisfies ListWorkspaceMembersResponseStatus);
-    expect(listMembersResponse.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+    expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
+    expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${otherWorkspace.id}'.`,
     });
@@ -289,12 +289,12 @@ describe('Workspace members: List', async () => {
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const listMembersResponse = await supertest(app).get(
+    const memberListResponse = await supertest(app).get(
       `/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral,
     );
 
-    expect(listMembersResponse.status).toBe(401 satisfies ListWorkspaceMembersResponseStatus);
-    expect(listMembersResponse.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+    expect(memberListResponse.status).toBe(401 satisfies WorkspaceMemberListResponseStatus);
+    expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -306,12 +306,12 @@ describe('Workspace members: List', async () => {
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const listMembersResponse = await supertest(app)
+    const memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth('invalid', { type: 'bearer' });
 
-    expect(listMembersResponse.status).toBe(401 satisfies ListWorkspaceMembersResponseStatus);
-    expect(listMembersResponse.body).toEqual<GetWorkspaceByIdForbiddenResponseBody>({
+    expect(memberListResponse.status).toBe(401 satisfies WorkspaceMemberListResponseStatus);
+    expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

@@ -2,20 +2,20 @@ import { RequestHandler } from '@/modules/shared/controllers';
 
 import BlinkService from './BlinkService';
 import { toBlinkResponse } from './views';
-import { createBlinkSchema, blinkByIdSchema, updateBlinkSchema, listBlinksSchema } from './validators';
+import { blinkCreationSchema, blinkByIdSchema, blinkUpdateSchema, blinksListSchema } from './validators';
 import {
-  CreateBlinkRequestBody,
-  CreateBlinkResponseStatus,
-  CreateBlinkSuccessResponseBody,
-  DeleteBlinkResponseStatus,
-  GetBlinkByIdResponseStatus,
-  GetBlinkByIdSuccessResponseBody,
-  ListBlinksParams,
-  ListBlinksResponseStatus,
-  ListBlinksSuccessResponseBody,
-  UpdateBlinkRequestBody,
-  UpdateBlinkResponseStatus,
-  UpdateBlinkSuccessResponseBody,
+  BlinkCreationRequestBody,
+  BlinkCreationResponseStatus,
+  BlinkCreationSuccessResponseBody,
+  BlinkDeletionResponseStatus,
+  BlinkGetByIdResponseStatus,
+  BlinkGetByIdSuccessResponseBody,
+  BlinkListParams,
+  BlinkListResponseStatus,
+  BlinkListSuccessResponseBody,
+  BlinkUpdateRequestBody,
+  BlinkUpdateResponseStatus,
+  BlinkUpdateSuccessResponseBody,
   BlinkByIdPathParams,
 } from './types';
 
@@ -32,27 +32,27 @@ class BlinkController {
 
   create: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = createBlinkSchema.parse(request.body) satisfies CreateBlinkRequestBody;
+    const input = blinkCreationSchema.parse(request.body) satisfies BlinkCreationRequestBody;
 
     const blink = await this.blinkService.create(userId, input);
 
     return response
-      .status(201 satisfies CreateBlinkResponseStatus)
-      .json(toBlinkResponse(blink) satisfies CreateBlinkSuccessResponseBody);
+      .status(201 satisfies BlinkCreationResponseStatus)
+      .json(toBlinkResponse(blink) satisfies BlinkCreationSuccessResponseBody);
   };
 
   list: RequestHandler = async (request, response) => {
-    const input = listBlinksSchema.parse({
+    const input = blinksListSchema.parse({
       ...request.params,
       ...request.query,
-    }) satisfies ListBlinksParams;
+    }) satisfies BlinkListParams;
 
     const blinks = await this.blinkService.list(input);
 
-    return response.status(200 satisfies ListBlinksResponseStatus).json({
+    return response.status(200 satisfies BlinkListResponseStatus).json({
       blinks: blinks.list.map(toBlinkResponse),
       total: blinks.total,
-    } satisfies ListBlinksSuccessResponseBody);
+    } satisfies BlinkListSuccessResponseBody);
   };
 
   get: RequestHandler = async (request, response) => {
@@ -60,28 +60,28 @@ class BlinkController {
     const blink = await this.blinkService.get(input);
 
     return response
-      .status(200 satisfies GetBlinkByIdResponseStatus)
-      .json(toBlinkResponse(blink) satisfies GetBlinkByIdSuccessResponseBody);
+      .status(200 satisfies BlinkGetByIdResponseStatus)
+      .json(toBlinkResponse(blink) satisfies BlinkGetByIdSuccessResponseBody);
   };
 
   update: RequestHandler = async (request, response) => {
-    const input = updateBlinkSchema.parse({
+    const input = blinkUpdateSchema.parse({
       ...request.body,
       ...request.params,
-    }) satisfies BlinkByIdPathParams & UpdateBlinkRequestBody;
+    }) satisfies BlinkByIdPathParams & BlinkUpdateRequestBody;
 
     const blink = await this.blinkService.update(input);
 
     return response
-      .status(200 satisfies UpdateBlinkResponseStatus)
-      .json(toBlinkResponse(blink) satisfies UpdateBlinkSuccessResponseBody);
+      .status(200 satisfies BlinkUpdateResponseStatus)
+      .json(toBlinkResponse(blink) satisfies BlinkUpdateSuccessResponseBody);
   };
 
   delete: RequestHandler = async (request, response) => {
     const input = blinkByIdSchema.parse(request.params) satisfies BlinkByIdPathParams;
     await this.blinkService.delete(input);
 
-    return response.status(204 satisfies DeleteBlinkResponseStatus).send();
+    return response.status(204 satisfies BlinkDeletionResponseStatus).send();
   };
 }
 

@@ -7,7 +7,11 @@ import { clearDatabase } from '@tests/utils/database';
 import database from '@/database/client';
 
 import { UserPath } from '../router';
-import { DeleteUserNotFoundResponseBody, DeleteUserResponseStatus, DeleteUserUnauthorizedResponseBody } from '../types';
+import {
+  UserDeletionNotFoundResponseBody,
+  UserDeletionResponseStatus,
+  UserDeletionUnauthorizedResponseBody,
+} from '../types';
 
 describe('Users: Delete', async () => {
   const app = await createApp();
@@ -23,7 +27,7 @@ describe('Users: Delete', async () => {
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(userDeletionResponse.status).toBe(204 satisfies DeleteUserResponseStatus);
+    expect(userDeletionResponse.status).toBe(204 satisfies UserDeletionResponseStatus);
 
     const userInDatabase = await database.client.user.findUnique({
       where: { id: user.id },
@@ -42,8 +46,8 @@ describe('Users: Delete', async () => {
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(userDeletionResponse.status).toBe(404 satisfies DeleteUserResponseStatus);
-    expect(userDeletionResponse.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(404 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `User '${user.id}' not found.`,
     });
@@ -57,8 +61,8 @@ describe('Users: Delete', async () => {
       .delete(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(userDeletionResponse.status).toBe(403 satisfies DeleteUserResponseStatus);
-    expect(userDeletionResponse.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
@@ -72,8 +76,8 @@ describe('Users: Delete', async () => {
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(userDeletionResponse.status).toBe(403 satisfies DeleteUserResponseStatus);
-    expect(userDeletionResponse.body).toEqual<DeleteUserNotFoundResponseBody>({
+    expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
@@ -89,8 +93,8 @@ describe('Users: Delete', async () => {
 
     const userDeletionResponse = await supertest(app).delete(`/users/${user.id}` satisfies UserPath.NonLiteral);
 
-    expect(userDeletionResponse.status).toBe(401 satisfies DeleteUserResponseStatus);
-    expect(userDeletionResponse.body).toEqual<DeleteUserUnauthorizedResponseBody>({
+    expect(userDeletionResponse.status).toBe(401 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -99,8 +103,8 @@ describe('Users: Delete', async () => {
   it('returns an error if the access token is invalid', async () => {
     const userDeletionResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
-    expect(userDeletionResponse.status).toBe(401 satisfies DeleteUserResponseStatus);
-    expect(userDeletionResponse.body).toEqual<DeleteUserUnauthorizedResponseBody>({
+    expect(userDeletionResponse.status).toBe(401 satisfies UserDeletionResponseStatus);
+    expect(userDeletionResponse.body).toEqual<UserDeletionUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

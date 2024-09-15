@@ -7,62 +7,62 @@ export type WorkspaceMemberWithUser = Prisma.WorkspaceMemberGetPayload<{
   include: { user: true };
 }>;
 
-export type CreateWorkspaceMemberRequestBody = BlinkOperations['workspaces/members/create']['request']['body'];
-export type CreateWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/create']['response'];
-export type CreateWorkspaceMemberSuccessResponseBody =
+export type WorkspaceMemberCreationRequestBody = BlinkOperations['workspaces/members/create']['request']['body'];
+export type WorkspaceMemberCreationResponseStatus = keyof BlinkOperations['workspaces/members/create']['response'];
+export type WorkspaceMemberCreationSuccessResponseBody =
   BlinkOperations['workspaces/members/create']['response']['201']['body'];
-export type CreateWorkspaceMemberBadRequestResponseBody =
+export type WorkspaceMemberCreationBadRequestResponseBody =
   BlinkOperations['workspaces/members/create']['response']['400']['body'];
-export type CreateWorkspaceMemberUnauthorizedResponseBody =
+export type WorkspaceMemberCreationUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/create']['response']['401']['body'];
-export type CreateWorkspaceMemberForbiddenResponseBody =
+export type WorkspaceMemberCreationForbiddenResponseBody =
   BlinkOperations['workspaces/members/create']['response']['403']['body'];
-export type CreateWorkspaceMemberNotFoundResponseBody =
+export type WorkspaceMemberCreationNotFoundResponseBody =
   BlinkOperations['workspaces/members/create']['response']['404']['body'];
-export type CreateWorkspaceMemberConflictResponseBody =
+export type WorkspaceMemberCreationConflictResponseBody =
   BlinkOperations['workspaces/members/create']['response']['409']['body'];
 
-export type ListWorkspaceMembersParams = ParsedHttpSearchParams<
+export type WorkspaceMemberListParams = ParsedHttpSearchParams<
   BlinkOperations['workspaces/members/list']['request']['searchParams']
 >;
-export type ListWorkspaceMembersSuccessResponseBody =
+export type WorkspaceMemberListSuccessResponseBody =
   BlinkOperations['workspaces/members/list']['response']['200']['body'];
-export type ListWorkspaceMembersUnauthorizedResponseBody =
+export type WorkspaceMemberListUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/list']['response']['401']['body'];
-export type ListWorkspaceMembersForbiddenResponseBody =
+export type WorkspaceMemberListForbiddenResponseBody =
   BlinkOperations['workspaces/members/list']['response']['403']['body'];
-export type ListWorkspaceMembersNotFoundResponseBody =
+export type WorkspaceMemberListNotFoundResponseBody =
   BlinkOperations['workspaces/members/list']['response']['404']['body'];
-export type ListWorkspaceMembersResponseStatus = keyof BlinkOperations['workspaces/members/get']['response'];
+export type WorkspaceMemberListResponseStatus = keyof BlinkOperations['workspaces/members/get']['response'];
 
 export type WorkspaceMemberByIdPathParams = InferPathParams<BlinkSchema, '/workspaces/:workspaceId/members/:memberId'>;
-export type GetWorkspaceMemberByIdSuccessResponseBody =
+export type WorkspaceMemberGetByIdSuccessResponseBody =
   BlinkOperations['workspaces/members/get']['response']['200']['body'];
-export type GetWorkspaceMemberByIdUnauthorizedResponseBody =
+export type WorkspaceMemberGetByIdUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/get']['response']['401']['body'];
-export type GetWorkspaceMemberByIdForbiddenResponseBody =
+export type WorkspaceMemberGetByIdForbiddenResponseBody =
   BlinkOperations['workspaces/members/get']['response']['403']['body'];
-export type GetWorkspaceMemberByIdNotFoundResponseBody =
+export type WorkspaceMemberGetByIdNotFoundResponseBody =
   BlinkOperations['workspaces/members/get']['response']['404']['body'];
-export type GetWorkspaceMemberByIdResponseStatus = keyof BlinkOperations['workspaces/members/get']['response'];
+export type WorkspaceMemberGetByIdResponseStatus = keyof BlinkOperations['workspaces/members/get']['response'];
 
-export type UpdateWorkspaceMemberRequestBody = BlinkOperations['workspaces/members/update']['request']['body'];
-export type UpdateWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/update']['response'];
-export type UpdateWorkspaceMemberSuccessResponseBody =
+export type WorkspaceMemberUpdateRequestBody = BlinkOperations['workspaces/members/update']['request']['body'];
+export type WorkspaceMemberUpdateResponseStatus = keyof BlinkOperations['workspaces/members/update']['response'];
+export type WorkspaceMemberUpdateSuccessResponseBody =
   BlinkOperations['workspaces/members/update']['response']['200']['body'];
-export type UpdateWorkspaceMemberUnauthorizedResponseBody =
+export type WorkspaceMemberUpdateUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/update']['response']['401']['body'];
-export type UpdateWorkspaceMemberForbiddenResponseBody =
+export type WorkspaceMemberUpdateForbiddenResponseBody =
   BlinkOperations['workspaces/members/update']['response']['403']['body'];
-export type UpdateWorkspaceMemberNotFoundResponseBody =
+export type WorkspaceMemberUpdateNotFoundResponseBody =
   BlinkOperations['workspaces/members/update']['response']['404']['body'];
 
-export type DeleteWorkspaceMemberResponseStatus = keyof BlinkOperations['workspaces/members/delete']['response'];
-export type DeleteWorkspaceMemberUnauthorizedResponseBody =
+export type WorkspaceMemberDeletionResponseStatus = keyof BlinkOperations['workspaces/members/delete']['response'];
+export type WorkspaceMemberDeletionUnauthorizedResponseBody =
   BlinkOperations['workspaces/members/delete']['response']['401']['body'];
-export type DeleteWorkspaceMemberForbiddenResponseBody =
+export type WorkspaceMemberDeletionForbiddenResponseBody =
   BlinkOperations['workspaces/members/delete']['response']['403']['body'];
-export type DeleteWorkspaceMemberNotFoundResponseBody =
+export type WorkspaceMemberDeletionNotFoundResponseBody =
   BlinkOperations['workspaces/members/delete']['response']['404']['body'];
 
 export type WorkspaceMemberResponse = BlinkComponents['schemas']['WorkspaceMember'];

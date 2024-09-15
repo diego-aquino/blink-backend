@@ -3,24 +3,24 @@ import { RequestHandler } from '@/modules/shared/controllers';
 import WorkspaceMemberService from './WorkspaceMemberService';
 import { toWorkspaceMemberResponse } from './views';
 import {
-  createWorkspaceMemberSchema,
+  workspaceMemberCreationSchema,
   workspaceMemberByIdSchema,
-  updateWorkspaceMemberSchema,
-  listWorkspaceMembersSchema,
+  workspaceMemberUpdateSchema,
+  workspaceMembersListSchema,
 } from './validators';
 import {
-  CreateWorkspaceMemberRequestBody,
-  CreateWorkspaceMemberResponseStatus,
-  CreateWorkspaceMemberSuccessResponseBody,
-  DeleteWorkspaceMemberResponseStatus,
-  GetWorkspaceMemberByIdResponseStatus,
-  GetWorkspaceMemberByIdSuccessResponseBody,
-  ListWorkspaceMembersParams,
-  ListWorkspaceMembersResponseStatus,
-  ListWorkspaceMembersSuccessResponseBody,
-  UpdateWorkspaceMemberRequestBody,
-  UpdateWorkspaceMemberResponseStatus,
-  UpdateWorkspaceMemberSuccessResponseBody,
+  WorkspaceMemberCreationRequestBody,
+  WorkspaceMemberCreationResponseStatus,
+  WorkspaceMemberCreationSuccessResponseBody,
+  WorkspaceMemberDeletionResponseStatus,
+  WorkspaceMemberGetByIdResponseStatus,
+  WorkspaceMemberGetByIdSuccessResponseBody,
+  WorkspaceMemberListParams,
+  WorkspaceMemberListResponseStatus,
+  WorkspaceMemberListSuccessResponseBody,
+  WorkspaceMemberUpdateRequestBody,
+  WorkspaceMemberUpdateResponseStatus,
+  WorkspaceMemberUpdateSuccessResponseBody,
   WorkspaceMemberByIdPathParams,
 } from './types';
 
@@ -38,30 +38,30 @@ class WorkspaceMemberController {
   create: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
 
-    const input = createWorkspaceMemberSchema.parse({
+    const input = workspaceMemberCreationSchema.parse({
       ...request.params,
       ...request.body,
-    }) satisfies CreateWorkspaceMemberRequestBody;
+    }) satisfies WorkspaceMemberCreationRequestBody;
 
     const member = await this.memberService.create(userId, input);
 
     return response
-      .status(201 satisfies CreateWorkspaceMemberResponseStatus)
-      .json(toWorkspaceMemberResponse(member) satisfies CreateWorkspaceMemberSuccessResponseBody);
+      .status(201 satisfies WorkspaceMemberCreationResponseStatus)
+      .json(toWorkspaceMemberResponse(member) satisfies WorkspaceMemberCreationSuccessResponseBody);
   };
 
   list: RequestHandler = async (request, response) => {
-    const input = listWorkspaceMembersSchema.parse({
+    const input = workspaceMembersListSchema.parse({
       ...request.params,
       ...request.query,
-    }) satisfies ListWorkspaceMembersParams;
+    }) satisfies WorkspaceMemberListParams;
 
     const members = await this.memberService.list(input);
 
-    return response.status(200 satisfies ListWorkspaceMembersResponseStatus).json({
+    return response.status(200 satisfies WorkspaceMemberListResponseStatus).json({
       members: members.list.map(toWorkspaceMemberResponse),
       total: members.total,
-    } satisfies ListWorkspaceMembersSuccessResponseBody);
+    } satisfies WorkspaceMemberListSuccessResponseBody);
   };
 
   get: RequestHandler = async (request, response) => {
@@ -69,28 +69,28 @@ class WorkspaceMemberController {
     const member = await this.memberService.get(input);
 
     return response
-      .status(200 satisfies GetWorkspaceMemberByIdResponseStatus)
-      .json(toWorkspaceMemberResponse(member) satisfies GetWorkspaceMemberByIdSuccessResponseBody);
+      .status(200 satisfies WorkspaceMemberGetByIdResponseStatus)
+      .json(toWorkspaceMemberResponse(member) satisfies WorkspaceMemberGetByIdSuccessResponseBody);
   };
 
   update: RequestHandler = async (request, response) => {
-    const input = updateWorkspaceMemberSchema.parse({
+    const input = workspaceMemberUpdateSchema.parse({
       ...request.params,
       ...request.body,
-    }) satisfies WorkspaceMemberByIdPathParams & UpdateWorkspaceMemberRequestBody;
+    }) satisfies WorkspaceMemberByIdPathParams & WorkspaceMemberUpdateRequestBody;
 
     const member = await this.memberService.update(input);
 
     return response
-      .status(200 satisfies UpdateWorkspaceMemberResponseStatus)
-      .json(toWorkspaceMemberResponse(member) satisfies UpdateWorkspaceMemberSuccessResponseBody);
+      .status(200 satisfies WorkspaceMemberUpdateResponseStatus)
+      .json(toWorkspaceMemberResponse(member) satisfies WorkspaceMemberUpdateSuccessResponseBody);
   };
 
   delete: RequestHandler = async (request, response) => {
     const input = workspaceMemberByIdSchema.parse(request.params) satisfies WorkspaceMemberByIdPathParams;
     await this.memberService.delete(input);
 
-    return response.status(204 satisfies DeleteWorkspaceMemberResponseStatus).send();
+    return response.status(204 satisfies WorkspaceMemberDeletionResponseStatus).send();
   };
 }
 

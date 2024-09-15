@@ -1,20 +1,25 @@
 import WorkspaceService from './WorkspaceService';
 import { RequestHandler } from '../shared/controllers';
 import { toWorkspaceResponse } from './views';
-import { createWorkspaceSchema, workspaceByIdSchema, updateWorkspaceSchema, listWorkspacesSchema } from './validators';
 import {
-  CreateWorkspaceRequestBody,
-  CreateWorkspaceResponseStatus,
-  CreateWorkspaceSuccessResponseBody,
-  DeleteWorkspaceResponseStatus,
-  GetWorkspaceByIdResponseStatus,
-  GetWorkspaceByIdSuccessResponseBody,
-  ListWorkspacesParams,
-  ListWorkspacesResponseStatus,
-  ListWorkspacesSuccessResponseBody,
-  UpdateWorkspaceRequestBody,
-  UpdateWorkspaceResponseStatus,
-  UpdateWorkspaceSuccessResponseBody,
+  workspaceCreationSchema,
+  workspaceByIdSchema,
+  workspaceUpdateSchema,
+  workspacesListSchema,
+} from './validators';
+import {
+  WorkspaceCreationRequestBody,
+  WorkspaceCreationResponseStatus,
+  WorkspaceCreationSuccessResponseBody,
+  WorkspaceDeletionResponseStatus,
+  WorkspaceGetByIdResponseStatus,
+  WorkspaceGetByIdSuccessResponseBody,
+  WorkspaceListParams,
+  WorkspaceListResponseStatus,
+  WorkspaceListSuccessResponseBody,
+  WorkspaceUpdateRequestBody,
+  WorkspaceUpdateResponseStatus,
+  WorkspaceUpdateSuccessResponseBody,
   WorkspaceByIdPathParams,
 } from './types';
 
@@ -31,28 +36,28 @@ class WorkspaceController {
 
   create: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = createWorkspaceSchema.parse(request.body) satisfies CreateWorkspaceRequestBody;
+    const input = workspaceCreationSchema.parse(request.body) satisfies WorkspaceCreationRequestBody;
 
     const workspace = await this.workspaceService.create(userId, input);
 
     return response
-      .status(201 satisfies CreateWorkspaceResponseStatus)
-      .json(toWorkspaceResponse(workspace) satisfies CreateWorkspaceSuccessResponseBody);
+      .status(201 satisfies WorkspaceCreationResponseStatus)
+      .json(toWorkspaceResponse(workspace) satisfies WorkspaceCreationSuccessResponseBody);
   };
 
   listAsMember: RequestHandler = async (request, response) => {
     const { userId } = request.middlewares.auth.authenticated;
-    const input = listWorkspacesSchema.parse({
+    const input = workspacesListSchema.parse({
       ...request.params,
       ...request.query,
-    }) satisfies ListWorkspacesParams;
+    }) satisfies WorkspaceListParams;
 
     const workspaces = await this.workspaceService.listByMember(userId, input);
 
-    return response.status(200 satisfies ListWorkspacesResponseStatus).json({
+    return response.status(200 satisfies WorkspaceListResponseStatus).json({
       workspaces: workspaces.list.map(toWorkspaceResponse),
       total: workspaces.total,
-    } satisfies ListWorkspacesSuccessResponseBody);
+    } satisfies WorkspaceListSuccessResponseBody);
   };
 
   get: RequestHandler = async (request, response) => {
@@ -60,28 +65,28 @@ class WorkspaceController {
     const workspace = await this.workspaceService.get(input);
 
     return response
-      .status(200 satisfies GetWorkspaceByIdResponseStatus)
-      .json(toWorkspaceResponse(workspace) satisfies GetWorkspaceByIdSuccessResponseBody);
+      .status(200 satisfies WorkspaceGetByIdResponseStatus)
+      .json(toWorkspaceResponse(workspace) satisfies WorkspaceGetByIdSuccessResponseBody);
   };
 
   update: RequestHandler = async (request, response) => {
-    const input = updateWorkspaceSchema.parse({
+    const input = workspaceUpdateSchema.parse({
       ...request.body,
       ...request.params,
-    }) satisfies WorkspaceByIdPathParams & UpdateWorkspaceRequestBody;
+    }) satisfies WorkspaceByIdPathParams & WorkspaceUpdateRequestBody;
 
     const workspace = await this.workspaceService.update(input);
 
     return response
-      .status(200 satisfies UpdateWorkspaceResponseStatus)
-      .json(toWorkspaceResponse(workspace) satisfies UpdateWorkspaceSuccessResponseBody);
+      .status(200 satisfies WorkspaceUpdateResponseStatus)
+      .json(toWorkspaceResponse(workspace) satisfies WorkspaceUpdateSuccessResponseBody);
   };
 
   delete: RequestHandler = async (request, response) => {
     const input = workspaceByIdSchema.parse(request.params) satisfies WorkspaceByIdPathParams;
     await this.workspaceService.delete(input);
 
-    return response.status(204 satisfies DeleteWorkspaceResponseStatus).send();
+    return response.status(204 satisfies WorkspaceDeletionResponseStatus).send();
   };
 }
 
