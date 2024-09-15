@@ -20,11 +20,11 @@ describe('Auth: Log out', async () => {
   it('logs out', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(204 satisfies LogoutResponseStatus);
+    expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
     const accessTokenPayload = await verifyJWT<AccessTokenPayload>(auth.accessToken);
 
@@ -37,34 +37,34 @@ describe('Auth: Log out', async () => {
   it('accepts an existing access token, even after logout, until expired', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    let response = await supertest(app)
+    let logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(204 satisfies LogoutResponseStatus);
+    expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
-    response = await supertest(app)
+    logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(204 satisfies LogoutResponseStatus);
+    expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
   });
 
   it('returns an error if not authenticated', async () => {
-    const response = await supertest(app).post('/auth/logout');
+    const logoutResponse = await supertest(app).post('/auth/logout');
 
-    expect(response.status).toBe(401 satisfies LogoutResponseStatus);
-    expect(response.body).toEqual<LogoutUnauthorizedResponseBody>({
+    expect(logoutResponse.status).toBe(401 satisfies LogoutResponseStatus);
+    expect(logoutResponse.body).toEqual<LogoutUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const logoutResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies LogoutResponseStatus);
-    expect(response.body).toEqual<LogoutUnauthorizedResponseBody>({
+    expect(logoutResponse.status).toBe(401 satisfies LogoutResponseStatus);
+    expect(logoutResponse.body).toEqual<LogoutUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

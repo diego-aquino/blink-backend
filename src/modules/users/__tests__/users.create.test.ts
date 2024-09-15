@@ -14,9 +14,13 @@ import {
   CreateUserSuccessResponseBody,
 } from '../types';
 import { CreateUserInput } from '../validators';
+import WorkspaceService from '@/modules/workspaces/WorkspaceService';
+import { WorkspaceMemberPath } from '@/modules/workspaces/members/router';
 
 describe('Users: Create', async () => {
   const app = await createApp();
+
+  const workspaceService = WorkspaceService.instance();
 
   beforeEach(async () => {
     await clearDatabase();
@@ -29,13 +33,13 @@ describe('Users: Create', async () => {
       password: 'password',
     };
 
-    const response = await supertest(app)
+    const userCreationResponse = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
 
-    expect(response.status).toBe(201 satisfies CreateUserResponseStatus);
+    expect(userCreationResponse.status).toBe(201 satisfies CreateUserResponseStatus);
 
-    const user = response.body as CreateUserSuccessResponseBody;
+    const user = userCreationResponse.body as CreateUserSuccessResponseBody;
 
     expect(user).toEqual<CreateUserSuccessResponseBody>({
       id: expect.any(String),
@@ -54,6 +58,16 @@ describe('Users: Create', async () => {
     expect(userInDatabase.hashedPassword).not.toBe(input.password);
     expect(userInDatabase.createdAt.toISOString()).toEqual(user.createdAt);
     expect(userInDatabase.updatedAt.toISOString()).toEqual(user.updatedAt);
+
+    const defaultWorkspace = (await workspaceService.getDefaultWorkspace(user.id))!;
+    expect(defaultWorkspace).not.toBeNull();
+
+    const members = await database.client.workspaceMember.findMany({
+      where: { workspaceId: defaultWorkspace.id },
+    });
+
+    expect(members).toHaveLength(1);
+    expect(members[0].userId).toBe(user.id);
   });
 
   it('returns an error if trying to create a user with email already in use', async () => {
@@ -63,18 +77,18 @@ describe('Users: Create', async () => {
       password: 'password',
     };
 
-    let response = await supertest(app)
+    let userCreationResponse = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
 
-    expect(response.status).toBe(201 satisfies CreateUserResponseStatus);
+    expect(userCreationResponse.status).toBe(201 satisfies CreateUserResponseStatus);
 
-    response = await supertest(app)
+    userCreationResponse = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(input);
 
-    expect(response.status).toBe(409 satisfies CreateUserResponseStatus);
-    expect(response.body).toEqual<CreateUserConflictResponseBody>({
+    expect(userCreationResponse.status).toBe(409 satisfies CreateUserResponseStatus);
+    expect(userCreationResponse.body).toEqual<CreateUserConflictResponseBody>({
       code: 'CONFLICT',
       message: "Email 'user@email.com' is already in use.",
     });
@@ -86,15 +100,15 @@ describe('Users: Create', async () => {
   });
 
   it('returns an error if trying to create a user with invalid inputs', async () => {
-    const response = await supertest(app)
+    const userCreationResponse = await supertest(app)
       .post('/users' satisfies UserPath)
       .send(
         // @ts-expect-error
         {} satisfies CreateUserInput,
       );
 
-    expect(response.status).toBe(400 satisfies CreateUserResponseStatus);
-    expect(response.body).toEqual<CreateUserBadRequestResponseBody>({
+    expect(userCreationResponse.status).toBe(400 satisfies CreateUserResponseStatus);
+    expect(userCreationResponse.body).toEqual<CreateUserBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [

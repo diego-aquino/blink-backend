@@ -27,18 +27,14 @@ describe.only('Workspace members: Delete', async () => {
   it('deletes a workspace member', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser } = await createAuthenticatedUser(app);
 
@@ -53,11 +49,11 @@ describe.only('Workspace members: Delete', async () => {
 
     const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(204 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.status).toBe(204 satisfies DeleteWorkspaceMemberResponseStatus);
 
     const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
       where: { id: workspace.id },
@@ -68,27 +64,23 @@ describe.only('Workspace members: Delete', async () => {
   });
 
   it('returns an error if the workspace member does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(404 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberNotFoundResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(404 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `Workspace member 'unknown' not found.`,
     });
@@ -97,12 +89,12 @@ describe.only('Workspace members: Delete', async () => {
   it('returns an error if the workspace does not exist', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/unknown/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: "Operation not allowed on resource '/workspaces/unknown'.",
     });
@@ -111,18 +103,14 @@ describe.only('Workspace members: Delete', async () => {
   it('returns an error if not an administrator of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
@@ -137,12 +125,12 @@ describe.only('Workspace members: Delete', async () => {
 
     const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -160,27 +148,23 @@ describe.only('Workspace members: Delete', async () => {
   it('returns an error if not a member of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { auth: otherAuth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(403 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -197,18 +181,14 @@ describe.only('Workspace members: Delete', async () => {
   it('returns an error if not authenticated', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser } = await createAuthenticatedUser(app);
 
@@ -223,12 +203,12 @@ describe.only('Workspace members: Delete', async () => {
 
     const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
-    const response = await supertest(app).delete(
+    const workspaceDeletionResponse = await supertest(app).delete(
       `/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral,
     );
 
-    expect(response.status).toBe(401 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(401 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -237,18 +217,14 @@ describe.only('Workspace members: Delete', async () => {
   it('returns an error if the access token is invalid', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser } = await createAuthenticatedUser(app);
 
@@ -263,12 +239,12 @@ describe.only('Workspace members: Delete', async () => {
 
     const member = memberResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
-    const response = await supertest(app)
+    const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
       .auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies DeleteWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
+    expect(workspaceDeletionResponse.status).toBe(401 satisfies DeleteWorkspaceMemberResponseStatus);
+    expect(workspaceDeletionResponse.body).toEqual<DeleteWorkspaceMemberForbiddenResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

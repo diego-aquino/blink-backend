@@ -36,14 +36,14 @@ describe('Users: Update', async () => {
     expect(updateInput.name).not.toBe(user.name);
     expect(updateInput.email).not.toBe(user.email);
 
-    const response = await supertest(app)
+    const updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(response.status).toBe(200 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.status).toBe(200 satisfies UpdateUserResponseStatus);
 
-    const updatedUser = response.body as UpdateUserSuccessResponseBody;
+    const updatedUser = updateUserResponse.body as UpdateUserSuccessResponseBody;
 
     expect(updatedUser).toEqual<UpdateUserSuccessResponseBody>({
       ...user,
@@ -73,14 +73,14 @@ describe('Users: Update', async () => {
       email: user.email,
     } satisfies UpdateUserRequestBody;
 
-    const response = await supertest(app)
+    const updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(response.status).toBe(200 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.status).toBe(200 satisfies UpdateUserResponseStatus);
 
-    const updatedUser = response.body as UpdateUserSuccessResponseBody;
+    const updatedUser = updateUserResponse.body as UpdateUserSuccessResponseBody;
 
     expect(updatedUser).toEqual<UpdateUserSuccessResponseBody>({
       ...user,
@@ -109,13 +109,13 @@ describe('Users: Update', async () => {
 
     expect(updateInput.email).not.toBe(user.email);
 
-    const response = await supertest(app)
+    const updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(response.status).toBe(409 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserForbiddenResponseBody>({
+    expect(updateUserResponse.status).toBe(409 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserForbiddenResponseBody>({
       code: 'CONFLICT',
       message: `Email '${updateInput.email}' is already in use.`,
     });
@@ -129,7 +129,7 @@ describe('Users: Update', async () => {
   it('returns an error if trying to update a user with invalid inputs', async () => {
     const { user, auth, password } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(
@@ -137,9 +137,9 @@ describe('Users: Update', async () => {
         { name: 1 } satisfies UpdateUserRequestBody,
       );
 
-    expect(response.status).toBe(400 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.status).toBe(400 satisfies UpdateUserResponseStatus);
 
-    expect(response.body).toEqual<UpdateUserBadRequestResponseBody>({
+    expect(updateUserResponse.body).toEqual<UpdateUserBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
@@ -171,13 +171,13 @@ describe('Users: Update', async () => {
       where: { id: user.id },
     });
 
-    const response = await supertest(app)
+    const updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send({ name: 'User (updated)' } satisfies UpdateUserRequestBody);
 
-    expect(response.status).toBe(404 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserNotFoundResponseBody>({
+    expect(updateUserResponse.status).toBe(404 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `User '${user.id}' not found.`,
     });
@@ -194,13 +194,13 @@ describe('Users: Update', async () => {
     expect(updateInput.name).not.toBe(user.name);
     expect(updateInput.name).not.toBe(otherUser.name);
 
-    let response = await supertest(app)
+    let updateUserResponse = await supertest(app)
       .patch(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(response.status).toBe(403 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserForbiddenResponseBody>({
+    expect(updateUserResponse.status).toBe(403 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
@@ -210,13 +210,13 @@ describe('Users: Update', async () => {
     });
     expect(userInDatabase.name).toBe(user.name);
 
-    response = await supertest(app)
+    updateUserResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' })
       .send(updateInput);
 
-    expect(response.status).toBe(403 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserForbiddenResponseBody>({
+    expect(updateUserResponse.status).toBe(403 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
@@ -230,20 +230,20 @@ describe('Users: Update', async () => {
   it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
+    const updateUserResponse = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
 
-    expect(response.status).toBe(401 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserUnauthorizedResponseBody>({
+    expect(updateUserResponse.status).toBe(401 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const response = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const updateUserResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies UpdateUserResponseStatus);
-    expect(response.body).toEqual<UpdateUserUnauthorizedResponseBody>({
+    expect(updateUserResponse.status).toBe(401 satisfies UpdateUserResponseStatus);
+    expect(updateUserResponse.body).toEqual<UpdateUserUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

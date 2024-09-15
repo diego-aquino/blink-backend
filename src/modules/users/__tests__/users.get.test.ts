@@ -25,13 +25,13 @@ describe('Users: Get', async () => {
   it('gets a user by id as oneself', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(200 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.status).toBe(200 satisfies GetUserByIdResponseStatus);
 
-    const gotUser = response.body as GetUserByIdSuccessResponseBody;
+    const gotUser = getUserResponse.body as GetUserByIdSuccessResponseBody;
 
     expect(gotUser).toEqual(user);
   });
@@ -43,12 +43,12 @@ describe('Users: Get', async () => {
       where: { id: user.id },
     });
 
-    const response = await supertest(app)
+    const getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(404 satisfies GetUserByIdResponseStatus);
-    expect(response.body).toEqual<GetUserByIdNotFoundResponseBody>({
+    expect(getUserResponse.status).toBe(404 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.body).toEqual<GetUserByIdNotFoundResponseBody>({
       code: 'NOT_FOUND',
       message: `User '${user.id}' not found.`,
     });
@@ -58,22 +58,22 @@ describe('Users: Get', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
-    let response = await supertest(app)
+    let getUserResponse = await supertest(app)
       .get(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
-    expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
+    expect(getUserResponse.status).toBe(403 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${otherUser.id}'.`,
     });
 
-    response = await supertest(app)
+    getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' });
 
-    expect(response.status).toBe(403 satisfies GetUserByIdResponseStatus);
-    expect(response.body).toEqual<GetUserByIdForbiddenResponseBody>({
+    expect(getUserResponse.status).toBe(403 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.body).toEqual<GetUserByIdForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/users/${user.id}'.`,
     });
@@ -82,10 +82,10 @@ describe('Users: Get', async () => {
   it('returns an error if not authenticated', async () => {
     const { user } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
+    const getUserResponse = await supertest(app).get(`/users/${user.id}` satisfies UserPath.NonLiteral);
 
-    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
-    expect(response.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
+    expect(getUserResponse.status).toBe(401 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -94,10 +94,10 @@ describe('Users: Get', async () => {
   it('returns an error if the access token is invalid', async () => {
     const { user } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app).get(`/users/${user.id}`).auth('invalid', { type: 'bearer' });
+    const getUserResponse = await supertest(app).get(`/users/${user.id}`).auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies GetUserByIdResponseStatus);
-    expect(response.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
+    expect(getUserResponse.status).toBe(401 satisfies GetUserByIdResponseStatus);
+    expect(getUserResponse.body).toEqual<GetUserByIdUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

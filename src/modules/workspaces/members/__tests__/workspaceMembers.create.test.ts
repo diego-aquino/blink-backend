@@ -31,29 +31,25 @@ describe('Workspace members: Create', async () => {
   it('creates a workspace member with administrator type', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = response.body as CreateWorkspaceMemberSuccessResponseBody;
+    const member = memberCreationResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(member).toEqual<CreateWorkspaceMemberSuccessResponseBody>({
       id: expect.any(String),
@@ -75,29 +71,25 @@ describe('Workspace members: Create', async () => {
   it('creates a workspace member with default type', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
-    const member = response.body as CreateWorkspaceMemberSuccessResponseBody;
+    const member = memberCreationResponse.body as CreateWorkspaceMemberSuccessResponseBody;
 
     expect(member).toEqual<CreateWorkspaceMemberSuccessResponseBody>({
       id: expect.any(String),
@@ -119,29 +111,25 @@ describe('Workspace members: Create', async () => {
   it('returns an error if trying to create a workspace member with invalid inputs', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     // @ts-expect-error
     const memberInput: CreateWorkspaceMemberInput.Body = { userId: 1, type: 'DEFAULT' };
 
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(memberInput);
 
-    expect(response.status).toBe(400 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceMemberBadRequestResponseBody>({
+    expect(memberCreationResponse.status).toBe(400 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceMemberBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
@@ -157,17 +145,15 @@ describe('Workspace members: Create', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { user, auth } = await createAuthenticatedUser(app);
 
-    const memberInput: CreateWorkspaceMemberInput.Body = { userId: '1', type: 'DEFAULT' };
-
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post('/workspaces/unknown/members' satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(memberInput);
+      .send({ userId: user.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
+    expect(memberCreationResponse.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: "Operation not allowed on resource '/workspaces/unknown'.",
     });
@@ -176,37 +162,33 @@ describe('Workspace members: Create', async () => {
   it('returns an error if not an administrator of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
 
-    let response = await supertest(app)
+    let memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(auth.accessToken, { type: 'bearer' })
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.status).toBe(201 satisfies CreateWorkspaceMemberResponseStatus);
 
     const { user: anotherUser, auth: anotherAuth } = await createAuthenticatedUser(app);
 
-    response = await supertest(app)
+    memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' })
       .send({ userId: anotherUser.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
+    expect(memberCreationResponse.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -224,28 +206,24 @@ describe('Workspace members: Create', async () => {
   it('returns an error if not a member of the workspace', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     const { auth: otherAuth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth(otherAuth.accessToken, { type: 'bearer' })
       .send({ userId: user.id, type: 'DEFAULT' } satisfies CreateWorkspaceMemberInput.Body);
 
-    expect(response.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
+    expect(memberCreationResponse.status).toBe(403 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceMemberForbiddenResponseBody>({
       code: 'FORBIDDEN',
       message: `Operation not allowed on resource '/workspaces/${workspace.id}'.`,
     });
@@ -262,25 +240,21 @@ describe('Workspace members: Create', async () => {
   it('returns an error if not authenticated', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
-    const response = await supertest(app).post(
+    const memberCreationResponse = await supertest(app).post(
       `/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral,
     );
 
-    expect(response.status).toBe(401 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
+    expect(memberCreationResponse.status).toBe(401 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
@@ -289,25 +263,21 @@ describe('Workspace members: Create', async () => {
   it('returns an error if the access token is invalid', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const input: CreateWorkspaceInput = {
-      name: 'Workspace',
-    };
-
-    const creationResponse = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
-      .send(input);
+      .send({ name: 'Workspace' } satisfies CreateWorkspaceInput);
 
-    expect(creationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = creationResponse.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
-    const response = await supertest(app)
+    const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
       .auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies CreateWorkspaceMemberResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
+    expect(memberCreationResponse.status).toBe(401 satisfies CreateWorkspaceMemberResponseStatus);
+    expect(memberCreationResponse.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

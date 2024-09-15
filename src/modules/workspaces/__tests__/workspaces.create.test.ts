@@ -27,14 +27,14 @@ describe('Workspaces: Create', async () => {
       name: 'Workspace',
     };
 
-    const response = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(input);
 
-    expect(response.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.status).toBe(201 satisfies CreateWorkspaceResponseStatus);
 
-    const workspace = response.body as CreateWorkspaceSuccessResponseBody;
+    const workspace = workspaceCreationResponse.body as CreateWorkspaceSuccessResponseBody;
 
     expect(workspace).toEqual<CreateWorkspaceSuccessResponseBody>({
       id: expect.any(String),
@@ -56,7 +56,7 @@ describe('Workspaces: Create', async () => {
   it('returns an error if trying to create a workspace with invalid inputs', async () => {
     const { auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth(auth.accessToken, { type: 'bearer' })
       .send(
@@ -64,8 +64,8 @@ describe('Workspaces: Create', async () => {
         {} satisfies CreateWorkspaceInput,
       );
 
-    expect(response.status).toBe(400 satisfies CreateWorkspaceResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceBadRequestResponseBody>({
+    expect(workspaceCreationResponse.status).toBe(400 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.body).toEqual<CreateWorkspaceBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
@@ -81,22 +81,22 @@ describe('Workspaces: Create', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const response = await supertest(app).post('/workspaces' satisfies WorkspacePath);
+    const workspaceCreationResponse = await supertest(app).post('/workspaces' satisfies WorkspacePath);
 
-    expect(response.status).toBe(401 satisfies CreateWorkspaceResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
+    expect(workspaceCreationResponse.status).toBe(401 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication is required to access this resource.',
     });
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const response = await supertest(app)
+    const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
       .auth('invalid', { type: 'bearer' });
 
-    expect(response.status).toBe(401 satisfies CreateWorkspaceResponseStatus);
-    expect(response.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
+    expect(workspaceCreationResponse.status).toBe(401 satisfies CreateWorkspaceResponseStatus);
+    expect(workspaceCreationResponse.body).toEqual<CreateWorkspaceUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });

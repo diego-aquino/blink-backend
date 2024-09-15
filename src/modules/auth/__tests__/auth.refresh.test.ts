@@ -28,13 +28,13 @@ describe('Auth: Refresh', async () => {
   it('generates a new access token', async () => {
     const { user, auth } = await createAuthenticatedUser(app);
 
-    const response = await supertest(app)
+    const refreshResponse = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
       .send({ refreshToken: auth.refreshToken } satisfies RefreshAuthRequestBody);
 
-    expect(response.status).toBe(200 satisfies RefreshAuthResponseStatus);
+    expect(refreshResponse.status).toBe(200 satisfies RefreshAuthResponseStatus);
 
-    const newAuth = response.body as RefreshAuthSuccessResponseBody;
+    const newAuth = refreshResponse.body as RefreshAuthSuccessResponseBody;
 
     expect(newAuth).toEqual<RefreshAuthSuccessResponseBody>({
       accessToken: expect.any(String),
@@ -61,6 +61,7 @@ describe('Auth: Refresh', async () => {
     const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
       .auth(auth.accessToken, { type: 'bearer' });
+
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
     const sessions = await database.client.userSession.findMany({
@@ -68,12 +69,12 @@ describe('Auth: Refresh', async () => {
     });
     expect(sessions).toHaveLength(0);
 
-    const response = await supertest(app)
+    const refreshResponse = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
       .send({ refreshToken: auth.refreshToken } satisfies RefreshAuthRequestBody);
 
-    expect(response.status).toBe(401 satisfies RefreshAuthResponseStatus);
-    expect(response.body).toEqual<RefreshAuthUnauthorizedResponseBody>({
+    expect(refreshResponse.status).toBe(401 satisfies RefreshAuthResponseStatus);
+    expect(refreshResponse.body).toEqual<RefreshAuthUnauthorizedResponseBody>({
       code: 'UNAUTHORIZED',
       message: 'Authentication credentials are not valid.',
     });
@@ -85,6 +86,7 @@ describe('Auth: Refresh', async () => {
     const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
       .auth(auth.accessToken, { type: 'bearer' });
+
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
     const sessions = await database.client.userSession.findMany({
@@ -92,15 +94,15 @@ describe('Auth: Refresh', async () => {
     });
     expect(sessions).toHaveLength(0);
 
-    const response = await supertest(app)
+    const refreshResponse = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
       .send(
         // @ts-expect-error
         {} satisfies RefreshAuthRequestBody,
       );
 
-    expect(response.status).toBe(400 satisfies RefreshAuthResponseStatus);
-    expect(response.body).toEqual<RefreshAuthBadRequestResponseBody>({
+    expect(refreshResponse.status).toBe(400 satisfies RefreshAuthResponseStatus);
+    expect(refreshResponse.body).toEqual<RefreshAuthBadRequestResponseBody>({
       message: 'Validation failed',
       code: 'BAD_REQUEST',
       issues: [
