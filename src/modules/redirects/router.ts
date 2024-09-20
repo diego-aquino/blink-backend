@@ -14,7 +14,7 @@ export namespace RedirectPath {
 }
 export type RedirectPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, '/:redirectId'>;
 
-export const REDIRECT_HTTP_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
+export const REDIRECT_HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] satisfies HttpMethod[];
 
 for (const method of REDIRECT_HTTP_METHODS) {
   const lowerCaseMethod = method.toLowerCase() as Lowercase<HttpMethod>;

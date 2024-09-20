@@ -1,9 +1,10 @@
+import { httpInterceptor } from 'zimic/interceptor/http';
 import { afterAll, beforeAll, expect } from 'vitest';
+import path from 'path';
 
 import environment from '@/config/environment';
 import { clearDatabase, generateTestSchemaName, TestSchemaCache } from './utils/database';
 import database from '@/database/client';
-import path from 'path';
 
 const testWorkerId = Number(process.env.VITEST_POOL_ID!);
 expect(testWorkerId).not.toBeNaN();
@@ -43,6 +44,14 @@ async function preparePostgresTestDatabase() {
 }
 
 beforeAll(async () => {
+  httpInterceptor.default.onUnhandledRequest(async (request, context) => {
+    const url = new URL(request.url);
+
+    if (url.hostname !== '127.0.0.1') {
+      await context.log();
+    }
+  });
+
   if (environment.DATABASE_URL.startsWith('file:')) {
     await prepareSQLiteTestDatabase();
   } else if (environment.DATABASE_URL.startsWith('postgresql:')) {

@@ -9,7 +9,7 @@
     "outDir": "./dist",
     "resolveJsonModule": true,
 
-    "lib": ["esnext"],
+    "lib": ["esnext", "webworker", "webworker.iterable"],
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
