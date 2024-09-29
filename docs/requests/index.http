@@ -1,7 +1,7 @@
 # Página inicial
-GET http://localhost:3000
+GET http://localhost:3001
 
 ###
 
 # Página inicial (index.html)
-GET http://localhost:3000/index.html
+GET http://localhost:3001/index.html

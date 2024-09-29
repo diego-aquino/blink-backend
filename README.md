@@ -5,7 +5,7 @@ disciplina de Programação Web 2 2024.1, no curso de Ciência da Computação d
 chamada de _blink_.
 
 Veja a [documentação da API](./docs/spec/openapi.yaml), também disponível no
-[SwaggerHub](https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0) ou em `http://localhost:3000` ao executar
+[SwaggerHub](https://app.swaggerhub.com/apis/diego-aquino/blink-backend/0.0.0) ou em `http://localhost:3001` ao executar
 o projeto.
 
 ![Swagger UI](docs/images/swagger.png)
@@ -49,7 +49,7 @@ o projeto.
    npm run dev
    ```
 
-O servidor estará disponível em `http://localhost:3000`.
+O servidor estará disponível em `http://localhost:3001`.
 
 ## Executando os testes
 
