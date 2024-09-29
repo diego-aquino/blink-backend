@@ -2,7 +2,7 @@ import { createJWT, verifyJWT, verifyPassword } from '@/utils/auth';
 import database from '@/database/client';
 import { createId } from '@paralleldrive/cuid2';
 
-import { AccessTokenPayload, LoginResult, RefreshTokenPayload } from './types';
+import { AccessTokenPayload, AuthToken, RefreshTokenPayload } from './types';
 import { LoginInput, RefreshAuthInput } from './validators';
 import { InvalidCredentialsError } from './errors';
 import environment from '@/config/environment';
@@ -17,7 +17,10 @@ class AuthService {
 
   private constructor() {}
 
-  async login(input: LoginInput): Promise<LoginResult> {
+  async login(input: LoginInput): Promise<{
+    accessToken: AuthToken;
+    refreshToken: AuthToken;
+  }> {
     const user = await database.client.user.findUnique({
       where: { email: input.email },
     });
@@ -35,19 +38,35 @@ class AuthService {
     await this.deleteExpiredSessions(user.id);
     const session = await this.createSession(user.id);
 
-    const [accessToken, refreshToken] = await Promise.all([
+    const [accessTokenValue, refreshTokenValue] = await Promise.all([
       createJWT<AccessTokenPayload>(
         { userId: user.id, sessionId: session.id },
         { durationInMinutes: environment.JWT_ACCESS_DURATION_IN_MINUTES },
       ),
-
       createJWT<RefreshTokenPayload>(
-        { sessionId: session.id },
+        { userId: user.id, sessionId: session.id },
         { durationInMinutes: environment.JWT_REFRESH_DURATION_IN_MINUTES },
       ),
     ]);
 
-    return { accessToken, refreshToken };
+    const [accessTokenPayload, refreshTokenPayload] = await Promise.all([
+      verifyJWT<AccessTokenPayload>(accessTokenValue),
+      verifyJWT<RefreshTokenPayload>(refreshTokenValue),
+    ]);
+
+    const accessTokenExpiresAt = new Date((accessTokenPayload.exp ?? 0) * 1000);
+    const refreshTokenExpiresAt = new Date((refreshTokenPayload.exp ?? 0) * 1000);
+
+    return {
+      accessToken: {
+        value: accessTokenValue,
+        expiresAt: accessTokenExpiresAt,
+      },
+      refreshToken: {
+        value: refreshTokenValue,
+        expiresAt: refreshTokenExpiresAt,
+      },
+    };
   }
 
   private async createSession(userId: User['id']) {
@@ -74,7 +93,9 @@ class AuthService {
     });
   }
 
-  async refresh(input: RefreshAuthInput) {
+  async refresh(input: RefreshAuthInput): Promise<{
+    accessToken: AuthToken;
+  }> {
     const refreshPayload = await verifyJWT<RefreshTokenPayload>(input.refreshToken);
 
     const session = await database.client.userSession.findUnique({
@@ -88,12 +109,20 @@ class AuthService {
       throw new InvalidCredentialsError();
     }
 
-    const accessToken = await createJWT<AccessTokenPayload>(
+    const accessTokenValue = await createJWT<AccessTokenPayload>(
       { userId: session.userId, sessionId: session.id },
       { durationInMinutes: environment.JWT_ACCESS_DURATION_IN_MINUTES },
     );
 
-    return { accessToken };
+    const accessTokenPayload = await verifyJWT<AccessTokenPayload>(accessTokenValue);
+    const accessTokenExpiresAt = new Date((accessTokenPayload.exp ?? 0) * 1000);
+
+    return {
+      accessToken: {
+        value: accessTokenValue,
+        expiresAt: accessTokenExpiresAt,
+      },
+    };
   }
 
   async logout(input: { sessionId: UserSession['id'] }) {

@@ -13,6 +13,7 @@ import {
   WorkspaceGetByIdUnauthorizedResponseBody,
 } from '../types';
 import { WorkspaceCreationInput } from '../validators';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspaces: Get', async () => {
   const app = await createApp();
@@ -22,11 +23,11 @@ describe('Workspaces: Get', async () => {
   });
 
   it('gets a workspace by id', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -35,7 +36,7 @@ describe('Workspaces: Get', async () => {
 
     const getWorkspaceResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(getWorkspaceResponse.status).toBe(200 satisfies WorkspaceGetByIdResponseStatus);
     expect(getWorkspaceResponse.body).toEqual<WorkspaceGetByIdSuccessResponseBody>({
@@ -47,11 +48,11 @@ describe('Workspaces: Get', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const getWorkspaceResponse = await supertest(app)
       .get('/workspaces/invalid' satisfies WorkspacePath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(getWorkspaceResponse.status).toBe(403 satisfies WorkspaceGetByIdResponseStatus);
     expect(getWorkspaceResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
@@ -61,22 +62,22 @@ describe('Workspaces: Get', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
     const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const getWorkspaceResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(getWorkspaceResponse.status).toBe(403 satisfies WorkspaceGetByIdResponseStatus);
     expect(getWorkspaceResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
@@ -98,7 +99,7 @@ describe('Workspaces: Get', async () => {
   it('returns an error if the access token is invalid', async () => {
     const getWorkspaceResponse = await supertest(app)
       .get('/workspaces/unknown' satisfies WorkspacePath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(getWorkspaceResponse.status).toBe(401 satisfies WorkspaceGetByIdResponseStatus);
     expect(getWorkspaceResponse.body).toEqual<WorkspaceGetByIdUnauthorizedResponseBody>({

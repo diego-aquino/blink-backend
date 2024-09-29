@@ -7,8 +7,11 @@ import {
 } from '@/modules/users/types';
 import supertest from 'supertest';
 import { expect } from 'vitest';
-import { LoginResponseStatus, LoginSuccessResponseBody } from '@/modules/auth/types';
+import { LoginResponseStatus } from '@/modules/auth/types';
 import { createId } from '@paralleldrive/cuid2';
+import { readCookie } from '@/utils/cookies';
+import { REFRESH_COOKIE_NAME } from '@/modules/auth/constants';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 export async function createAuthenticatedUser(app: Express, partialInput: Partial<UserCreationRequestBody> = {}) {
   const creationInput: UserCreationRequestBody = {
@@ -28,13 +31,27 @@ export async function createAuthenticatedUser(app: Express, partialInput: Partia
     password: creationInput.password,
   });
 
-  expect(loginResponse.status).toBe(200 satisfies LoginResponseStatus);
+  expect(loginResponse.status).toBe(204 satisfies LoginResponseStatus);
 
-  const loginResult = loginResponse.body as LoginSuccessResponseBody;
+  const cookies = loginResponse.get('Set-Cookie') ?? [];
+
+  const accessCookie = readCookie(ACCESS_COOKIE_NAME, cookies)!;
+  expect(accessCookie).toBeDefined();
+
+  const refreshCookie = readCookie(REFRESH_COOKIE_NAME, cookies)!;
+  expect(refreshCookie).toBeDefined();
 
   return {
     user,
-    auth: loginResult,
-    password: creationInput.password,
+    cookies: {
+      all: cookies,
+      access: accessCookie,
+      refresh: refreshCookie,
+    },
+    auth: {
+      accessToken: accessCookie.value,
+      refreshToken: refreshCookie.value,
+      password: creationInput.password,
+    },
   };
 }

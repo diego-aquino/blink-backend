@@ -12,6 +12,7 @@ import {
   WorkspaceCreationUnauthorizedResponseBody,
 } from '../types';
 import { WorkspaceCreationInput } from '../validators';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspaces: Create', async () => {
   const app = await createApp();
@@ -21,7 +22,7 @@ describe('Workspaces: Create', async () => {
   });
 
   it('creates a workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const input: WorkspaceCreationInput = {
       name: 'Workspace',
@@ -29,7 +30,7 @@ describe('Workspaces: Create', async () => {
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -54,11 +55,11 @@ describe('Workspaces: Create', async () => {
   });
 
   it('returns an error if trying to create a workspace with invalid inputs', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(
         // @ts-expect-error
         {} satisfies WorkspaceCreationInput,
@@ -93,7 +94,7 @@ describe('Workspaces: Create', async () => {
   it('returns an error if the access token is invalid', async () => {
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(workspaceCreationResponse.status).toBe(401 satisfies WorkspaceCreationResponseStatus);
     expect(workspaceCreationResponse.body).toEqual<WorkspaceCreationUnauthorizedResponseBody>({

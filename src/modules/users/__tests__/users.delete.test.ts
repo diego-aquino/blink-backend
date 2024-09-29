@@ -12,6 +12,7 @@ import {
   UserDeletionResponseStatus,
   UserDeletionUnauthorizedResponseBody,
 } from '../types';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Users: Delete', async () => {
   const app = await createApp();
@@ -21,11 +22,11 @@ describe('Users: Delete', async () => {
   });
 
   it('deletes a user', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(userDeletionResponse.status).toBe(204 satisfies UserDeletionResponseStatus);
 
@@ -36,7 +37,7 @@ describe('Users: Delete', async () => {
   });
 
   it('returns an error if the user does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
       where: { id: user.id },
@@ -44,7 +45,7 @@ describe('Users: Delete', async () => {
 
     const userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(userDeletionResponse.status).toBe(404 satisfies UserDeletionResponseStatus);
     expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
@@ -54,12 +55,12 @@ describe('Users: Delete', async () => {
   });
 
   it('returns an error if trying to delete a user as a different user', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     let userDeletionResponse = await supertest(app)
       .delete(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
     expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
@@ -74,7 +75,7 @@ describe('Users: Delete', async () => {
 
     userDeletionResponse = await supertest(app)
       .delete(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(userDeletionResponse.status).toBe(403 satisfies UserDeletionResponseStatus);
     expect(userDeletionResponse.body).toEqual<UserDeletionNotFoundResponseBody>({
@@ -101,7 +102,9 @@ describe('Users: Delete', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const userDeletionResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const userDeletionResponse = await supertest(app)
+      .post('/auth/logout')
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(userDeletionResponse.status).toBe(401 satisfies UserDeletionResponseStatus);
     expect(userDeletionResponse.body).toEqual<UserDeletionUnauthorizedResponseBody>({

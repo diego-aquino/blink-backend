@@ -13,6 +13,7 @@ import {
   BlinkGetByIdSuccessResponseBody,
 } from '../types';
 import WorkspaceService from '../../WorkspaceService';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Blinks: Get', async () => {
   const app = await createApp();
@@ -24,14 +25,14 @@ describe('Blinks: Get', async () => {
   });
 
   it('gets a blink by id', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -43,21 +44,21 @@ describe('Blinks: Get', async () => {
 
     const blinkGetResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkGetResponse.status).toBe(200 satisfies BlinkGetByIdResponseStatus);
     expect(blinkGetResponse.body).toEqual<BlinkGetByIdSuccessResponseBody>(blink);
   });
 
   it('returns an error if the blink does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     const blinkGetResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks/unknown` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkGetResponse.status).toBe(404 satisfies BlinkGetByIdResponseStatus);
     expect(blinkGetResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({
@@ -67,11 +68,11 @@ describe('Blinks: Get', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const blinkGetResponse = await supertest(app)
       .get('/workspaces/unknown/blinks/unknown' satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkGetResponse.status).toBe(403 satisfies BlinkGetByIdResponseStatus);
     expect(blinkGetResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({
@@ -86,11 +87,11 @@ describe('Blinks: Get', async () => {
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -100,7 +101,7 @@ describe('Blinks: Get', async () => {
 
     const blinkGetResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks/unknown` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkGetResponse.status).toBe(403 satisfies BlinkGetByIdResponseStatus);
     expect(blinkGetResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({
@@ -152,7 +153,7 @@ describe('Blinks: Get', async () => {
 
     const blinkGetResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks/unknown` satisfies BlinkPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(blinkGetResponse.status).toBe(401 satisfies BlinkGetByIdResponseStatus);
     expect(blinkGetResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({

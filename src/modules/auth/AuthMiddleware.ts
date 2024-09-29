@@ -5,6 +5,7 @@ import { verifyJWT } from '@/utils/auth';
 import { RequestMiddleware } from '../shared/controllers';
 import { AuthenticationRequiredError, InvalidCredentialsError } from './errors';
 import { AccessTokenPayload } from './types';
+import { ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from './constants';
 
 class AuthMiddleware {
   private static _instance = new AuthMiddleware();
@@ -16,17 +17,10 @@ class AuthMiddleware {
   private constructor() {}
 
   authenticated: RequestMiddleware = async (request, _response, next) => {
-    const { authorization } = request.headers;
-
-    if (!authorization) {
-      throw new AuthenticationRequiredError();
-    }
-
-    const authorizationMatch = authorization.match(/^Bearer (?<accessToken>.+)$/);
-    const { accessToken } = authorizationMatch?.groups ?? {};
+    const accessToken = this.readAccessTokenFromCookies(request.cookies);
 
     if (!accessToken) {
-      throw new InvalidCredentialsError();
+      throw new AuthenticationRequiredError();
     }
 
     try {
@@ -46,6 +40,16 @@ class AuthMiddleware {
       throw error;
     }
   };
+
+  readAccessTokenFromCookies(cookies: Record<string, string | undefined>) {
+    const accessToken = cookies[ACCESS_COOKIE_NAME];
+    return accessToken;
+  }
+
+  readRefreshTokenFromCookies(cookies: Record<string, string | undefined>) {
+    const refreshToken = cookies[REFRESH_COOKIE_NAME];
+    return refreshToken;
+  }
 }
 
 export default AuthMiddleware;

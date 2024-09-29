@@ -89,14 +89,14 @@ describe('Redirects', async () => {
     const lowerCaseMethod = method.toLowerCase() as Lowercase<typeof method>;
 
     it('should support redirecting requests having a registered blink', async () => {
-      const { user, auth } = await createAuthenticatedUser(app);
+      const { user, cookies } = await createAuthenticatedUser(app);
 
       const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
       expect(workspace).not.toBeNull();
 
       const blinkCreationResponse = await supertest(app)
         .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-        .auth(auth.accessToken, { type: 'bearer' })
+        .set('cookie', cookies.access.raw)
         .send({
           name: 'Blink',
           url: blinkURL,
@@ -127,14 +127,14 @@ describe('Redirects', async () => {
     });
 
     it('should forward headers on redirect', async () => {
-      const { user, auth } = await createAuthenticatedUser(app);
+      const { user, cookies } = await createAuthenticatedUser(app);
 
       const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
       expect(workspace).not.toBeNull();
 
       const blinkCreationResponse = await supertest(app)
         .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-        .auth(auth.accessToken, { type: 'bearer' })
+        .set('cookie', cookies.access.raw)
         .send({
           name: 'Blink',
           url: blinkURL,
@@ -171,14 +171,14 @@ describe('Redirects', async () => {
     });
 
     it('should forward query parameters on redirect', async () => {
-      const { user, auth } = await createAuthenticatedUser(app);
+      const { user, cookies } = await createAuthenticatedUser(app);
 
       const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
       expect(workspace).not.toBeNull();
 
       const blinkCreationResponse = await supertest(app)
         .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-        .auth(auth.accessToken, { type: 'bearer' })
+        .set('cookie', cookies.access.raw)
         .send({
           name: 'Blink',
           url: blinkURL,
@@ -215,14 +215,14 @@ describe('Redirects', async () => {
     });
 
     it('returns an error if a blink with the redirect id is not found', async () => {
-      const { user, auth } = await createAuthenticatedUser(app);
+      const { user, cookies } = await createAuthenticatedUser(app);
 
       const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
       expect(workspace).not.toBeNull();
 
       const redirectResponse = await supertest(app)
         [lowerCaseMethod]('/unknown' satisfies RedirectPath.NonLiteral)
-        .auth(auth.accessToken, { type: 'bearer' });
+        .set('cookie', cookies.access.raw);
 
       expect(redirectResponse.status).toBe(404 satisfies BlinkGetByIdResponseStatus);
 

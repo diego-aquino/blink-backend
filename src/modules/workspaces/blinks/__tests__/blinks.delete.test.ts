@@ -12,6 +12,7 @@ import { BlinkCreationInput } from '../validators';
 import { BlinkCreationResponseStatus, BlinkCreationSuccessResponseBody } from '../types';
 import WorkspaceService from '../../WorkspaceService';
 import { WorkspaceMemberType } from '@prisma/client';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Blinks: Delete', async () => {
   const app = await createApp();
@@ -23,16 +24,16 @@ describe('Blinks: Delete', async () => {
   });
 
   it('deletes a blink as its creator', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -44,7 +45,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -63,7 +64,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(204);
 
@@ -75,7 +76,7 @@ describe('Blinks: Delete', async () => {
   });
 
   it('deletes a blink as an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -85,11 +86,11 @@ describe('Blinks: Delete', async () => {
     });
     expect(member.type).toBe('ADMINISTRATOR' satisfies WorkspaceMemberType);
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -101,7 +102,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -120,7 +121,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(204);
 
@@ -132,14 +133,14 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if the blink does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/unknown` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(404);
     expect(blinkDeletionResponse.body).toEqual({
@@ -149,11 +150,11 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const blinkDeletionResponse = await supertest(app)
       .delete('/workspaces/unknown/blinks/unknown' satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(403);
     expect(blinkDeletionResponse.body).toEqual({
@@ -163,7 +164,7 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if not the creator of the blink nor an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -175,7 +176,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
@@ -189,18 +190,18 @@ describe('Blinks: Delete', async () => {
       updatedAt: expect.any(String),
     });
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201);
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/${blinkCreationResponse.body.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(403);
     expect(blinkDeletionResponse.body).toEqual({
@@ -210,7 +211,7 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -222,7 +223,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
@@ -236,11 +237,11 @@ describe('Blinks: Delete', async () => {
       updatedAt: expect.any(String),
     });
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/${blinkCreationResponse.body.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkDeletionResponse.status).toBe(403);
     expect(blinkDeletionResponse.body).toEqual({
@@ -250,7 +251,7 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -262,7 +263,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
@@ -288,7 +289,7 @@ describe('Blinks: Delete', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -300,7 +301,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
@@ -316,7 +317,7 @@ describe('Blinks: Delete', async () => {
 
     const blinkDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/blinks/${blinkCreationResponse.body.id}` satisfies BlinkPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(blinkDeletionResponse.status).toBe(401);
     expect(blinkDeletionResponse.body).toEqual({

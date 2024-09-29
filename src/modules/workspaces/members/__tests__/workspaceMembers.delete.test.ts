@@ -16,6 +16,7 @@ import {
   WorkspaceMemberCreationSuccessResponseBody,
 } from '../types';
 import { WorkspaceCreationMemberInput } from '../validators';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspace members: Delete', async () => {
   const app = await createApp();
@@ -25,11 +26,11 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('deletes a workspace member', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -42,7 +43,7 @@ describe('Workspace members: Delete', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -51,7 +52,7 @@ describe('Workspace members: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(204 satisfies WorkspaceMemberDeletionResponseStatus);
 
@@ -64,11 +65,11 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if the workspace member does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -77,7 +78,7 @@ describe('Workspace members: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(404 satisfies WorkspaceMemberDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceMemberDeletionNotFoundResponseBody>({
@@ -87,11 +88,11 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/unknown/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(403 satisfies WorkspaceMemberDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceMemberDeletionForbiddenResponseBody>({
@@ -101,24 +102,24 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if not an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
     const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberInput: WorkspaceCreationMemberInput.Body = { userId: otherUser.id, type: 'DEFAULT' };
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -127,7 +128,7 @@ describe('Workspace members: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(403 satisfies WorkspaceMemberDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceMemberDeletionForbiddenResponseBody>({
@@ -146,22 +147,22 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
     const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(403 satisfies WorkspaceMemberDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceMemberDeletionForbiddenResponseBody>({
@@ -179,11 +180,11 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -196,7 +197,7 @@ describe('Workspace members: Delete', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -215,11 +216,11 @@ describe('Workspace members: Delete', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -232,7 +233,7 @@ describe('Workspace members: Delete', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -241,7 +242,7 @@ describe('Workspace members: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(workspaceDeletionResponse.status).toBe(401 satisfies WorkspaceMemberDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceMemberDeletionForbiddenResponseBody>({
