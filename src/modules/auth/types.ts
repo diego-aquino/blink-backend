@@ -1,8 +1,11 @@
-import { BlinkComponents, BlinkOperations } from '@/types/generated';
+import { BlinkOperations } from '@/types/generated';
 import { User, UserSession } from '@prisma/client';
 import { JWTPayload } from 'jose';
 
-export type LoginResult = BlinkComponents['schemas']['LoginResult'];
+export interface AuthToken {
+  value: string;
+  expiresAt: Date;
+}
 
 export interface AccessTokenPayload extends JWTPayload {
   userId: User['id'];
@@ -10,18 +13,16 @@ export interface AccessTokenPayload extends JWTPayload {
 }
 
 export interface RefreshTokenPayload extends JWTPayload {
+  userId: User['id'];
   sessionId: UserSession['id'];
 }
 
 export type LoginRequestBody = BlinkOperations['auth/login']['request']['body'];
 export type LoginResponseStatus = keyof BlinkOperations['auth/login']['response'];
-export type LoginSuccessResponseBody = BlinkOperations['auth/login']['response']['200']['body'];
 export type LoginBadRequestResponseBody = BlinkOperations['auth/login']['response']['400']['body'];
 export type LoginUnauthorizedResponseBody = BlinkOperations['auth/login']['response']['401']['body'];
 
-export type RefreshAuthRequestBody = BlinkOperations['auth/refresh']['request']['body'];
 export type RefreshAuthResponseStatus = keyof BlinkOperations['auth/refresh']['response'];
-export type RefreshAuthSuccessResponseBody = BlinkOperations['auth/refresh']['response']['200']['body'];
 export type RefreshAuthBadRequestResponseBody = BlinkOperations['auth/refresh']['response']['400']['body'];
 export type RefreshAuthUnauthorizedResponseBody = BlinkOperations['auth/refresh']['response']['401']['body'];
 

@@ -17,6 +17,7 @@ import {
   UserUpdateResponseStatus,
   UserUpdateBadRequestResponseBody,
 } from '../types';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Users: Update', async () => {
   const app = await createApp();
@@ -26,7 +27,7 @@ describe('Users: Update', async () => {
   });
 
   it('updates a user as oneself', async () => {
-    const { user, auth, password } = await createAuthenticatedUser(app);
+    const { user, auth, cookies } = await createAuthenticatedUser(app);
 
     const updateInput = {
       name: 'User (updated)',
@@ -38,7 +39,7 @@ describe('Users: Update', async () => {
 
     const userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(userUpdateResponse.status).toBe(200 satisfies UserUpdateResponseStatus);
@@ -60,13 +61,13 @@ describe('Users: Update', async () => {
     expect(userInDatabase.id).toBe(user.id);
     expect(userInDatabase.name).toBe(updatedUser.name);
     expect(userInDatabase.email).toBe(updatedUser.email);
-    expect(userInDatabase.hashedPassword).not.toBe(password);
+    expect(userInDatabase.hashedPassword).not.toBe(auth.password);
     expect(userInDatabase.createdAt.toISOString()).toEqual(user.createdAt);
     expect(userInDatabase.updatedAt.toISOString()).toEqual(updatedUser.updatedAt);
   });
 
   it('updates a user with unchanged inputs', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const updateInput = {
       name: user.name,
@@ -75,7 +76,7 @@ describe('Users: Update', async () => {
 
     const userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(userUpdateResponse.status).toBe(200 satisfies UserUpdateResponseStatus);
@@ -100,7 +101,7 @@ describe('Users: Update', async () => {
   });
 
   it('returns an error if trying to update a user with email already in use', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
     const { user: otherUser } = await createAuthenticatedUser(app);
 
     const updateInput = {
@@ -111,7 +112,7 @@ describe('Users: Update', async () => {
 
     const userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(userUpdateResponse.status).toBe(409 satisfies UserUpdateResponseStatus);
@@ -127,11 +128,11 @@ describe('Users: Update', async () => {
   });
 
   it('returns an error if trying to update a user with invalid inputs', async () => {
-    const { user, auth, password } = await createAuthenticatedUser(app);
+    const { user, auth, cookies } = await createAuthenticatedUser(app);
 
     const userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(
         // @ts-expect-error
         { name: 1 } satisfies UserUpdateRequestBody,
@@ -159,13 +160,13 @@ describe('Users: Update', async () => {
     expect(userInDatabase.id).toBe(user.id);
     expect(userInDatabase.name).toBe(user.name);
     expect(userInDatabase.email).toBe(user.email);
-    expect(userInDatabase.hashedPassword).not.toBe(password);
+    expect(userInDatabase.hashedPassword).not.toBe(auth.password);
     expect(userInDatabase.createdAt.toISOString()).toEqual(user.createdAt);
     expect(userInDatabase.updatedAt.toISOString()).toEqual(user.updatedAt);
   });
 
   it('returns an error if the user does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
       where: { id: user.id },
@@ -173,7 +174,7 @@ describe('Users: Update', async () => {
 
     const userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'User (updated)' } satisfies UserUpdateRequestBody);
 
     expect(userUpdateResponse.status).toBe(404 satisfies UserUpdateResponseStatus);
@@ -184,8 +185,8 @@ describe('Users: Update', async () => {
   });
 
   it('returns an error if trying to update a user as a different user', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const updateInput = {
       name: 'User (updated)',
@@ -196,7 +197,7 @@ describe('Users: Update', async () => {
 
     let userUpdateResponse = await supertest(app)
       .patch(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(userUpdateResponse.status).toBe(403 satisfies UserUpdateResponseStatus);
@@ -212,7 +213,7 @@ describe('Users: Update', async () => {
 
     userUpdateResponse = await supertest(app)
       .patch(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(updateInput);
 
     expect(userUpdateResponse.status).toBe(403 satisfies UserUpdateResponseStatus);
@@ -240,7 +241,7 @@ describe('Users: Update', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const userUpdateResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const userUpdateResponse = await supertest(app).post('/auth/logout').set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(userUpdateResponse.status).toBe(401 satisfies UserUpdateResponseStatus);
     expect(userUpdateResponse.body).toEqual<UserUpdateUnauthorizedResponseBody>({

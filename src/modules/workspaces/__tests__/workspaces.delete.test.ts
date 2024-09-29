@@ -17,6 +17,7 @@ import {
 } from '../types';
 import { WorkspaceCreationInput } from '../validators';
 import WorkspaceService from '../WorkspaceService';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspaces: Delete', async () => {
   const app = await createApp();
@@ -28,11 +29,11 @@ describe('Workspaces: Delete', async () => {
   });
 
   it('deletes a workspace', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -41,7 +42,7 @@ describe('Workspaces: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(204 satisfies WorkspaceDeletionResponseStatus);
 
@@ -52,14 +53,14 @@ describe('Workspaces: Delete', async () => {
   });
 
   it("deletes the user's default workspace", async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(204 satisfies WorkspaceDeletionResponseStatus);
 
@@ -70,11 +71,11 @@ describe('Workspaces: Delete', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceDeletionResponse = await supertest(app)
       .delete('/workspaces/unknown' satisfies WorkspacePath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(403 satisfies WorkspaceDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceUpdateForbiddenResponseBody>({
@@ -84,22 +85,22 @@ describe('Workspaces: Delete', async () => {
   });
 
   it('returns an error if not an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
     const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -115,7 +116,7 @@ describe('Workspaces: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(workspaceDeletionResponse.status).toBe(403 satisfies WorkspaceDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceUpdateForbiddenResponseBody>({
@@ -135,11 +136,11 @@ describe('Workspaces: Delete', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -158,11 +159,11 @@ describe('Workspaces: Delete', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -171,7 +172,7 @@ describe('Workspaces: Delete', async () => {
 
     const workspaceDeletionResponse = await supertest(app)
       .delete(`/workspaces/${workspace.id}` satisfies WorkspacePath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(workspaceDeletionResponse.status).toBe(401 satisfies WorkspaceDeletionResponseStatus);
     expect(workspaceDeletionResponse.body).toEqual<WorkspaceUpdateUnauthorizedResponseBody>({

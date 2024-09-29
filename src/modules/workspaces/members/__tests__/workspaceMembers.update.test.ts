@@ -23,6 +23,7 @@ import {
 } from '../types';
 import { WorkspaceCreationMemberInput } from '../validators';
 import { WorkspaceMemberType } from '@prisma/client';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspace members: Update', async () => {
   const app = await createApp();
@@ -32,11 +33,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('updates the type of a workspace member', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -49,7 +50,7 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -60,7 +61,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(200 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -88,11 +89,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('updates a workspace member with unchanged inputs', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -105,7 +106,7 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -114,7 +115,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberUpdateResponse.status).toBe(200 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -142,11 +143,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if trying to update a workspace member with invalid inputs', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -159,7 +160,7 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -171,7 +172,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(400 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -193,11 +194,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if the workspace member does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -208,7 +209,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/unknown` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(404 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -219,13 +220,13 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const updateInput = { type: 'ADMINISTRATOR' } satisfies WorkspaceMemberUpdateRequestBody;
 
     const memberUpdateResponse = await supertest(app)
       .patch('/workspaces/unknown/members/unknown' satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(403 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -236,24 +237,24 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if not an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
 
     const workspace = workspaceCreationResponse.body as WorkspaceCreationSuccessResponseBody;
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberInput: WorkspaceCreationMemberInput.Body = { userId: otherUser.id, type: 'DEFAULT' };
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -264,7 +265,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(403 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -284,11 +285,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -301,20 +302,20 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
     const member = memberResponse.body as WorkspaceMemberCreationSuccessResponseBody;
 
-    const { auth: anotherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherOtherCookies } = await createAuthenticatedUser(app);
 
     const updateInput = { type: 'ADMINISTRATOR' } satisfies WorkspaceMemberUpdateRequestBody;
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(anotherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherOtherCookies.access.raw)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(403 satisfies WorkspaceMemberUpdateResponseStatus);
@@ -334,11 +335,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -351,7 +352,7 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -380,11 +381,11 @@ describe('Workspace members: Update', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -397,7 +398,7 @@ describe('Workspace members: Update', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(memberInput);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -408,7 +409,7 @@ describe('Workspace members: Update', async () => {
 
     const memberUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/members/${member.id}` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' })
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`)
       .send(updateInput);
 
     expect(memberUpdateResponse.status).toBe(401 satisfies WorkspaceMemberUpdateResponseStatus);

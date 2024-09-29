@@ -13,6 +13,7 @@ import {
   BlinkListSuccessResponseBody,
 } from '../types';
 import WorkspaceService from '../../WorkspaceService';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Blinks: List', async () => {
   const app = await createApp();
@@ -24,14 +25,14 @@ describe('Blinks: List', async () => {
   });
 
   it('lists blinks of a workspace with pagination', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     let blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -43,7 +44,7 @@ describe('Blinks: List', async () => {
 
     blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -55,7 +56,7 @@ describe('Blinks: List', async () => {
 
     let blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
 
@@ -69,7 +70,7 @@ describe('Blinks: List', async () => {
 
     blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ page: 1, limit: 1 } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
@@ -83,14 +84,14 @@ describe('Blinks: List', async () => {
   });
 
   it('filters blinks by case-insensitive name', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     let blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -102,7 +103,7 @@ describe('Blinks: List', async () => {
 
     blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Other Blink',
         url: 'https://example.com',
@@ -114,7 +115,7 @@ describe('Blinks: List', async () => {
 
     let blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ name: blink.name } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
@@ -129,7 +130,7 @@ describe('Blinks: List', async () => {
 
     blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ name: otherBlink.name.slice(0, 3).toUpperCase() } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
@@ -141,7 +142,7 @@ describe('Blinks: List', async () => {
 
     blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ name: 'unknown' } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
@@ -153,14 +154,14 @@ describe('Blinks: List', async () => {
   });
 
   it('does not list blinks of other workspaces', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     let blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -168,14 +169,14 @@ describe('Blinks: List', async () => {
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const otherWorkspace = (await workspaceService.getDefaultWorkspace(otherUser.id))!;
     expect(otherWorkspace).not.toBeNull();
 
     let blinkListResponse = await supertest(app)
       .get(`/workspaces/${otherWorkspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
 
@@ -186,11 +187,11 @@ describe('Blinks: List', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const blinkListResponse = await supertest(app)
       .get('/workspaces/unknown/blinks' satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(blinkListResponse.status).toBe(403 satisfies BlinkListResponseStatus);
     expect(blinkListResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({
@@ -205,11 +206,11 @@ describe('Blinks: List', async () => {
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send({
         name: 'Blink',
         url: 'https://example.com',
@@ -219,7 +220,7 @@ describe('Blinks: List', async () => {
 
     const blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(blinkListResponse.status).toBe(403 satisfies BlinkListResponseStatus);
     expect(blinkListResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({
@@ -271,7 +272,7 @@ describe('Blinks: List', async () => {
 
     const blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(blinkListResponse.status).toBe(401 satisfies BlinkListResponseStatus);
     expect(blinkListResponse.body).toEqual<BlinkCreationBadRequestResponseBody>({

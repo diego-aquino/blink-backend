@@ -8,15 +8,15 @@ import {
   AccessTokenPayload,
   LogoutResponseStatus,
   RefreshAuthBadRequestResponseBody,
-  RefreshAuthRequestBody,
   RefreshAuthResponseStatus,
-  RefreshAuthSuccessResponseBody,
   RefreshAuthUnauthorizedResponseBody,
 } from '@/modules/auth/types';
 import { verifyJWT } from '@/utils/auth';
 import database from '@/database/client';
 
 import { AuthPath } from '../router';
+import { readCookie } from '@/utils/cookies';
+import { ACCESS_COOKIE_NAME } from '../constants';
 
 describe('Auth: Refresh', async () => {
   const app = await createApp();
@@ -26,27 +26,39 @@ describe('Auth: Refresh', async () => {
   });
 
   it('generates a new access token', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, auth, cookies } = await createAuthenticatedUser(app);
 
     const refreshResponse = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
-      .send({ refreshToken: auth.refreshToken } satisfies RefreshAuthRequestBody);
+      .set('cookie', cookies.refresh.raw);
 
-    expect(refreshResponse.status).toBe(200 satisfies RefreshAuthResponseStatus);
+    expect(refreshResponse.status).toBe(204 satisfies RefreshAuthResponseStatus);
 
-    const newAuth = refreshResponse.body as RefreshAuthSuccessResponseBody;
+    const newCookies = refreshResponse.get('Set-Cookie') ?? [];
 
-    expect(newAuth).toEqual<RefreshAuthSuccessResponseBody>({
-      accessToken: expect.any(String),
-    });
+    const newAccessCookie = readCookie(ACCESS_COOKIE_NAME, newCookies)!;
+    expect(newAccessCookie).toBeDefined();
 
-    expect(newAuth.accessToken).not.toBe(auth.accessToken);
+    const newAccessToken = newAccessCookie.value;
+    expect(newAccessToken).toEqual(expect.any(String));
 
-    const accessTokenPayload = await verifyJWT<AccessTokenPayload>(auth.accessToken);
-    const newAccessTokenPayload = await verifyJWT<AccessTokenPayload>(newAuth.accessToken);
+    expect(newAccessToken).not.toBe(auth.accessToken);
+
+    const [accessTokenPayload, newAccessTokenPayload] = await Promise.all([
+      verifyJWT<AccessTokenPayload>(auth.accessToken),
+      verifyJWT<AccessTokenPayload>(newAccessToken),
+    ]);
 
     expect(newAccessTokenPayload.userId).toBe(accessTokenPayload.userId);
     expect(newAccessTokenPayload.sessionId).toBe(accessTokenPayload.sessionId);
+
+    const newAccessTokenExpiration = new Date(newAccessTokenPayload.exp! * 1000);
+
+    expect(newAccessCookie.properties.get('Domain')).toBe('localhost');
+    expect(newAccessCookie.properties.get('Path')).toBe('/');
+    expect(newAccessCookie.properties.get('Expires')).toBe(newAccessTokenExpiration.toUTCString());
+    expect(newAccessCookie.properties.get('HttpOnly')).toBe('');
+    expect(newAccessCookie.properties.get('SameSite')).toBe('Strict');
 
     const sessions = await database.client.userSession.findMany({
       where: { userId: user.id },
@@ -56,11 +68,11 @@ describe('Auth: Refresh', async () => {
   });
 
   it('returns an error if the session does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
@@ -71,7 +83,7 @@ describe('Auth: Refresh', async () => {
 
     const refreshResponse = await supertest(app)
       .post('/auth/refresh' satisfies AuthPath)
-      .send({ refreshToken: auth.refreshToken } satisfies RefreshAuthRequestBody);
+      .set('cookie', cookies.refresh.raw);
 
     expect(refreshResponse.status).toBe(401 satisfies RefreshAuthResponseStatus);
     expect(refreshResponse.body).toEqual<RefreshAuthUnauthorizedResponseBody>({
@@ -81,11 +93,11 @@ describe('Auth: Refresh', async () => {
   });
 
   it('returns an error if trying to refresh with invalid inputs', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
@@ -94,26 +106,12 @@ describe('Auth: Refresh', async () => {
     });
     expect(sessions).toHaveLength(0);
 
-    const refreshResponse = await supertest(app)
-      .post('/auth/refresh' satisfies AuthPath)
-      .send(
-        // @ts-expect-error
-        {} satisfies RefreshAuthRequestBody,
-      );
+    const refreshResponse = await supertest(app).post('/auth/refresh' satisfies AuthPath);
 
-    expect(refreshResponse.status).toBe(400 satisfies RefreshAuthResponseStatus);
+    expect(refreshResponse.status).toBe(401 satisfies RefreshAuthResponseStatus);
     expect(refreshResponse.body).toEqual<RefreshAuthBadRequestResponseBody>({
-      message: 'Validation failed',
-      code: 'BAD_REQUEST',
-      issues: [
-        {
-          code: 'invalid_type',
-          expected: 'string',
-          received: 'undefined',
-          path: ['refreshToken'],
-          message: 'Required',
-        },
-      ],
+      code: 'UNAUTHORIZED',
+      message: 'Authentication credentials are not valid.',
     });
   });
 });

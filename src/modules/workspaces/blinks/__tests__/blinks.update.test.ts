@@ -18,6 +18,7 @@ import {
 } from '../types';
 import WorkspaceService from '../../WorkspaceService';
 import { WorkspaceMemberType } from '@prisma/client';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Blinks: Update', async () => {
   const app = await createApp();
@@ -29,16 +30,16 @@ describe('Blinks: Update', async () => {
   });
 
   it('updates a blink as its creator', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -50,7 +51,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -79,7 +80,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(updateInput);
 
     expect(blinkUpdateResponse.status).toBe(200 satisfies BlinkUpdateResponseStatus);
@@ -109,7 +110,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('updates a blink as an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -119,11 +120,11 @@ describe('Blinks: Update', async () => {
     });
     expect(member.type).toBe('ADMINISTRATOR' satisfies WorkspaceMemberType);
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -135,7 +136,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -164,7 +165,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(blinkUpdateResponse.status).toBe(200 satisfies BlinkUpdateResponseStatus);
@@ -194,7 +195,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('updates a blink with unchanged inputs', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -206,7 +207,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -227,7 +228,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(updateInput);
 
     expect(blinkUpdateResponse.status).toBe(200 satisfies BlinkUpdateResponseStatus);
@@ -257,7 +258,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if trying to update a blink with invalid inputs', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -269,7 +270,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -288,7 +289,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         // @ts-expect-error
         name: 1,
@@ -318,7 +319,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if trying to update a blink to a redirect id already in use by the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -330,7 +331,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -354,7 +355,7 @@ describe('Blinks: Update', async () => {
 
     const otherBlinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(otherInput);
 
     expect(otherBlinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -373,7 +374,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -388,7 +389,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if trying to update a blink to a redirect id already in use by other workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -400,7 +401,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -417,7 +418,7 @@ describe('Blinks: Update', async () => {
       updatedAt: expect.any(String),
     });
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const otherWorkspace = (await workspaceService.getDefaultWorkspace(otherUser.id))!;
     expect(otherWorkspace).not.toBeNull();
@@ -429,7 +430,7 @@ describe('Blinks: Update', async () => {
 
     const otherBlinkCreationResponse = await supertest(app)
       .post(`/workspaces/${otherWorkspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send(otherInput);
 
     expect(otherBlinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -448,7 +449,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -463,14 +464,14 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if the blink does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/unknown` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -484,11 +485,11 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const blinkUpdateResponse = await supertest(app)
       .patch('/workspaces/unknown/blinks/unknown' satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -502,7 +503,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -514,7 +515,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -531,11 +532,11 @@ describe('Blinks: Update', async () => {
       updatedAt: expect.any(String),
     });
 
-    const { auth: otherAuth } = await createAuthenticatedUser(app);
+    const { cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -549,7 +550,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if not the creator of the blink nor an administrator of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -561,7 +562,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -578,18 +579,18 @@ describe('Blinks: Update', async () => {
       updatedAt: expect.any(String),
     });
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const memberCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'DEFAULT' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberCreationResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' })
+      .set('cookie', otherCookies.access.raw)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',
@@ -603,7 +604,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if not authenticated', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -615,7 +616,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -647,7 +648,7 @@ describe('Blinks: Update', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -659,7 +660,7 @@ describe('Blinks: Update', async () => {
 
     const blinkCreationResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
@@ -678,7 +679,7 @@ describe('Blinks: Update', async () => {
 
     const blinkUpdateResponse = await supertest(app)
       .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' })
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`)
       .send({
         name: 'Blink (updated)',
         url: 'https://example.com/updated',

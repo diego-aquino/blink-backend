@@ -2,6 +2,7 @@ import filesystem from 'fs';
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { absolutePath as swaggerAbsolutePath } from 'swagger-ui-dist';
 
 import authRouter from '@/modules/auth/router';
@@ -26,6 +27,7 @@ async function createApp() {
   const app = express();
 
   app.use(express.json());
+  app.use(cookieParser());
   app.use(cors({ origin: '*' }));
 
   const rootDirectory = path.join(__dirname, '..', '..');

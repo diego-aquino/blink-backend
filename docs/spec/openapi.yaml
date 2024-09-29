@@ -92,7 +92,7 @@ paths:
       tags:
         - Usuários
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '200':
           description: Usuário encontrado
@@ -131,7 +131,7 @@ paths:
       tags:
         - Usuários
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -200,7 +200,7 @@ paths:
       tags:
         - Usuários
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '204':
           description: Usuário removido
@@ -257,12 +257,8 @@ paths:
                   examples:
                     - 12345678
       responses:
-        '200':
+        '204':
           description: Usuário autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResult'
         '400':
           description: Erro de validação
           content:
@@ -289,7 +285,7 @@ paths:
       tags:
         - Autenticação
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '204':
           description: Usuário deslogado
@@ -312,27 +308,11 @@ paths:
       operationId: auth/refresh
       tags:
         - Autenticação
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - refreshToken
-              properties:
-                refreshToken:
-                  type: string
-                  description: O token de atualização
-                  examples:
-                    - eyJhbGciOiJIUzI1NiI...
+      security:
+        - refreshCookieAuth: []
       responses:
-        '200':
+        '204':
           description: Novo token de acesso gerado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenRefreshResult'
         '400':
           description: Erro de validação
           content:
@@ -359,7 +339,7 @@ paths:
       tags:
         - Autenticação
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -415,7 +395,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -468,7 +448,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       parameters:
         - workspaceName:
           name: name
@@ -547,7 +527,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '200':
           description: Workspace encontrado
@@ -586,7 +566,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -642,7 +622,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '204':
           description: Workspace removido
@@ -687,7 +667,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -753,7 +733,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       parameters:
         - memberName:
           name: name
@@ -852,7 +832,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '200':
           description: Membro encontrado
@@ -891,7 +871,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -945,7 +925,7 @@ paths:
       tags:
         - Workspaces
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '204':
           description: Membro removido
@@ -990,7 +970,7 @@ paths:
       tags:
         - Blinks
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -1066,7 +1046,7 @@ paths:
       tags:
         - Blinks
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       parameters:
         - blinkName:
           name: name
@@ -1158,7 +1138,7 @@ paths:
       tags:
         - Blinks
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '200':
           description: Blink encontrado
@@ -1197,7 +1177,7 @@ paths:
       tags:
         - Blinks
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       requestBody:
         required: true
         content:
@@ -1270,7 +1250,7 @@ paths:
       tags:
         - Blinks
       security:
-        - bearerAuth: []
+        - accessCookieAuth: []
       responses:
         '204':
           description: Blink removido
@@ -1381,34 +1361,6 @@ components:
           description: A data de atualização do usuário
           examples:
             - '2021-08-01T00:00:00.000Z'
-
-    LoginResult:
-      type: object
-      required:
-        - accessToken
-        - refreshToken
-      properties:
-        accessToken:
-          type: string
-          description: O token de autenticação
-          examples:
-            - eyJhbGciOiJIUzI1NiI...
-        refreshToken:
-          type: string
-          description: O token de atualização
-          examples:
-            - eyJIUzI1NiIJhbGciOi...
-
-    TokenRefreshResult:
-      type: object
-      required:
-        - accessToken
-      properties:
-        accessToken:
-          type: string
-          description: O novo token de autenticação
-          examples:
-            - eyJhbGciOiJIUzI1NiI...
 
     Workspace:
       type: object
@@ -1634,7 +1586,12 @@ components:
             - INTERNAL_SERVER_ERROR
 
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    accessCookieAuth:
+      type: apiKey
+      in: cookie
+      name: blink:access
+
+    refreshCookieAuth:
+      type: apiKey
+      in: cookie
+      name: blink:access

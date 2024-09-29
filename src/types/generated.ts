@@ -3,7 +3,7 @@
 
 import type { HttpHeadersSerialized, HttpSchema, HttpSearchParamsSerialized } from 'zimic/http';
 
-export type BlinkSchema = HttpSchema.Paths<{
+export type BlinkSchema = HttpSchema<{
   '/users': {
     /** Criar usuário */
     POST: BlinkOperations['users/create'];
@@ -102,16 +102,6 @@ export interface BlinkComponents {
        * @description A data de atualização do usuário
        */
       updatedAt: string;
-    };
-    LoginResult: {
-      /** @description O token de autenticação */
-      accessToken: string;
-      /** @description O token de atualização */
-      refreshToken: string;
-    };
-    TokenRefreshResult: {
-      /** @description O novo token de autenticação */
-      accessToken: string;
     };
     Workspace: {
       /** @description O id do workspace */
@@ -352,9 +342,7 @@ export interface BlinkOperations {
     };
     response: {
       /** @description Usuário autenticado */
-      200: {
-        body: BlinkComponents['schemas']['LoginResult'];
-      };
+      204: {};
       /** @description Erro de validação */
       400: {
         body: BlinkComponents['schemas']['ValidationError'];
@@ -384,17 +372,9 @@ export interface BlinkOperations {
     };
   }>;
   'auth/refresh': HttpSchema.Method<{
-    request: {
-      body: {
-        /** @description O token de atualização */
-        refreshToken: string;
-      };
-    };
     response: {
       /** @description Novo token de acesso gerado */
-      200: {
-        body: BlinkComponents['schemas']['TokenRefreshResult'];
-      };
+      204: {};
       /** @description Erro de validação */
       400: {
         body: BlinkComponents['schemas']['ValidationError'];

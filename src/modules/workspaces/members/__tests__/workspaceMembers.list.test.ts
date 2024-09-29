@@ -22,6 +22,7 @@ import WorkspaceService from '../../WorkspaceService';
 import database from '@/database/client';
 import { toWorkspaceMemberResponse } from '../views';
 import { createId } from '@paralleldrive/cuid2';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Workspace members: List', async () => {
   const app = await createApp();
@@ -33,7 +34,7 @@ describe('Workspace members: List', async () => {
   });
 
   it('lists workspace members of a workspace with pagination', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -47,7 +48,7 @@ describe('Workspace members: List', async () => {
 
     let memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -56,7 +57,7 @@ describe('Workspace members: List', async () => {
 
     let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
@@ -70,7 +71,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ page: 1, limit: 1 } satisfies WorkspaceListInput);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
@@ -84,7 +85,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ page: 2, limit: 1 } satisfies WorkspaceListInput);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
@@ -98,7 +99,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ page: 3, limit: 1 } satisfies WorkspaceListInput);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceListResponseStatus);
@@ -110,7 +111,7 @@ describe('Workspace members: List', async () => {
   });
 
   it('filters workspace members by case-insensitive name', async () => {
-    const { user, auth } = await createAuthenticatedUser(app, {
+    const { user, cookies } = await createAuthenticatedUser(app, {
       name: `User ${createId()}`,
     });
 
@@ -128,7 +129,7 @@ describe('Workspace members: List', async () => {
 
     let memberResponse = await supertest(app)
       .post(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -141,7 +142,7 @@ describe('Workspace members: List', async () => {
 
     let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ name: searchName } satisfies WorkspaceListInput.Raw);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
@@ -158,7 +159,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .query({ name: searchName } satisfies WorkspaceListInput.Raw);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
@@ -172,7 +173,7 @@ describe('Workspace members: List', async () => {
   });
 
   it('does not list workspace members of other workspaces', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
@@ -186,7 +187,7 @@ describe('Workspace members: List', async () => {
 
     const workspaceCreationResponse = await supertest(app)
       .post('/workspaces' satisfies WorkspacePath)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ name: 'Workspace' } satisfies WorkspaceCreationInput);
 
     expect(workspaceCreationResponse.status).toBe(201 satisfies WorkspaceCreationResponseStatus);
@@ -200,7 +201,7 @@ describe('Workspace members: List', async () => {
 
     const memberResponse = await supertest(app)
       .post(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' })
+      .set('cookie', cookies.access.raw)
       .send({ userId: otherUser.id, type: 'ADMINISTRATOR' } satisfies WorkspaceCreationMemberInput.Body);
 
     expect(memberResponse.status).toBe(201 satisfies WorkspaceMemberCreationResponseStatus);
@@ -209,7 +210,7 @@ describe('Workspace members: List', async () => {
 
     let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
@@ -222,7 +223,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(memberListResponse.status).toBe(200 satisfies WorkspaceMemberListResponseStatus);
 
@@ -238,11 +239,11 @@ describe('Workspace members: List', async () => {
   });
 
   it('returns an error if the workspace does not exist', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     const memberListResponse = await supertest(app)
       .get(`/workspaces/unknown/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
     expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
@@ -252,19 +253,19 @@ describe('Workspace members: List', async () => {
   });
 
   it('returns an error if not a member of the workspace', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
     expect(workspace).not.toBeNull();
 
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     const otherWorkspace = (await workspaceService.getDefaultWorkspace(otherUser.id))!;
     expect(otherWorkspace).not.toBeNull();
 
     let memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
     expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
@@ -274,7 +275,7 @@ describe('Workspace members: List', async () => {
 
     memberListResponse = await supertest(app)
       .get(`/workspaces/${otherWorkspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(memberListResponse.status).toBe(403 satisfies WorkspaceMemberListResponseStatus);
     expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({
@@ -308,7 +309,7 @@ describe('Workspace members: List', async () => {
 
     const memberListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/members` satisfies WorkspaceMemberPath.NonLiteral)
-      .auth('invalid', { type: 'bearer' });
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(memberListResponse.status).toBe(401 satisfies WorkspaceMemberListResponseStatus);
     expect(memberListResponse.body).toEqual<WorkspaceGetByIdForbiddenResponseBody>({

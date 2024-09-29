@@ -9,6 +9,7 @@ import { verifyJWT } from '@/utils/auth';
 import database from '@/database/client';
 
 import { AuthPath } from '../router';
+import { ACCESS_COOKIE_NAME } from '../constants';
 
 describe('Auth: Log out', async () => {
   const app = await createApp();
@@ -18,11 +19,11 @@ describe('Auth: Log out', async () => {
   });
 
   it('logs out', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { auth, cookies } = await createAuthenticatedUser(app);
 
     const logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
@@ -35,17 +36,17 @@ describe('Auth: Log out', async () => {
   });
 
   it('accepts an existing access token, even after logout, until expired', async () => {
-    const { auth } = await createAuthenticatedUser(app);
+    const { cookies } = await createAuthenticatedUser(app);
 
     let logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
 
     logoutResponse = await supertest(app)
       .post('/auth/logout' satisfies AuthPath)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(logoutResponse.status).toBe(204 satisfies LogoutResponseStatus);
   });
@@ -61,7 +62,7 @@ describe('Auth: Log out', async () => {
   });
 
   it('returns an error if the access token is invalid', async () => {
-    const logoutResponse = await supertest(app).post('/auth/logout').auth('invalid', { type: 'bearer' });
+    const logoutResponse = await supertest(app).post('/auth/logout').set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(logoutResponse.status).toBe(401 satisfies LogoutResponseStatus);
     expect(logoutResponse.body).toEqual<LogoutUnauthorizedResponseBody>({

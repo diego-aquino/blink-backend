@@ -14,6 +14,7 @@ import {
   UserGetByIdSuccessResponseBody,
   UserGetByIdUnauthorizedResponseBody,
 } from '../types';
+import { ACCESS_COOKIE_NAME } from '@/modules/auth/constants';
 
 describe('Users: Get', async () => {
   const app = await createApp();
@@ -23,11 +24,11 @@ describe('Users: Get', async () => {
   });
 
   it('gets a user by id as oneself', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     const getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(getUserResponse.status).toBe(200 satisfies UserGetByIdResponseStatus);
 
@@ -37,7 +38,7 @@ describe('Users: Get', async () => {
   });
 
   it('returns an error if the user does not exist', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
 
     await database.client.user.delete({
       where: { id: user.id },
@@ -45,7 +46,7 @@ describe('Users: Get', async () => {
 
     const getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(getUserResponse.status).toBe(404 satisfies UserGetByIdResponseStatus);
     expect(getUserResponse.body).toEqual<UserGetByIdNotFoundResponseBody>({
@@ -55,12 +56,12 @@ describe('Users: Get', async () => {
   });
 
   it('returns an error if trying to get a user as a different user', async () => {
-    const { user, auth } = await createAuthenticatedUser(app);
-    const { user: otherUser, auth: otherAuth } = await createAuthenticatedUser(app);
+    const { user, cookies } = await createAuthenticatedUser(app);
+    const { user: otherUser, cookies: otherCookies } = await createAuthenticatedUser(app);
 
     let getUserResponse = await supertest(app)
       .get(`/users/${otherUser.id}` satisfies UserPath.NonLiteral)
-      .auth(auth.accessToken, { type: 'bearer' });
+      .set('cookie', cookies.access.raw);
 
     expect(getUserResponse.status).toBe(403 satisfies UserGetByIdResponseStatus);
     expect(getUserResponse.body).toEqual<UserGetByIdForbiddenResponseBody>({
@@ -70,7 +71,7 @@ describe('Users: Get', async () => {
 
     getUserResponse = await supertest(app)
       .get(`/users/${user.id}` satisfies UserPath.NonLiteral)
-      .auth(otherAuth.accessToken, { type: 'bearer' });
+      .set('cookie', otherCookies.access.raw);
 
     expect(getUserResponse.status).toBe(403 satisfies UserGetByIdResponseStatus);
     expect(getUserResponse.body).toEqual<UserGetByIdForbiddenResponseBody>({
@@ -94,7 +95,9 @@ describe('Users: Get', async () => {
   it('returns an error if the access token is invalid', async () => {
     const { user } = await createAuthenticatedUser(app);
 
-    const getUserResponse = await supertest(app).get(`/users/${user.id}`).auth('invalid', { type: 'bearer' });
+    const getUserResponse = await supertest(app)
+      .get(`/users/${user.id}`)
+      .set('cookie', `${ACCESS_COOKIE_NAME}=invalid`);
 
     expect(getUserResponse.status).toBe(401 satisfies UserGetByIdResponseStatus);
     expect(getUserResponse.body).toEqual<UserGetByIdUnauthorizedResponseBody>({
