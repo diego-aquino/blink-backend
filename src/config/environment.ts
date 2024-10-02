@@ -8,6 +8,7 @@ const environmentSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+  CORS_ORIGIN: z.string(),
 
   DATABASE_URL: z.string().url(),
 

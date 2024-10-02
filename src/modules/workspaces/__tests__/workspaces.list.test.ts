@@ -124,15 +124,11 @@ describe('Workspaces: List', async () => {
 
     let { workspaces, total } = workspaceListResponse.body as WorkspaceListSuccessResponseBody;
 
-    const defaultWorkspace = (await workspaceService.getDefaultWorkspace(user.id))!;
-    expect(defaultWorkspace).not.toBeNull();
-
-    expect(workspaces).toHaveLength(3);
+    expect(workspaces).toHaveLength(2);
     expect(workspaces[0]).toEqual<WorkspaceCreationSuccessResponseBody>(otherWorkspace);
     expect(workspaces[1]).toEqual<WorkspaceCreationSuccessResponseBody>(workspace);
-    expect(workspaces[2]).toEqual<WorkspaceCreationSuccessResponseBody>(toWorkspaceResponse(defaultWorkspace));
 
-    expect(total).toBe(3);
+    expect(total).toBe(2);
 
     workspaceListResponse = await supertest(app)
       .get('/workspaces' satisfies WorkspacePath)

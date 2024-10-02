@@ -13,6 +13,7 @@ import handleUncaughtError from '@/errors/handler';
 import workspaceMemberRouter from '@/modules/workspaces/members/router';
 import blinkRouter from '@/modules/workspaces/blinks/router';
 import redirectRouter from '@/modules/redirects/router';
+import environment from '@/config/environment';
 
 async function setSwaggerConfigURL(swaggerDirectory: string, newConfigURL: string) {
   const initializerPath = path.join(swaggerDirectory, 'swagger-initializer.js');
@@ -28,7 +29,12 @@ async function createApp() {
 
   app.use(express.json());
   app.use(cookieParser());
-  app.use(cors({ origin: '*' }));
+  app.use(
+    cors({
+      origin: environment.CORS_ORIGIN,
+      credentials: true,
+    }),
+  );
 
   const rootDirectory = path.join(__dirname, '..', '..');
 
