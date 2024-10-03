@@ -3,8 +3,7 @@ import { RequestHandler } from '../shared/controllers';
 import { loginSchema } from './validators';
 import { LoginRequestBody, LoginResponseStatus, LogoutResponseStatus, RefreshAuthResponseStatus } from './types';
 import { AuthPath } from './router';
-import { readCookie } from '@/utils/cookies';
-import { AuthenticationRequiredError, InvalidCredentialsError } from './errors';
+import { InvalidCredentialsError } from './errors';
 import { ACCESS_COOKIE_NAME, AUTH_TOKEN_COOKIE_DEFAULT_OPTIONS, REFRESH_COOKIE_NAME } from './constants';
 import AuthMiddleware from './AuthMiddleware';
 

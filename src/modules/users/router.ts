@@ -20,6 +20,8 @@ export type UserPath = Extract<HttpSchemaPath.Literal<BlinkSchema>, `/users${str
 
 userRouter.post('/users' satisfies UserPath, userController.create);
 
+userRouter.get('/users/me' satisfies UserPath, authMiddleware.authenticated, userController.getMe);
+
 userRouter.get(
   '/users/:userId' satisfies UserPath,
   authMiddleware.authenticated,

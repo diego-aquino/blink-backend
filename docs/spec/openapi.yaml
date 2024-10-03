@@ -76,6 +76,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
+  /users/me:
+    get:
+      summary: Buscar usuário autenticado
+      operationId: users/get/me
+      tags:
+        - Usuários
+      security:
+        - accessCookieAuth: []
+      responses:
+        '200':
+          description: Usuário encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
   /users/{userId}:
     parameters:
       - name: userId

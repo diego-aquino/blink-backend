@@ -32,9 +32,8 @@ describe('Users: Get', async () => {
 
     expect(getUserResponse.status).toBe(200 satisfies UserGetByIdResponseStatus);
 
-    const gotUser = getUserResponse.body as UserGetByIdSuccessResponseBody;
-
-    expect(gotUser).toEqual(user);
+    const fetchedUser = getUserResponse.body as UserGetByIdSuccessResponseBody;
+    expect(fetchedUser).toEqual(user);
   });
 
   it('returns an error if the user does not exist', async () => {

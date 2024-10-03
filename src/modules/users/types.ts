@@ -14,6 +14,11 @@ export type UserGetByIdForbiddenResponseBody = BlinkOperations['users/get']['res
 export type UserGetByIdNotFoundResponseBody = BlinkOperations['users/get']['response']['404']['body'];
 export type UserGetByIdResponseStatus = keyof BlinkOperations['users/get']['response'];
 
+export type UserGetMeSuccessResponseBody = BlinkOperations['users/get/me']['response']['200']['body'];
+export type UserGetMeUnauthorizedResponseBody = BlinkOperations['users/get/me']['response']['401']['body'];
+export type UserGetMeNotFoundResponseBody = BlinkOperations['users/get/me']['response']['404']['body'];
+export type UserGetMeResponseStatus = keyof BlinkOperations['users/get/me']['response'];
+
 export type UserUpdateRequestBody = BlinkOperations['users/update']['request']['body'];
 export type UserUpdateResponseStatus = keyof BlinkOperations['users/update']['response'];
 export type UserUpdateSuccessResponseBody = BlinkOperations['users/update']['response']['200']['body'];

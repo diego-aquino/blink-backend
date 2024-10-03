@@ -18,6 +18,7 @@ class AuthService {
   private constructor() {}
 
   async login(input: LoginInput): Promise<{
+    user: User;
     accessToken: AuthToken;
     refreshToken: AuthToken;
   }> {
@@ -58,6 +59,7 @@ class AuthService {
     const refreshTokenExpiresAt = new Date((refreshTokenPayload.exp ?? 0) * 1000);
 
     return {
+      user,
       accessToken: {
         value: accessTokenValue,
         expiresAt: accessTokenExpiresAt,

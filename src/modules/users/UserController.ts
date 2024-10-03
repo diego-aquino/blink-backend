@@ -35,6 +35,15 @@ class UserController {
       .json(toUserResponse(user) satisfies UserCreationSuccessResponseBody);
   };
 
+  getMe: RequestHandler = async (request, response) => {
+    const userId = request.middlewares.auth.authenticated.userId;
+    const user = await this.userService.get({ userId });
+
+    return response
+      .status(200 satisfies UserGetByIdResponseStatus)
+      .json(toUserResponse(user) satisfies UserGetByIdSuccessResponseBody);
+  };
+
   get: RequestHandler = async (request, response) => {
     const input = userByIdSchema.parse(request.params) satisfies UserByIdPathParams;
     const user = await this.userService.get(input);

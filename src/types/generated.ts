@@ -8,6 +8,10 @@ export type BlinkSchema = HttpSchema<{
     /** Criar usuário */
     POST: BlinkOperations['users/create'];
   };
+  '/users/me': {
+    /** Buscar usuário autenticado */
+    GET: BlinkOperations['users/get/me'];
+  };
   '/users/:userId': {
     /** Buscar usuário */
     GET: BlinkOperations['users/get'];
@@ -232,6 +236,26 @@ export interface BlinkOperations {
       /** @description Email em uso por outro usuário */
       409: {
         body: BlinkComponents['schemas']['ConflictError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'users/get/me': HttpSchema.Method<{
+    response: {
+      /** @description Usuário encontrado */
+      200: {
+        body: BlinkComponents['schemas']['User'];
+      };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Usuário não encontrado */
+      404: {
+        body: BlinkComponents['schemas']['NotFoundError'];
       };
       /** @description Erro no servidor */
       500: {
