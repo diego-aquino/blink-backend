@@ -1474,7 +1474,7 @@ components:
         - name
         - url
         - redirectId
-        - workspace
+        - workspaceId
         - createdAt
         - updatedAt
       properties:
@@ -1498,6 +1498,11 @@ components:
           description: O id do redirecionamento
           examples:
             - t96iws9z
+        workspaceId:
+          type: string
+          description: O id do workspace
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
         creator:
           $ref: '#/components/schemas/User'
         createdAt:

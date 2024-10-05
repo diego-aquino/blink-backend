@@ -8,6 +8,7 @@ export function toBlinkResponse(blink: Blink & { creator: User | null }): BlinkR
     name: blink.name,
     url: blink.url,
     redirectId: blink.redirectId,
+    workspaceId: blink.workspaceId,
     creator: blink.creator ? toUserResponse(blink.creator) : undefined,
     createdAt: blink.createdAt.toISOString(),
     updatedAt: blink.updatedAt.toISOString(),

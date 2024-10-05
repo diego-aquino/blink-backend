@@ -64,6 +64,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -93,6 +94,7 @@ describe('Blinks: Update', async () => {
       url: updateInput.url,
       creator: otherUser,
       redirectId: updateInput.redirectId,
+      workspaceId: workspace.id,
       createdAt: blink.createdAt,
       updatedAt: expect.any(String),
     });
@@ -149,6 +151,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -178,6 +181,7 @@ describe('Blinks: Update', async () => {
       url: updateInput.url,
       creator: otherUser,
       redirectId: updateInput.redirectId,
+      workspaceId: workspace.id,
       createdAt: blink.createdAt,
       updatedAt: expect.any(String),
     });
@@ -220,6 +224,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -241,6 +246,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: blink.redirectId,
+      workspaceId: workspace.id,
       createdAt: blink.createdAt,
       updatedAt: expect.any(String),
     });
@@ -283,6 +289,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -344,6 +351,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -368,6 +376,7 @@ describe('Blinks: Update', async () => {
       url: otherInput.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -414,6 +423,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -443,6 +453,7 @@ describe('Blinks: Update', async () => {
       url: otherInput.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -528,6 +539,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -575,6 +587,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -629,6 +642,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -673,6 +687,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

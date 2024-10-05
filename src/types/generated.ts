@@ -153,6 +153,8 @@ export interface BlinkComponents {
       url: string;
       /** @description O id do redirecionamento */
       redirectId: string;
+      /** @description O id do workspace */
+      workspaceId: string;
       creator?: BlinkComponents['schemas']['User'];
       /**
        * Format: date-time

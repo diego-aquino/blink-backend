@@ -58,6 +58,7 @@ describe('Blinks: Delete', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -115,6 +116,7 @@ describe('Blinks: Delete', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
