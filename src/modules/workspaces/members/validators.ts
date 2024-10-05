@@ -16,7 +16,7 @@ export namespace WorkspaceCreationMemberInput {
 }
 
 export const workspaceMemberListSchema = workspaceByIdSchema.extend({
-  name: z.string().optional(),
+  name: z.string().trim().optional(),
   type: z.nativeEnum(WorkspaceMemberType).optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),

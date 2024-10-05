@@ -74,10 +74,10 @@ enum WorkspaceMemberType {
 }
 
 model Blink {
-  id         String @id
-  name       String
+  id         String  @id
+  name       String?
   url        String
-  redirectId String @unique
+  redirectId String  @unique
 
   creatorId String?
   creator   User?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)

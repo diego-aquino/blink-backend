@@ -148,7 +148,7 @@ export interface BlinkComponents {
       /** @description O id do blink */
       id: string;
       /** @description O nome do blink */
-      name: string;
+      name?: string | null;
       /** @description A url do blink */
       url: string;
       /** @description O id do redirecionamento */
@@ -788,7 +788,7 @@ export interface BlinkOperations {
     request: {
       body: {
         /** @description O nome do blink */
-        name: string;
+        name?: string;
         /** @description A url do blink */
         url: string;
         /** @description O id do redirecionamento (se não fornecido, será gerado automaticamente) */

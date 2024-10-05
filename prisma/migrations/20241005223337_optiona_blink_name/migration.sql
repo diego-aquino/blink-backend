@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Blink"
+ALTER COLUMN "name"
+DROP NOT NULL;

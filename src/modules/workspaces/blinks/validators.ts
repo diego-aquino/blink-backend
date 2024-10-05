@@ -2,9 +2,13 @@ import { z } from 'zod';
 import { workspaceByIdSchema } from '../validators';
 
 export const blinkCreationBodySchema = z.object({
-  name: z.string().min(1),
-  url: z.string().url(),
-  redirectId: z.string().optional(),
+  name: z.string().trim().optional(),
+  url: z.string().trim().url(),
+  redirectId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value)),
 });
 
 export const blinkCreationSchema = workspaceByIdSchema.and(blinkCreationBodySchema);
@@ -16,7 +20,7 @@ export namespace BlinkCreationInput {
 }
 
 export const blinkListQuerySchema = z.object({
-  name: z.string().optional(),
+  name: z.string().trim().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
@@ -36,9 +40,13 @@ export const blinkByIdSchema = workspaceByIdSchema.extend({
 export type BlinkByIdInput = z.infer<typeof blinkByIdSchema>;
 
 export const blinkUpdateBodySchema = z.object({
-  name: z.string().min(1).optional(),
-  url: z.string().url().optional(),
-  redirectId: z.string().optional(),
+  name: z.string().trim().optional(),
+  url: z.string().trim().url().optional(),
+  redirectId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value)),
 });
 
 export const blinkUpdateSchema = blinkByIdSchema.and(blinkUpdateBodySchema);
