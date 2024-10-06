@@ -1,0 +1,15 @@
+meta {
+  name: Buscar usuário autenticado
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3001/users/me
+  body: none
+  auth: none
+}
+
+vars:post-response {
+  userId: res.body.id
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Criar workspace
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3001/workspaces
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Workspace 2"
+  }
+}

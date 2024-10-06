@@ -1,0 +1,11 @@
+meta {
+  name: Remover membro
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/members/{{memberId}}
+  body: none
+  auth: none
+}

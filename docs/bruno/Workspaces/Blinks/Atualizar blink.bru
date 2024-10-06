@@ -1,0 +1,19 @@
+meta {
+  name: Atualizar blink
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/blinks/{{blinkId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Google",
+    "url": "https://google.com",
+    "redirectId": ""
+  }
+}

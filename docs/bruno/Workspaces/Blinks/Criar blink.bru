@@ -1,0 +1,19 @@
+meta {
+  name: Criar blink
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/blinks
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Google",
+    "url": "https://google.com",
+    "redirectId": ""
+  }
+}

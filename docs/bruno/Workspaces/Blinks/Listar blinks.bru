@@ -1,0 +1,22 @@
+meta {
+  name: Listar blinks
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/blinks
+  body: none
+  auth: none
+}
+
+params:query {
+  ~name: 
+  ~page: 
+  ~limit: 
+}
+
+vars:post-response {
+  blinkId: res.body.blinks.at(0)?.id
+  redirectId: res.body.blinks.at(0)?.redirectId
+}

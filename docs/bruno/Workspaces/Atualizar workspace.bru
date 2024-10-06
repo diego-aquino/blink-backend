@@ -1,0 +1,17 @@
+meta {
+  name: Atualizar workspace
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:3001/workspaces/{{workspaceId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Meus blinks 2"
+  }
+}

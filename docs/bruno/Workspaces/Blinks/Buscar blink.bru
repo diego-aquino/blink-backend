@@ -1,0 +1,11 @@
+meta {
+  name: Buscar blink
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/blinks/{{blinkId}}
+  body: none
+  auth: none
+}
