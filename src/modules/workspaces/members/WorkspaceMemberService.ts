@@ -104,12 +104,13 @@ class WorkspaceMemberService {
       throw new WorkspaceMemberNotFoundError(input.memberId);
     }
 
-    const isLastAdministrator =
+    const isChangingTheLastAdministrator =
       member.type === 'ADMINISTRATOR' &&
+      input.type !== member.type &&
       member.workspace.members.length === 1 &&
       member.workspace.members[0].id === member.id;
 
-    if (isLastAdministrator) {
+    if (isChangingTheLastAdministrator) {
       throw new WorkspaceMemberLastAdministratorError(input.memberId);
     }
 

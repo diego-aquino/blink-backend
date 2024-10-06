@@ -64,6 +64,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -93,6 +94,7 @@ describe('Blinks: Update', async () => {
       url: updateInput.url,
       creator: otherUser,
       redirectId: updateInput.redirectId,
+      workspaceId: workspace.id,
       createdAt: blink.createdAt,
       updatedAt: expect.any(String),
     });
@@ -149,6 +151,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -178,6 +181,7 @@ describe('Blinks: Update', async () => {
       url: updateInput.url,
       creator: otherUser,
       redirectId: updateInput.redirectId,
+      workspaceId: workspace.id,
       createdAt: blink.createdAt,
       updatedAt: expect.any(String),
     });
@@ -194,68 +198,73 @@ describe('Blinks: Update', async () => {
     expect(workspaceInDatabase.blinks[0].redirectId).toBe(updateInput.redirectId);
   });
 
-  it('updates a blink with unchanged inputs', async () => {
-    const { user, cookies } = await createAuthenticatedUser(app);
+  it.each([{ redirectId: undefined }, { redirectId: '' }])(
+    'updates a blink with unchanged inputs: redirect id $redirectId',
+    async ({ redirectId }) => {
+      const { user, cookies } = await createAuthenticatedUser(app);
 
-    const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
-    expect(workspace).not.toBeNull();
+      const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
+      expect(workspace).not.toBeNull();
 
-    const input = {
-      name: 'Blink',
-      url: 'https://example.com',
-    } satisfies BlinkCreationInput.Body;
+      const input = {
+        name: 'Blink',
+        url: 'https://example.com',
+      } satisfies BlinkCreationInput.Body;
 
-    const blinkCreationResponse = await supertest(app)
-      .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .set('cookie', cookies.access.raw)
-      .send(input);
+      const blinkCreationResponse = await supertest(app)
+        .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
+        .set('cookie', cookies.access.raw)
+        .send(input);
 
-    expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
+      expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
 
-    const blink = blinkCreationResponse.body as BlinkCreationSuccessResponseBody;
+      const blink = blinkCreationResponse.body as BlinkCreationSuccessResponseBody;
 
-    expect(blink).toEqual<BlinkCreationSuccessResponseBody>({
-      id: expect.any(String),
-      name: input.name,
-      url: input.url,
-      creator: user,
-      redirectId: expect.any(String),
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
-    });
+      expect(blink).toEqual<BlinkCreationSuccessResponseBody>({
+        id: expect.any(String),
+        name: input.name,
+        url: input.url,
+        creator: user,
+        redirectId: expect.any(String),
+        workspaceId: workspace.id,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
 
-    const updateInput = input satisfies BlinkUpdateInput.Body;
+      const updateInput = { ...input, redirectId } satisfies BlinkUpdateInput.Body;
 
-    const blinkUpdateResponse = await supertest(app)
-      .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
-      .set('cookie', cookies.access.raw)
-      .send(updateInput);
+      const blinkUpdateResponse = await supertest(app)
+        .patch(`/workspaces/${workspace.id}/blinks/${blink.id}` satisfies BlinkPath.NonLiteral)
+        .set('cookie', cookies.access.raw)
+        .send(updateInput);
 
-    expect(blinkUpdateResponse.status).toBe(200 satisfies BlinkUpdateResponseStatus);
+      expect(blinkUpdateResponse.status).toBe(200 satisfies BlinkUpdateResponseStatus);
 
-    const updatedBlink = blinkUpdateResponse.body as BlinkUpdateSuccessResponseBody;
+      const updatedBlink = blinkUpdateResponse.body as BlinkUpdateSuccessResponseBody;
 
-    expect(updatedBlink).toEqual<BlinkUpdateSuccessResponseBody>({
-      id: blink.id,
-      name: input.name,
-      url: input.url,
-      creator: user,
-      redirectId: blink.redirectId,
-      createdAt: blink.createdAt,
-      updatedAt: expect.any(String),
-    });
+      expect(updatedBlink).toEqual<BlinkUpdateSuccessResponseBody>({
+        id: blink.id,
+        name: input.name,
+        url: input.url,
+        creator: user,
+        redirectId: blink.redirectId,
+        workspaceId: workspace.id,
+        createdAt: blink.createdAt,
+        updatedAt: expect.any(String),
+      });
 
-    expect(new Date(updatedBlink.updatedAt).getTime()).toBeGreaterThan(new Date(blink.updatedAt).getTime());
+      expect(new Date(updatedBlink.updatedAt).getTime()).toBeGreaterThan(new Date(blink.updatedAt).getTime());
 
-    const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
-      where: { id: workspace.id },
-      include: { blinks: { orderBy: { createdAt: 'asc' } } },
-    });
-    expect(workspaceInDatabase.blinks).toHaveLength(1);
-    expect(workspaceInDatabase.blinks[0].name).toBe(input.name);
-    expect(workspaceInDatabase.blinks[0].url).toBe(input.url);
-    expect(workspaceInDatabase.blinks[0].redirectId).toBe(blink.redirectId);
-  });
+      const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
+        where: { id: workspace.id },
+        include: { blinks: { orderBy: { createdAt: 'asc' } } },
+      });
+      expect(workspaceInDatabase.blinks).toHaveLength(1);
+      expect(workspaceInDatabase.blinks[0].name).toBe(input.name);
+      expect(workspaceInDatabase.blinks[0].url).toBe(input.url);
+      expect(workspaceInDatabase.blinks[0].redirectId).toBe(blink.redirectId);
+    },
+  );
 
   it('returns an error if trying to update a blink with invalid inputs', async () => {
     const { user, cookies } = await createAuthenticatedUser(app);
@@ -283,6 +292,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -344,6 +354,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -368,6 +379,7 @@ describe('Blinks: Update', async () => {
       url: otherInput.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -414,6 +426,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -443,6 +456,7 @@ describe('Blinks: Update', async () => {
       url: otherInput.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: otherWorkspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -528,6 +542,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -575,6 +590,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -629,6 +645,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -673,6 +690,7 @@ describe('Blinks: Update', async () => {
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

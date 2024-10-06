@@ -58,6 +58,7 @@ describe('Blinks: Delete', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -115,6 +116,7 @@ describe('Blinks: Delete', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -180,12 +182,13 @@ describe('Blinks: Delete', async () => {
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
-    expect(blinkCreationResponse.body).toEqual({
+    expect(blinkCreationResponse.body).toEqual<BlinkCreationSuccessResponseBody>({
       id: expect.any(String),
       name: input.name,
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -227,12 +230,13 @@ describe('Blinks: Delete', async () => {
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
-    expect(blinkCreationResponse.body).toEqual({
+    expect(blinkCreationResponse.body).toEqual<BlinkCreationSuccessResponseBody>({
       id: expect.any(String),
       name: input.name,
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -267,12 +271,13 @@ describe('Blinks: Delete', async () => {
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
-    expect(blinkCreationResponse.body).toEqual({
+    expect(blinkCreationResponse.body).toEqual<BlinkCreationSuccessResponseBody>({
       id: expect.any(String),
       name: input.name,
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -305,12 +310,13 @@ describe('Blinks: Delete', async () => {
       .send(input);
 
     expect(blinkCreationResponse.status).toBe(201);
-    expect(blinkCreationResponse.body).toEqual({
+    expect(blinkCreationResponse.body).toEqual<BlinkCreationSuccessResponseBody>({
       id: expect.any(String),
       name: input.name,
       url: input.url,
       creator: user,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

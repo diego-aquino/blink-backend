@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Blink API REST",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

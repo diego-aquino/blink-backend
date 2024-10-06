@@ -8,6 +8,10 @@ export type BlinkSchema = HttpSchema<{
     /** Criar usuário */
     POST: BlinkOperations['users/create'];
   };
+  '/users/me': {
+    /** Buscar usuário autenticado */
+    GET: BlinkOperations['users/get/me'];
+  };
   '/users/:userId': {
     /** Buscar usuário */
     GET: BlinkOperations['users/get'];
@@ -27,10 +31,6 @@ export type BlinkSchema = HttpSchema<{
   '/auth/refresh': {
     /** Gerar novo token de acesso */
     POST: BlinkOperations['auth/refresh'];
-  };
-  '/auth/password': {
-    /** Alterar senha */
-    PUT: BlinkOperations['auth/password/update'];
   };
   '/workspaces': {
     /** Listar workspaces */
@@ -55,10 +55,10 @@ export type BlinkSchema = HttpSchema<{
   '/workspaces/:workspaceId/members/:memberId': {
     /** Buscar membro */
     GET: BlinkOperations['workspaces/members/get'];
-    /** Atualizar membro */
-    PUT: BlinkOperations['workspaces/members/update'];
     /** Remover membro */
     DELETE: BlinkOperations['workspaces/members/delete'];
+    /** Atualizar membro */
+    PATCH: BlinkOperations['workspaces/members/update'];
   };
   '/workspaces/:workspaceId/blinks': {
     /** Listar blinks */
@@ -144,11 +144,13 @@ export interface BlinkComponents {
       /** @description O id do blink */
       id: string;
       /** @description O nome do blink */
-      name: string;
+      name?: string | null;
       /** @description A url do blink */
       url: string;
       /** @description O id do redirecionamento */
       redirectId: string;
+      /** @description O id do workspace */
+      workspaceId: string;
       creator?: BlinkComponents['schemas']['User'];
       /**
        * Format: date-time
@@ -232,6 +234,26 @@ export interface BlinkOperations {
       /** @description Email em uso por outro usuário */
       409: {
         body: BlinkComponents['schemas']['ConflictError'];
+      };
+      /** @description Erro no servidor */
+      500: {
+        body: BlinkComponents['schemas']['InternalServerError'];
+      };
+    };
+  }>;
+  'users/get/me': HttpSchema.Method<{
+    response: {
+      /** @description Usuário encontrado */
+      200: {
+        body: BlinkComponents['schemas']['User'];
+      };
+      /** @description Não autenticado */
+      401: {
+        body: BlinkComponents['schemas']['AuthError'];
+      };
+      /** @description Usuário não encontrado */
+      404: {
+        body: BlinkComponents['schemas']['NotFoundError'];
       };
       /** @description Erro no servidor */
       500: {
@@ -381,36 +403,6 @@ export interface BlinkOperations {
       };
       /** @description Credenciais inválidas */
       401: {
-        body: BlinkComponents['schemas']['AuthError'];
-      };
-      /** @description Erro no servidor */
-      500: {
-        body: BlinkComponents['schemas']['InternalServerError'];
-      };
-    };
-  }>;
-  'auth/password/update': HttpSchema.Method<{
-    request: {
-      body: {
-        /** @description A senha atual */
-        oldPassword: string;
-        /** @description A nova senha */
-        newPassword: string;
-      };
-    };
-    response: {
-      /** @description Senha alterada */
-      204: {};
-      /** @description Erro de validação ou senha atual inválida */
-      400: {
-        body: BlinkComponents['schemas']['ValidationError'];
-      };
-      /** @description Não autenticado */
-      401: {
-        body: BlinkComponents['schemas']['AuthError'];
-      };
-      /** @description Não autorizado */
-      403: {
         body: BlinkComponents['schemas']['AuthError'];
       };
       /** @description Erro no servidor */
@@ -665,21 +657,10 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/members/update': HttpSchema.Method<{
-    request: {
-      body: {
-        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
-      };
-    };
+  'workspaces/members/delete': HttpSchema.Method<{
     response: {
-      /** @description Membro atualizado */
-      200: {
-        body: BlinkComponents['schemas']['WorkspaceMember'];
-      };
-      /** @description Erro de validação */
-      400: {
-        body: BlinkComponents['schemas']['ValidationError'];
-      };
+      /** @description Membro removido */
+      204: {};
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
@@ -698,10 +679,21 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/members/delete': HttpSchema.Method<{
+  'workspaces/members/update': HttpSchema.Method<{
+    request: {
+      body: {
+        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
+      };
+    };
     response: {
-      /** @description Membro removido */
-      204: {};
+      /** @description Membro atualizado */
+      200: {
+        body: BlinkComponents['schemas']['WorkspaceMember'];
+      };
+      /** @description Erro de validação */
+      400: {
+        body: BlinkComponents['schemas']['ValidationError'];
+      };
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
@@ -762,7 +754,7 @@ export interface BlinkOperations {
     request: {
       body: {
         /** @description O nome do blink */
-        name: string;
+        name?: string;
         /** @description A url do blink */
         url: string;
         /** @description O id do redirecionamento (se não fornecido, será gerado automaticamente) */

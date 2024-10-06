@@ -1,0 +1,22 @@
+meta {
+  name: Listar membros
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/members
+  body: none
+  auth: none
+}
+
+params:query {
+  ~name: 
+  ~type: 
+  ~page: 
+  ~limit: 
+}
+
+vars:post-response {
+  memberId: res.body.members.at(0)?.id
+}

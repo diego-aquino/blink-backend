@@ -1,0 +1,17 @@
+meta {
+  name: Atualizar membro
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:3001/workspaces/{{workspaceId}}/members/{{memberId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "ADMINISTRATOR"
+  }
+}

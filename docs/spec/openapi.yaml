@@ -13,6 +13,7 @@ tags:
   - name: Usuários
   - name: Autenticação
   - name: Workspaces
+  - name: Membros de workspace
   - name: Blinks
   - name: Redirecionamentos
 
@@ -69,6 +70,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConflictError'
+        '500':
+          description: Erro no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /users/me:
+    get:
+      summary: Buscar usuário autenticado
+      operationId: users/get/me
+      tags:
+        - Usuários
+      security:
+        - accessCookieAuth: []
+      responses:
+        '200':
+          description: Usuário encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
         '500':
           description: Erro no servidor
           content:
@@ -321,62 +356,6 @@ paths:
                 $ref: '#/components/schemas/ValidationError'
         '401':
           description: Credenciais inválidas
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '500':
-          description: Erro no servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-
-  /auth/password:
-    put:
-      summary: Alterar senha
-      operationId: auth/password/update
-      tags:
-        - Autenticação
-      security:
-        - accessCookieAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - oldPassword
-                - newPassword
-              properties:
-                oldPassword:
-                  type: string
-                  description: A senha atual
-                  examples:
-                    - 12345678
-                newPassword:
-                  type: string
-                  description: A nova senha
-                  examples:
-                    - 654321
-      responses:
-        '204':
-          description: Senha alterada
-        '400':
-          description: Erro de validação ou senha atual inválida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '403':
-          description: Não autorizado
           content:
             application/json:
               schema:
@@ -665,7 +644,7 @@ paths:
       summary: Adicionar membro
       operationId: workspaces/members/create
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       requestBody:
@@ -731,7 +710,7 @@ paths:
       summary: Listar membros
       operationId: workspaces/members/list
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       parameters:
@@ -830,7 +809,7 @@ paths:
       summary: Buscar membro
       operationId: workspaces/members/get
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       responses:
@@ -865,11 +844,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
-    put:
+    patch:
       summary: Atualizar membro
       operationId: workspaces/members/update
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       requestBody:
@@ -923,7 +902,7 @@ paths:
       summary: Remover membro
       operationId: workspaces/members/delete
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       responses:
@@ -978,7 +957,6 @@ paths:
             schema:
               type: object
               required:
-                - name
                 - url
               properties:
                 name:
@@ -1437,10 +1415,9 @@ components:
       type: object
       required:
         - id
-        - name
         - url
         - redirectId
-        - workspace
+        - workspaceId
         - createdAt
         - updatedAt
       properties:
@@ -1452,6 +1429,7 @@ components:
         name:
           type: string
           description: O nome do blink
+          nullable: true
           examples:
             - Meu blink
         url:
@@ -1464,6 +1442,11 @@ components:
           description: O id do redirecionamento
           examples:
             - t96iws9z
+        workspaceId:
+          type: string
+          description: O id do workspace
+          examples:
+            - tz4a98xxat96iws9zmbrgj3a
         creator:
           $ref: '#/components/schemas/User'
         createdAt:

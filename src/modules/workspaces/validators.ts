@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 export const workspaceCreationSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().trim().min(1),
 });
 
 export type WorkspaceCreationInput = z.infer<typeof workspaceCreationSchema>;
 
 export const workspaceListSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().trim().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
 });
@@ -24,7 +24,7 @@ export const workspaceByIdSchema = z.object({
 export type WorkspaceByIdInput = z.infer<typeof workspaceByIdSchema>;
 
 export const workspaceUpdateSchema = workspaceByIdSchema.extend({
-  name: z.string().min(1).optional(),
+  name: z.string().trim().min(1).optional(),
 });
 
 export type WorkspaceUpdateInput = z.infer<typeof workspaceUpdateSchema>;

@@ -116,7 +116,7 @@ describe('Blinks: List', async () => {
     let blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
       .set('cookie', cookies.access.raw)
-      .query({ name: blink.name } satisfies BlinkListInput.RawQuery);
+      .query({ name: blink.name! } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
 
@@ -131,7 +131,7 @@ describe('Blinks: List', async () => {
     blinkListResponse = await supertest(app)
       .get(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
       .set('cookie', cookies.access.raw)
-      .query({ name: otherBlink.name.slice(0, 3).toUpperCase() } satisfies BlinkListInput.RawQuery);
+      .query({ name: otherBlink.name!.slice(0, 3).toUpperCase() } satisfies BlinkListInput.RawQuery);
 
     expect(blinkListResponse.status).toBe(200 satisfies BlinkListResponseStatus);
 

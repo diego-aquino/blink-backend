@@ -1,0 +1,18 @@
+meta {
+  name: Atualizar usuário
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:3001/users/{{userId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Diego",
+    "email": "diego@email.com"
+  }
+}

@@ -26,43 +26,48 @@ describe('Blinks: Create', async () => {
     await clearDatabase();
   });
 
-  it('creates a blink with an auto-generated redirect id', async () => {
-    const { user, cookies } = await createAuthenticatedUser(app);
+  it.each([{ redirectId: undefined }, { redirectId: '' }])(
+    'creates a blink with an auto-generated redirect id: redirect id $redirectId',
+    async ({ redirectId }) => {
+      const { user, cookies } = await createAuthenticatedUser(app);
 
-    const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
-    expect(workspace).not.toBeNull();
+      const workspace = (await workspaceService.getDefaultWorkspace(user.id))!;
+      expect(workspace).not.toBeNull();
 
-    const input = {
-      name: 'Blink',
-      url: 'https://example.com',
-    } satisfies BlinkCreationInput.Body;
+      const input = {
+        name: 'Blink',
+        url: 'https://example.com',
+        redirectId,
+      } satisfies BlinkCreationInput.Body;
 
-    const blinkCreationResponse = await supertest(app)
-      .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
-      .set('cookie', cookies.access.raw)
-      .send(input);
+      const blinkCreationResponse = await supertest(app)
+        .post(`/workspaces/${workspace.id}/blinks` satisfies BlinkPath.NonLiteral)
+        .set('cookie', cookies.access.raw)
+        .send(input);
 
-    expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
+      expect(blinkCreationResponse.status).toBe(201 satisfies BlinkCreationResponseStatus);
 
-    const blink = blinkCreationResponse.body as BlinkCreationSuccessResponseBody;
+      const blink = blinkCreationResponse.body as BlinkCreationSuccessResponseBody;
 
-    expect(blink).toEqual<BlinkCreationSuccessResponseBody>({
-      id: expect.any(String),
-      name: input.name,
-      url: input.url,
-      creator: user,
-      redirectId: expect.any(String),
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
-    });
+      expect(blink).toEqual<BlinkCreationSuccessResponseBody>({
+        id: expect.any(String),
+        name: input.name,
+        url: input.url,
+        creator: user,
+        redirectId: expect.any(String),
+        workspaceId: workspace.id,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
 
-    const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
-      where: { id: workspace.id },
-      include: { blinks: { orderBy: { createdAt: 'asc' } } },
-    });
-    expect(workspaceInDatabase.blinks).toHaveLength(1);
-    expect(workspaceInDatabase.blinks[0].name).toBe('Blink');
-  });
+      const workspaceInDatabase = await database.client.workspace.findUniqueOrThrow({
+        where: { id: workspace.id },
+        include: { blinks: { orderBy: { createdAt: 'asc' } } },
+      });
+      expect(workspaceInDatabase.blinks).toHaveLength(1);
+      expect(workspaceInDatabase.blinks[0].name).toBe('Blink');
+    },
+  );
 
   it('creates a blink with a custom redirect id', async () => {
     const { user, cookies } = await createAuthenticatedUser(app);
@@ -91,6 +96,7 @@ describe('Blinks: Create', async () => {
       url: input.url,
       creator: user,
       redirectId: input.redirectId,
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -138,6 +144,7 @@ describe('Blinks: Create', async () => {
       url: input.url,
       creator: otherUser,
       redirectId: expect.any(String),
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -214,6 +221,7 @@ describe('Blinks: Create', async () => {
       url: input.url,
       creator: user,
       redirectId: input.redirectId,
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -263,6 +271,7 @@ describe('Blinks: Create', async () => {
       url: input.url,
       creator: user,
       redirectId: input.redirectId,
+      workspaceId: workspace.id,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
