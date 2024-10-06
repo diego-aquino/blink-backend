@@ -12,7 +12,7 @@ class WorkspaceService {
     return this._instance;
   }
 
-  readonly DEFAULT_WORKSPACE_NAME = 'Meus blinks';
+  readonly DEFAULT_WORKSPACE_NAME = 'Meus links';
   readonly DEFAULT_WORKSPACE_CREATOR_MEMBER_TYPE: WorkspaceMemberType = 'ADMINISTRATOR';
 
   private constructor() {}

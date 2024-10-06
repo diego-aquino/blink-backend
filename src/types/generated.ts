@@ -55,10 +55,10 @@ export type BlinkSchema = HttpSchema<{
   '/workspaces/:workspaceId/members/:memberId': {
     /** Buscar membro */
     GET: BlinkOperations['workspaces/members/get'];
-    /** Atualizar membro */
-    PUT: BlinkOperations['workspaces/members/update'];
     /** Remover membro */
     DELETE: BlinkOperations['workspaces/members/delete'];
+    /** Atualizar membro */
+    PATCH: BlinkOperations['workspaces/members/update'];
   };
   '/workspaces/:workspaceId/blinks': {
     /** Listar blinks */
@@ -657,21 +657,10 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/members/update': HttpSchema.Method<{
-    request: {
-      body: {
-        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
-      };
-    };
+  'workspaces/members/delete': HttpSchema.Method<{
     response: {
-      /** @description Membro atualizado */
-      200: {
-        body: BlinkComponents['schemas']['WorkspaceMember'];
-      };
-      /** @description Erro de validação */
-      400: {
-        body: BlinkComponents['schemas']['ValidationError'];
-      };
+      /** @description Membro removido */
+      204: {};
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
@@ -690,10 +679,21 @@ export interface BlinkOperations {
       };
     };
   }>;
-  'workspaces/members/delete': HttpSchema.Method<{
+  'workspaces/members/update': HttpSchema.Method<{
+    request: {
+      body: {
+        type?: BlinkComponents['schemas']['WorkspaceMemberType'];
+      };
+    };
     response: {
-      /** @description Membro removido */
-      204: {};
+      /** @description Membro atualizado */
+      200: {
+        body: BlinkComponents['schemas']['WorkspaceMember'];
+      };
+      /** @description Erro de validação */
+      400: {
+        body: BlinkComponents['schemas']['ValidationError'];
+      };
       /** @description Não autenticado */
       401: {
         body: BlinkComponents['schemas']['AuthError'];
