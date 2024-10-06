@@ -32,10 +32,6 @@ export type BlinkSchema = HttpSchema<{
     /** Gerar novo token de acesso */
     POST: BlinkOperations['auth/refresh'];
   };
-  '/auth/password': {
-    /** Alterar senha */
-    PUT: BlinkOperations['auth/password/update'];
-  };
   '/workspaces': {
     /** Listar workspaces */
     GET: BlinkOperations['workspaces/list'];
@@ -407,36 +403,6 @@ export interface BlinkOperations {
       };
       /** @description Credenciais inválidas */
       401: {
-        body: BlinkComponents['schemas']['AuthError'];
-      };
-      /** @description Erro no servidor */
-      500: {
-        body: BlinkComponents['schemas']['InternalServerError'];
-      };
-    };
-  }>;
-  'auth/password/update': HttpSchema.Method<{
-    request: {
-      body: {
-        /** @description A senha atual */
-        oldPassword: string;
-        /** @description A nova senha */
-        newPassword: string;
-      };
-    };
-    response: {
-      /** @description Senha alterada */
-      204: {};
-      /** @description Erro de validação ou senha atual inválida */
-      400: {
-        body: BlinkComponents['schemas']['ValidationError'];
-      };
-      /** @description Não autenticado */
-      401: {
-        body: BlinkComponents['schemas']['AuthError'];
-      };
-      /** @description Não autorizado */
-      403: {
         body: BlinkComponents['schemas']['AuthError'];
       };
       /** @description Erro no servidor */

@@ -13,6 +13,7 @@ tags:
   - name: Usuários
   - name: Autenticação
   - name: Workspaces
+  - name: Membros de workspace
   - name: Blinks
   - name: Redirecionamentos
 
@@ -366,62 +367,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
-  /auth/password:
-    put:
-      summary: Alterar senha
-      operationId: auth/password/update
-      tags:
-        - Autenticação
-      security:
-        - accessCookieAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - oldPassword
-                - newPassword
-              properties:
-                oldPassword:
-                  type: string
-                  description: A senha atual
-                  examples:
-                    - 12345678
-                newPassword:
-                  type: string
-                  description: A nova senha
-                  examples:
-                    - 654321
-      responses:
-        '204':
-          description: Senha alterada
-        '400':
-          description: Erro de validação ou senha atual inválida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '403':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthError'
-        '500':
-          description: Erro no servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-
   /workspaces:
     post:
       summary: Criar workspace
@@ -699,7 +644,7 @@ paths:
       summary: Adicionar membro
       operationId: workspaces/members/create
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       requestBody:
@@ -765,7 +710,7 @@ paths:
       summary: Listar membros
       operationId: workspaces/members/list
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       parameters:
@@ -864,7 +809,7 @@ paths:
       summary: Buscar membro
       operationId: workspaces/members/get
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       responses:
@@ -899,11 +844,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
 
-    put:
+    patch:
       summary: Atualizar membro
       operationId: workspaces/members/update
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       requestBody:
@@ -957,7 +902,7 @@ paths:
       summary: Remover membro
       operationId: workspaces/members/delete
       tags:
-        - Workspaces
+        - Membros de workspace
       security:
         - accessCookieAuth: []
       responses:
