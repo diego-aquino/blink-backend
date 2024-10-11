@@ -429,24 +429,21 @@ paths:
       security:
         - accessCookieAuth: []
       parameters:
-        - workspaceName:
-          name: name
+        - name: name
           in: query
           required: false
           description: O nome do workspace para filtrar
           schema:
             type: string
             example: Meu workspace
-        - page:
-          name: page
+        - name: page
           in: query
           required: false
           description: O número da página
           schema:
             type: integer
             example: 1
-        - limit:
-          name: limit
+        - name: limit
           in: query
           required: false
           description: O número de workspaces por página
@@ -714,31 +711,27 @@ paths:
       security:
         - accessCookieAuth: []
       parameters:
-        - memberName:
-          name: name
+        - name: name
           in: query
           required: false
           description: O nome do membro para filtrar
           schema:
             type: string
             example: Diego Aquino
-        - memberType:
-          name: type
+        - name: type
           in: query
           required: false
           description: O tipo do membro para filtrar
           schema:
             $ref: '#/components/schemas/WorkspaceMemberType'
-        - page:
-          name: page
+        - name: page
           in: query
           required: false
           description: O número da página
           schema:
             type: integer
             example: 1
-        - limit:
-          name: limit
+        - name: limit
           in: query
           required: false
           description: O número de membros por página
@@ -1026,24 +1019,21 @@ paths:
       security:
         - accessCookieAuth: []
       parameters:
-        - blinkName:
-          name: name
+        - name: name
           in: query
           required: false
           description: O nome do blink para filtrar
           schema:
             type: string
             example: Meu blink
-        - page:
-          name: page
+        - name: page
           in: query
           required: false
           description: O número da página
           schema:
             type: integer
             example: 1
-        - limit:
-          name: limit
+        - name: limit
           in: query
           required: false
           description: O número de blinks por página
